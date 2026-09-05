@@ -2,12 +2,12 @@
 
 This repository is a small handoff package for the team. Start with this README, run the notebook once, then read `LATER_PLAN.md` before choosing or continuing a modelling role.
 
-The repository contains only four files:
+The starting handoff contains four files:
 
 - `README.md` — where to start and where every output goes
 - `requirements.txt` — Python packages needed by the notebook
 - `eda.ipynb` — data download, preparation, validation and EDA in one place
-- `LATER_PLAN.md` — what the results mean and what each role should do next
+- `LATER_PLAN.md` — what the results mean and the next work for each role
 
 ## 1. Install the packages
 
@@ -21,7 +21,7 @@ Python 3.10 or newer is recommended.
 
 ## 2. Get the BESSTIE data
 
-You normally do not need to download anything by hand. When `eda.ipynb` runs, it looks for these six files:
+The notebook handles downloading automatically. When `eda.ipynb` runs, it first looks for these six local files:
 
 ```text
 data/raw/besstie/
@@ -59,7 +59,7 @@ The notebook does all shared data work:
 7. writes task-ready CSV files;
 8. creates the EDA tables and figures.
 
-The official BESSTIE validation files become the project test set because the official test set is not public. The project validation set is a fixed 15% stratified part of official train, using seed `36118`. Do not use the project test set to choose a model, feature or threshold.
+The public BESSTIE release provides train and validation files. This project reserves the official validation files as its held-out test set. A fixed 15% stratified part of official train becomes project validation, using seed `36118`. Model and threshold choices come from train and project validation; the held-out test supports one final evaluation.
 
 ## 4. Find the prepared data
 
@@ -81,7 +81,7 @@ outputs/processed/validation_report.json
 outputs/processed/audit/removed_rows.csv
 ```
 
-Each modelling role should use its own task folder:
+Each modelling role uses its own task folder:
 
 | Work | Read these files |
 | --- | --- |
@@ -95,7 +95,7 @@ Each task folder contains `train.csv`, `validation.csv` and `test.csv`, with the
 id,text,variety,source,label
 ```
 
-Keep `id` in prediction files. Evaluation should join predictions to labels by `id`, not row order. A model may apply its own tokenizer or feature extraction, but it should not rewrite these shared CSV files.
+Keep `id` in prediction files so evaluation can join each prediction to its label. Apply model-specific tokenisation or feature extraction inside the model code and keep the shared CSV files unchanged.
 
 ## 5. Find the EDA results
 
@@ -121,19 +121,40 @@ Important files include:
 
 Read `LATER_PLAN.md`. It explains the six separate work packages, shared prediction format, evaluation rules and user-testing plan.
 
-The sarcasm role should pay particular attention to the Google data:
+The sarcasm role uses the following Google-data findings:
 
 - Google has only 88 sarcastic examples in the prepared dataset.
 - `en-UK Google` has one positive example in train and none in validation or test.
 - `en-IN Google` is also sparse.
-- Use a shared sarcasm model instead of separate models for these segments.
+- Use one shared sarcasm model across all varieties and sources.
 - Compare an ordinary baseline with class weighting, using training data only.
 - Choose thresholds on validation only.
-- Report unsupported positive-class metrics as `N/A`, not zero.
+- Use `N/A` for positive-class metrics when the subgroup contains zero positive examples.
 - Pass limited-evidence information to the application so uncertain cases can go to human review.
 
 The full instructions and reasons are in the **Sarcasm modelling** section of `LATER_PLAN.md`.
 
-## Local files
+## 7. What the team keeps on GitHub
 
-The `data/` and `outputs/` folders are created locally and are not part of the four-file handoff. They should not be committed to this repository.
+The starting EDA handoff stays small because the notebook can rebuild its data outputs quickly. Keep these generated materials on each person's computer:
+
+- `data/` — downloaded BESSTIE source files
+- `outputs/processed/` — cleaned data, fixed splits and task CSV files
+- `outputs/eda/` — generated EDA tables and figures
+- notebook caches, temporary files and exploratory checkpoints
+
+The data preparation logic remains inside `eda.ipynb`, so every person can recreate the same files by running the notebook from the top.
+
+Later modelling work adds useful, reusable project files to GitHub. Each modelling role uploads:
+
+- training and inference code;
+- the final configuration and random seed;
+- the selected model artefact needed by evaluation or the application;
+- validation and final test predictions with `id` and probabilities;
+- validation and test metric tables;
+- the chosen threshold, class order and model metadata;
+- the short report section explaining the result.
+
+These files let evaluation and application work continue without repeating a long training run. When a final model artefact is too large for ordinary Git, store it with Git LFS or the team's shared model storage and commit a small metadata file containing its location, version and loading instructions.
+
+Member 5 uploads the shared evaluation code, locked result tables and final figures. Member 6 uploads the application, inference wrapper, anonymous user-study summary and poster material. `LATER_PLAN.md` gives the expected paths and contents for each role.
