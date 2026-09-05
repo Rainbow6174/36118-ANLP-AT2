@@ -1,5 +1,0 @@
-{
-  "char_ngram_variety_validation_macro_f1": 0.7099172635904271,
-  "source_prediction_validation_macro_f1": 0.9721124272622195,
-  "interpretation": "Source is much easier to predict than English variety, so the final evaluation needs source-aware and cross-source checks."
-}

@@ -1,6 +1,6 @@
 # From EDA to the Final System
 
-This guide explains what the EDA found, what is ready to use, and what each project role should deliver. The roles are separate on purpose: people can work in parallel without editing the same files.
+This guide explains what the EDA found and what each project role should deliver next. Run all cells in `eda.ipynb` first. The roles are separate on purpose, so people can work in parallel without editing the same files.
 
 ## The short version
 
@@ -14,20 +14,20 @@ The data is large enough for a solid English-variety classifier and useful senti
 
 A strong project should therefore do more than report one accuracy score. It should compare simple and stronger models, show results by variety and source, explain where the evidence is weak, and turn those limits into useful behaviour in the application.
 
-## What is ready now
+## What the notebook creates
 
-The shared files are under `data/processed/`.
+After `eda.ipynb` finishes, the shared files are under `outputs/processed/` and the EDA evidence is under `outputs/eda/`.
 
 | Need | File or folder |
 | --- | --- |
-| Full dataset with both labels | `data/processed/dataset_v1.csv` |
-| Fixed train, validation and test splits | `data/processed/train.csv`, `validation.csv`, `test.csv` |
-| Sentiment-ready files | `data/processed/by_task/sentiment/` |
-| Sarcasm-ready files | `data/processed/by_task/sarcasm/` |
-| Variety-ready files | `data/processed/by_task/variety/` |
-| Removed-row record | `data/processed/audit/removed_rows.csv` |
-| Data quality checks | `data/processed/validation_report.json` |
-| EDA support tables and figures | `reports/eda/notebook_outputs/` |
+| Full dataset with both labels | `outputs/processed/dataset_v1.csv` |
+| Fixed train, validation and test splits | `outputs/processed/train.csv`, `validation.csv`, `test.csv` |
+| Sentiment-ready files | `outputs/processed/by_task/sentiment/` |
+| Sarcasm-ready files | `outputs/processed/by_task/sarcasm/` |
+| Variety-ready files | `outputs/processed/by_task/variety/` |
+| Removed-row record | `outputs/processed/audit/removed_rows.csv` |
+| Data quality checks | `outputs/processed/validation_report.json` |
+| EDA support tables and figures | `outputs/eda/` |
 
 Each task file has the same five columns:
 
@@ -102,10 +102,9 @@ The team can assign one person to each role. Folder ownership keeps the work sep
 
 Owns:
 
-- `src/data/`
-- `data/processed/`
-- `notebooks/eda.ipynb`
-- `reports/eda/`
+- `eda.ipynb`
+- the shared data rules and output description in `README.md`
+- the data and EDA sections of the final report
 - final report assembly
 
 Delivers:
@@ -119,7 +118,7 @@ Delivers:
 
 Why it matters: this gives every model the same data and prevents split leakage or inconsistent row handling. It also supports the report's data, reproducibility, limitations and contribution sections.
 
-Done when: `python src/data/run_data_pipeline.py` completes, all validation tests pass, and each task folder can be loaded without extra cleaning.
+Done when: every cell in `eda.ipynb` runs from a clean start, `outputs/processed/validation_report.json` says that all checks passed, and each task folder can be loaded without extra shared cleaning.
 
 ### Sentiment modelling
 
@@ -165,7 +164,7 @@ Required approach:
 5. Report macro-F1, sarcastic precision, recall and F1, PR-AUC, balanced accuracy and the confusion matrix. Accuracy is secondary.
 6. Break results down by variety and by source. Show a `variety × source` result only beside its positive and total support.
 7. For `en-UK Google` test, positive-class recall, F1 and PR-AUC are not measurable. Write `N/A`, not zero. Report false positives, false-positive rate, specificity and predicted-positive rate.
-8. Export a segment-support file or reuse `reports/eda/notebook_outputs/sarcasm_segment_support_recommendations.csv` so the application knows when to show a warning.
+8. Export a segment-support file or reuse `outputs/eda/sarcasm_segment_support_recommendations.csv` so the application knows when to show a warning.
 
 The application behaviour for sparse Google segments should also be agreed here: use the shared model, display `Limited segment evidence`, and send predicted sarcastic cases to human review.
 
@@ -321,23 +320,6 @@ Before submission, the team should be able to answer yes to all of these:
 - Do the report, poster and application use the same final numbers?
 - Are limitations and contributions stated plainly?
 
-## Commands
+## Starting point
 
-Prepare and validate the data:
-
-```bash
-python src/data/run_data_pipeline.py
-```
-
-Build and run the notebook:
-
-```bash
-python tools/build_eda_notebook.py
-python tools/execute_eda_notebook.py
-```
-
-Run the data tests:
-
-```bash
-python -m unittest discover -s tests -v
-```
+Install `requirements.txt`, open `eda.ipynb` from the repository root and run all cells. The notebook downloads any missing BESSTIE source files, prepares and checks the shared data, and writes every handoff file to the paths listed in `README.md`.

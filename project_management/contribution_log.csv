@@ -1,7 +1,0 @@
-role,work_package,deliverable,evidence_path,status,notes
-Data and report coordination,Data acquisition,Official BESSTIE files and provenance,data/raw/besstie/provenance.json,complete,Six public train and validation files
-Data and report coordination,Data preparation,Canonical project dataset and splits,data/processed/dataset_v1.csv,complete,Shared files are ready for modelling
-Data and report coordination,Quality assurance,Automated validation report,data/processed/validation_report.json,complete,All checks passed
-Data and report coordination,Exploratory analysis,EDA tables and figures,reports/eda/,complete,Report and poster ready
-Data and report coordination,Documentation,Data card and report section,reports/eda/,complete,Needs final report integration later
-Data and report coordination,Final assembly,Master report assembly,reports/MASTER_REPORT_OUTLINE.md,planned,Depends on finished sections and locked results

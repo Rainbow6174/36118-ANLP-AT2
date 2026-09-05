@@ -1,61 +1,139 @@
-# VarietyLens - AT2 English Variety Project
+# VarietyLens EDA Handoff
 
-This repository contains the shared BESSTIE data pipeline, EDA, modelling folders, evaluation plan and report structure for the project.
+This repository is a small handoff package for the team. Start with this README, run the notebook once, then read `LATER_PLAN.md` before choosing or continuing a modelling role.
 
-## Prepare the data
+The repository contains only four files:
 
-Python 3.10 or newer is enough for the core pipeline.
+- `README.md` — where to start and where every output goes
+- `requirements.txt` — Python packages needed by the notebook
+- `eda.ipynb` — data download, preparation, validation and EDA in one place
+- `LATER_PLAN.md` — what the results mean and what each role should do next
 
-```powershell
-python src/data/run_data_pipeline.py
-python -m unittest discover -s tests -v
+## 1. Install the packages
+
+From the repository folder, run:
+
+```bash
+python -m pip install -r requirements.txt
 ```
 
-The first command downloads the six public BESSTIE files, prepares fixed project splits, checks the data, creates task-ready files and refreshes the main EDA summaries.
+Python 3.10 or newer is recommended.
 
-## Main outputs
+## 2. Get the BESSTIE data
 
-- `data/raw/besstie/`: the six source CSV files and provenance details
-- `data/processed/dataset_v1.csv`: the full prepared dataset
-- `data/processed/train.csv`, `validation.csv`, `test.csv`: shared split files with both labels
-- `data/processed/by_task/`: ready-to-use files for sentiment, sarcasm and variety
-- `data/processed/quality_report.json`: row counts and removal summary
-- `data/processed/validation_report.json`: schema and leakage checks
-- `data/processed/audit/removed_rows.csv`: row-level removal record
-- `notebooks/eda.ipynb`: the full executable EDA
-- `reports/eda/`: the data card, report section, tables and figures
-- `docs/EDA_TO_HD_IMPLEMENTATION_PLAN.md`: practical next steps for all six roles
-- `reports/MASTER_REPORT_OUTLINE.md`: final report structure
+You normally do not need to download anything by hand. When `eda.ipynb` runs, it looks for these six files:
 
-## Use the task files directly
+```text
+data/raw/besstie/
+├── en_AU/
+│   ├── train.csv
+│   └── validation.csv
+├── en_IN/
+│   ├── train.csv
+│   └── validation.csv
+└── en_UK/
+    ├── train.csv
+    └── validation.csv
+```
 
-Every file under `data/processed/by_task/` contains:
+If a file is missing, the notebook downloads it from the official [BESSTIE Hugging Face repository](https://huggingface.co/datasets/unswnlporg/BESSTIE). If you already have the files, place them in the paths above and the notebook will use the local copies.
+
+## 3. Run the notebook
+
+Start Jupyter from the repository folder:
+
+```bash
+jupyter lab
+```
+
+Open `eda.ipynb` and choose **Run All Cells**. Run the whole notebook from top to bottom; later cells use the fixed splits and tables created near the beginning.
+
+The notebook does all shared data work:
+
+1. finds or downloads the six source files;
+2. checks their columns and labels;
+3. keeps wording, spelling, case, punctuation and emoji while cleaning whitespace;
+4. removes exact/case-only duplicates and records every removal;
+5. creates fixed train, validation and held-out test splits;
+6. validates IDs, labels and split separation;
+7. writes task-ready CSV files;
+8. creates the EDA tables and figures.
+
+The official BESSTIE validation files become the project test set because the official test set is not public. The project validation set is a fixed 15% stratified part of official train, using seed `36118`. Do not use the project test set to choose a model, feature or threshold.
+
+## 4. Find the prepared data
+
+After the notebook finishes, shared data is under:
+
+```text
+outputs/processed/
+```
+
+The main files are:
+
+```text
+outputs/processed/dataset_v1.csv
+outputs/processed/train.csv
+outputs/processed/validation.csv
+outputs/processed/test.csv
+outputs/processed/quality_report.json
+outputs/processed/validation_report.json
+outputs/processed/audit/removed_rows.csv
+```
+
+Each modelling role should use its own task folder:
+
+| Work | Read these files |
+| --- | --- |
+| English-variety modelling | `outputs/processed/by_task/variety/` |
+| Sentiment modelling | `outputs/processed/by_task/sentiment/` |
+| Sarcasm modelling | `outputs/processed/by_task/sarcasm/` |
+
+Each task folder contains `train.csv`, `validation.csv` and `test.csv`, with the same columns:
 
 ```text
 id,text,variety,source,label
 ```
 
-Use train to fit a model and validation to choose settings or thresholds. Keep test untouched until the final evaluation. If a model needs its own tokenisation or text transformation, apply it inside that model's code without changing the shared files.
+Keep `id` in prediction files. Evaluation should join predictions to labels by `id`, not row order. A model may apply its own tokenizer or feature extraction, but it should not rewrite these shared CSV files.
 
-## Run the EDA notebook
+## 5. Find the EDA results
 
-```powershell
-python -m pip install -r requirements-notebook.txt
-python tools/build_eda_notebook.py
-python tools/execute_eda_notebook.py
+All tables and figures are saved under:
+
+```text
+outputs/eda/
 ```
 
-The executed notebook saves reusable CSV tables and PNG/SVG figures under `reports/eda/notebook_outputs/`.
+Important files include:
 
-## Important data choices
+- `label_balance_by_split.csv`
+- `variety_source_sample_counts.csv`
+- `text_length_distribution_summary.csv`
+- `top_keywords_by_variety_source_train_only.csv`
+- `top_character_ngrams_by_variety_train_only.csv`
+- `source_diagnostic_validation_report.csv`
+- `sarcasm_distribution_by_split_variety_source.csv`
+- `sarcasm_segment_support_recommendations.csv`
+- `figures/`
 
-The public BESSTIE validation split is used as the project's held-out test set because the official test data is not public. A stratified 15% part of the official train split becomes project validation.
+## 6. Before starting later work
 
-Cleaning is deliberately light. The pipeline normalises whitespace but keeps spelling, case, punctuation, emoji, hashtags and regional wording. It audits exact duplicates and conflicting labels to prevent leakage.
+Read `LATER_PLAN.md`. It explains the six separate work packages, shared prediction format, evaluation rules and user-testing plan.
 
-## Source and citation
+The sarcasm role should pay particular attention to the Google data:
 
-- Dataset: <https://huggingface.co/datasets/unswnlporg/BESSTIE>
-- Paper: <https://aclanthology.org/2025.findings-acl.441/>
+- Google has only 88 sarcastic examples in the prepared dataset.
+- `en-UK Google` has one positive example in train and none in validation or test.
+- `en-IN Google` is also sparse.
+- Use a shared sarcasm model instead of separate models for these segments.
+- Compare an ordinary baseline with class weighting, using training data only.
+- Choose thresholds on validation only.
+- Report unsupported positive-class metrics as `N/A`, not zero.
+- Pass limited-evidence information to the application so uncertain cases can go to human review.
 
-Srirag, D., Joshi, A., Painter, J., and Kanojia, D. (2025). *BESSTIE: A Benchmark for Sentiment and Sarcasm Classification for Varieties of English*. Findings of ACL 2025, 8413-8429.
+The full instructions and reasons are in the **Sarcasm modelling** section of `LATER_PLAN.md`.
+
+## Local files
+
+The `data/` and `outputs/` folders are created locally and are not part of the four-file handoff. They should not be committed to this repository.

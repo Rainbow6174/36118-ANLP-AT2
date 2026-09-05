@@ -1,1 +1,0 @@
-"""VarietyLens project package."""
