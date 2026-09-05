@@ -1,0 +1,57 @@
+{
+  "dataset": "BESSTIE",
+  "repository": "https://huggingface.co/datasets/unswnlporg/BESSTIE",
+  "paper": "https://aclanthology.org/2025.findings-acl.441/",
+  "retrieved_at_utc": "2026-09-05T12:09:30.088065+00:00",
+  "files": [
+    {
+      "variety": "en-AU",
+      "official_split": "train",
+      "url": "https://huggingface.co/datasets/unswnlporg/BESSTIE/resolve/main/data/en_AU/train.csv?download=true",
+      "relative_path": "data/raw/besstie/en_AU/train.csv",
+      "bytes": "910895",
+      "status": "reused"
+    },
+    {
+      "variety": "en-AU",
+      "official_split": "validation",
+      "url": "https://huggingface.co/datasets/unswnlporg/BESSTIE/resolve/main/data/en_AU/validation.csv?download=true",
+      "relative_path": "data/raw/besstie/en_AU/validation.csv",
+      "bytes": "118277",
+      "status": "reused"
+    },
+    {
+      "variety": "en-IN",
+      "official_split": "train",
+      "url": "https://huggingface.co/datasets/unswnlporg/BESSTIE/resolve/main/data/en_IN/train.csv?download=true",
+      "relative_path": "data/raw/besstie/en_IN/train.csv",
+      "bytes": "718370",
+      "status": "reused"
+    },
+    {
+      "variety": "en-IN",
+      "official_split": "validation",
+      "url": "https://huggingface.co/datasets/unswnlporg/BESSTIE/resolve/main/data/en_IN/validation.csv?download=true",
+      "relative_path": "data/raw/besstie/en_IN/validation.csv",
+      "bytes": "94141",
+      "status": "reused"
+    },
+    {
+      "variety": "en-UK",
+      "official_split": "train",
+      "url": "https://huggingface.co/datasets/unswnlporg/BESSTIE/resolve/main/data/en_UK/train.csv?download=true",
+      "relative_path": "data/raw/besstie/en_UK/train.csv",
+      "bytes": "970627",
+      "status": "reused"
+    },
+    {
+      "variety": "en-UK",
+      "official_split": "validation",
+      "url": "https://huggingface.co/datasets/unswnlporg/BESSTIE/resolve/main/data/en_UK/validation.csv?download=true",
+      "relative_path": "data/raw/besstie/en_UK/validation.csv",
+      "bytes": "137454",
+      "status": "reused"
+    }
+  ],
+  "integrity_note": "Files are validated by schema and row-level quality checks; no SHA256/local hash freeze is used."
+}

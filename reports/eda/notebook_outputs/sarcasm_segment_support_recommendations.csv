@@ -1,0 +1,7 @@
+variety,source,sarcastic_test,sarcastic_train,sarcastic_validation,total_test,total_train,total_validation,recommendation
+en-AU,google,7,56,10,130,804,142,Shared model is primary; subgroup metrics allowed with support and uncertainty
+en-AU,reddit,102,628,111,241,1496,264,Shared model is primary; subgroup metrics allowed with support and uncertainty
+en-IN,google,2,10,2,225,1398,247,"No standalone model; shared model only, descriptive subgroup metrics with support"
+en-IN,reddit,34,190,33,229,1428,252,Shared model is primary; subgroup metrics allowed with support and uncertainty
+en-UK,google,0,1,0,248,1544,273,"No standalone model; use shared global model, show limited-evidence warning, report false-positive behaviour only"
+en-UK,reddit,30,183,33,138,844,149,Shared model is primary; subgroup metrics allowed with support and uncertainty

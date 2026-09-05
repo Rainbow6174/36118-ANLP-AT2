@@ -1,0 +1,2 @@
+# The core data pipeline uses only the Python 3.10+ standard library.
+# Other members should add modelling and web-application dependencies separately.

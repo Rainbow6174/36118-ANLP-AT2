@@ -1,0 +1,313 @@
+{
+  "generated_at_utc": "2026-09-05T12:09:30.776315+00:00",
+  "configuration": {
+    "dataset_name": "BESSTIE",
+    "dataset_repository": "unswnlporg/BESSTIE",
+    "random_seed": 36118,
+    "validation_fraction_from_official_train": 0.15,
+    "varieties": [
+      "en-AU",
+      "en-IN",
+      "en-UK"
+    ],
+    "sources": [
+      "google",
+      "reddit"
+    ],
+    "sentiment_labels": [
+      0,
+      1
+    ],
+    "sarcasm_labels": [
+      0,
+      1
+    ],
+    "split_policy": {
+      "train": "stratified portion of the official public train split",
+      "validation": "stratified 15% portion of the official public train split",
+      "test": "official public validation split; never use for tuning"
+    },
+    "text_policy": "Strip leading/trailing whitespace and collapse whitespace only. Preserve case, spelling, punctuation, emoji, hashtags and regional expressions.",
+    "duplicate_policy": "Detect exact duplicates after Unicode NFKC, case-folding and whitespace collapse. Remove conflicting-label groups; otherwise keep one canonical row, preferring the official validation row to protect the project test split.",
+    "use_sha256_or_local_hash_freeze": false
+  },
+  "rows_after_quality_control": 10052,
+  "rows_removed": 22,
+  "removal_reasons": {
+    "conflicting_duplicate_labels": 2,
+    "duplicate_text": 20
+  },
+  "counts_by_split": [
+    {
+      "split": "test",
+      "count": 1211
+    },
+    {
+      "split": "train",
+      "count": 7514
+    },
+    {
+      "split": "validation",
+      "count": 1327
+    }
+  ],
+  "counts_by_split_variety_source": [
+    {
+      "split": "test",
+      "variety": "en-AU",
+      "source": "google",
+      "count": 130
+    },
+    {
+      "split": "test",
+      "variety": "en-AU",
+      "source": "reddit",
+      "count": 241
+    },
+    {
+      "split": "test",
+      "variety": "en-IN",
+      "source": "google",
+      "count": 225
+    },
+    {
+      "split": "test",
+      "variety": "en-IN",
+      "source": "reddit",
+      "count": 229
+    },
+    {
+      "split": "test",
+      "variety": "en-UK",
+      "source": "google",
+      "count": 248
+    },
+    {
+      "split": "test",
+      "variety": "en-UK",
+      "source": "reddit",
+      "count": 138
+    },
+    {
+      "split": "train",
+      "variety": "en-AU",
+      "source": "google",
+      "count": 804
+    },
+    {
+      "split": "train",
+      "variety": "en-AU",
+      "source": "reddit",
+      "count": 1496
+    },
+    {
+      "split": "train",
+      "variety": "en-IN",
+      "source": "google",
+      "count": 1398
+    },
+    {
+      "split": "train",
+      "variety": "en-IN",
+      "source": "reddit",
+      "count": 1428
+    },
+    {
+      "split": "train",
+      "variety": "en-UK",
+      "source": "google",
+      "count": 1544
+    },
+    {
+      "split": "train",
+      "variety": "en-UK",
+      "source": "reddit",
+      "count": 844
+    },
+    {
+      "split": "validation",
+      "variety": "en-AU",
+      "source": "google",
+      "count": 142
+    },
+    {
+      "split": "validation",
+      "variety": "en-AU",
+      "source": "reddit",
+      "count": 264
+    },
+    {
+      "split": "validation",
+      "variety": "en-IN",
+      "source": "google",
+      "count": 247
+    },
+    {
+      "split": "validation",
+      "variety": "en-IN",
+      "source": "reddit",
+      "count": 252
+    },
+    {
+      "split": "validation",
+      "variety": "en-UK",
+      "source": "google",
+      "count": 273
+    },
+    {
+      "split": "validation",
+      "variety": "en-UK",
+      "source": "reddit",
+      "count": 149
+    }
+  ],
+  "counts_by_variety_source_labels": [
+    {
+      "variety": "en-AU",
+      "source": "google",
+      "sentiment": "0",
+      "sarcasm": "0",
+      "count": 218
+    },
+    {
+      "variety": "en-AU",
+      "source": "google",
+      "sentiment": "0",
+      "sarcasm": "1",
+      "count": 67
+    },
+    {
+      "variety": "en-AU",
+      "source": "google",
+      "sentiment": "1",
+      "sarcasm": "0",
+      "count": 785
+    },
+    {
+      "variety": "en-AU",
+      "source": "google",
+      "sentiment": "1",
+      "sarcasm": "1",
+      "count": 6
+    },
+    {
+      "variety": "en-AU",
+      "source": "reddit",
+      "sentiment": "0",
+      "sarcasm": "0",
+      "count": 551
+    },
+    {
+      "variety": "en-AU",
+      "source": "reddit",
+      "sentiment": "0",
+      "sarcasm": "1",
+      "count": 812
+    },
+    {
+      "variety": "en-AU",
+      "source": "reddit",
+      "sentiment": "1",
+      "sarcasm": "0",
+      "count": 609
+    },
+    {
+      "variety": "en-AU",
+      "source": "reddit",
+      "sentiment": "1",
+      "sarcasm": "1",
+      "count": 29
+    },
+    {
+      "variety": "en-IN",
+      "source": "google",
+      "sentiment": "0",
+      "sarcasm": "0",
+      "count": 457
+    },
+    {
+      "variety": "en-IN",
+      "source": "google",
+      "sentiment": "0",
+      "sarcasm": "1",
+      "count": 14
+    },
+    {
+      "variety": "en-IN",
+      "source": "google",
+      "sentiment": "1",
+      "sarcasm": "0",
+      "count": 1399
+    },
+    {
+      "variety": "en-IN",
+      "source": "reddit",
+      "sentiment": "0",
+      "sarcasm": "0",
+      "count": 1168
+    },
+    {
+      "variety": "en-IN",
+      "source": "reddit",
+      "sentiment": "0",
+      "sarcasm": "1",
+      "count": 257
+    },
+    {
+      "variety": "en-IN",
+      "source": "reddit",
+      "sentiment": "1",
+      "sarcasm": "0",
+      "count": 484
+    },
+    {
+      "variety": "en-UK",
+      "source": "google",
+      "sentiment": "0",
+      "sarcasm": "0",
+      "count": 519
+    },
+    {
+      "variety": "en-UK",
+      "source": "google",
+      "sentiment": "0",
+      "sarcasm": "1",
+      "count": 1
+    },
+    {
+      "variety": "en-UK",
+      "source": "google",
+      "sentiment": "1",
+      "sarcasm": "0",
+      "count": 1545
+    },
+    {
+      "variety": "en-UK",
+      "source": "reddit",
+      "sentiment": "0",
+      "sarcasm": "0",
+      "count": 759
+    },
+    {
+      "variety": "en-UK",
+      "source": "reddit",
+      "sentiment": "0",
+      "sarcasm": "1",
+      "count": 243
+    },
+    {
+      "variety": "en-UK",
+      "source": "reddit",
+      "sentiment": "1",
+      "sarcasm": "0",
+      "count": 126
+    },
+    {
+      "variety": "en-UK",
+      "source": "reddit",
+      "sentiment": "1",
+      "sarcasm": "1",
+      "count": 3
+    }
+  ]
+}

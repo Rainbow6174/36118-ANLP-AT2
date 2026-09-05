@@ -1,0 +1,13 @@
+variety,source,measure,n,mean,median,p95,max
+en-AU,google,word_count,1076,63.67,51.0,151.0,464
+en-AU,google,char_count,1076,346.86,281.0,840.5,2543
+en-AU,reddit,word_count,2001,52.46,28,163.0,1321
+en-AU,reddit,char_count,2001,297.12,152,916.0,8533
+en-IN,google,word_count,1870,43.73,33.0,115.0,354
+en-IN,google,char_count,1870,244.77,183.0,634.1,2012
+en-IN,reddit,word_count,1909,26.7,15,88.0,525
+en-IN,reddit,char_count,1909,147.62,81,499.8,2919
+en-UK,google,word_count,2065,71.87,56,175.8,569
+en-UK,google,char_count,2065,389.56,308,950.0,3088
+en-UK,reddit,word_count,1131,37.7,25,113.0,362
+en-UK,reddit,char_count,1131,210.73,142,639.0,2091
