@@ -3,6 +3,11 @@ data/
 
 # Mac OS-specific storage files
 .DS_Store
+__MACOSX/
+
+# Local archives and plotting cache
+*.zip
+.matplotlib/
 
 # vim
 *.swp
