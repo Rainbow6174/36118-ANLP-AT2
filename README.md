@@ -4,6 +4,18 @@ VarietyLens studies sentiment and sarcasm across Australian, Indian and British 
 
 This repository is organised so that every member can start from the same notebook, rebuild the same data locally and place later work in a clear shared location.
 
+```text
+notebooks/    Data preparation, modelling and evaluation notebooks
+data/         Local raw BESSTIE files and prepared datasets created by the EDA notebook
+models/       Selected trained models or model metadata
+outputs/      EDA, predictions, evaluation results and figures
+app/          Web application
+report/       Group report and user-study material
+poster/       Group poster
+```
+
+The detailed repository map below shows the exact subfolders used by each workstream.
+
 ## Quick start
 
 Run the following commands from the repository root.
@@ -75,6 +87,18 @@ The notebook uses these paths:
 | Task-specific files | `data/processed/by_task/` | Local, rebuilt by the notebook |
 | Data-quality records | `data/processed/audit/` | Local, rebuilt by the notebook |
 | Approved EDA tables and figures | `outputs/eda/` | Shared through Git |
+
+Important EDA outputs include:
+
+- `outputs/eda/label_balance_by_split.csv`
+- `outputs/eda/variety_source_sample_counts.csv`
+- `outputs/eda/text_length_distribution_summary.csv`
+- `outputs/eda/top_keywords_by_variety_source_train_only.csv`
+- `outputs/eda/top_character_ngrams_by_variety_train_only.csv`
+- `outputs/eda/source_diagnostic_validation_report.csv`
+- `outputs/eda/sarcasm_distribution_by_split_variety_source.csv`
+- `outputs/eda/sarcasm_segment_support_recommendations.csv`
+- `outputs/eda/figures/`
 
 Each task folder contains `train.csv`, `validation.csv` and `test.csv`:
 
