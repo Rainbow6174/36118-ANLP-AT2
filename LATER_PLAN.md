@@ -1,17 +1,19 @@
 # Work Plan After the EDA
 
-## What the EDA has completed
+This file explains what the EDA has produced, what each member owns and where each handoff belongs. Start with `README.md`, run `notebooks/01_data_eda.ipynb`, and then use the section for your role.
 
-Running every cell in `eda.ipynb` completes the shared data work:
+## Shared starting point
 
-1. Find the six BESSTIE source files and download any missing file.
-2. Check columns, English-variety values, source values and labels.
-3. Clean whitespace while preserving spelling, case, punctuation, emoji, hashtags and regional wording.
-4. Remove exact and case-only duplicate text and record each removal.
-5. Use the official validation data as the held-out project test set.
-6. Create a fixed project validation split from official train with seed `36118`.
-7. Write shared and task-specific data under `outputs/processed/`.
-8. Write EDA tables and figures under `outputs/eda/`.
+The EDA notebook completes the shared data work:
+
+1. download any missing BESSTIE files to `data/raw/besstie/`;
+2. check columns, varieties, sources and labels;
+3. clean whitespace while keeping spelling, case, punctuation and emoji;
+4. remove duplicate text and record each removal;
+5. use the official validation files as the held-out project test set;
+6. create a fixed validation split from official train with seed `36118`;
+7. write shared and task-specific data to `data/processed/`;
+8. write EDA tables and figures to `outputs/eda/`.
 
 The prepared dataset contains 10,052 texts:
 
@@ -21,60 +23,60 @@ The prepared dataset contains 10,052 texts:
 | Validation | 1,327 |
 | Test | 1,211 |
 
-Quality control removes 20 duplicate copies and two rows from a conflicting-label duplicate group. The generated validation report confirms unique IDs, valid labels and clean split separation.
+The quality checks remove 20 duplicate copies and two rows from one conflicting-label duplicate group. The generated validation report checks unique IDs, valid labels and clean split separation.
 
-## What the EDA has found
+The `data/` folder is local. Every member creates the same files by running the EDA notebook. The approved EDA results in `outputs/eda/` are shared through Git.
 
-### Stable project splits
+## What the EDA tells us
 
-Positive sentiment stays close to 49.6% in train, validation and test. Sarcasm stays close to 14.2%. The modelling roles can use validation for model choices and reserve test for the final run.
+### The project splits are stable
 
-Relevant outputs:
+Positive sentiment stays close to 49.6% in train, validation and test. Sarcasm stays close to 14.2%. Use validation for model and threshold choices. Use test after the final settings are agreed.
+
+Useful files:
 
 - `outputs/eda/label_balance_by_split.csv`
 - `outputs/eda/label_balance_by_split_variety_source.csv`
 
-### Unequal variety and source groups
+### Variety and source groups have different sizes
 
-Every `variety × source` group appears in all three splits. Their sample sizes differ, so the final results need overall, per-variety and per-source views with sample counts.
+Every `variety × source` group appears in all three splits, but the sample sizes differ. Final results therefore need overall, per-variety and per-source views with support counts.
 
-Relevant outputs:
+Useful files:
 
 - `outputs/eda/variety_source_sample_counts.csv`
 - `outputs/eda/figures/variety_source_sample_count_heatmaps.png`
 
-### Different text-length distributions
+### Text lengths differ
 
-Median length ranges from about 15 words for `en-IN Reddit` to about 56 words for `en-UK Google`, with long tails in several groups. These results support the token-length and feature-limit choices in later models.
+Median length ranges from about 15 words for `en-IN Reddit` to about 56 words for `en-UK Google`, with long tails in several groups. These results can guide token limits, TF-IDF feature limits and error analysis.
 
-Relevant outputs:
+Useful files:
 
 - `outputs/eda/text_length_distribution_summary.csv`
 - `outputs/eda/figures/text_length_distributions.png`
 
-### Learnable English-variety patterns
+### English variety is learnable
 
-The initial character 3–5 gram classifier reaches about 0.710 validation macro-F1. Character patterns may provide a useful baseline for the variety work.
+The initial character 3–5 gram classifier reaches about 0.712 validation macro-F1. This is a useful baseline for the variety work.
 
-Relevant outputs:
+Useful files:
 
 - `outputs/eda/char_ngram_variety_validation_report.csv`
 - `outputs/eda/top_character_ngrams_by_variety_train_only.csv`
 - `outputs/eda/figures/char_ngram_variety_validation_confusion.png`
 
-### Strong source signal
+### Source is a strong signal
 
-A word/bigram classifier predicts Google versus Reddit with about 0.972 validation macro-F1. 
+A word/bigram classifier predicts Google versus Reddit with about 0.972 validation macro-F1. Variety and downstream models therefore need source-sliced results. The variety work also includes a cross-source check.
 
-Source-sliced results and cross-source experiments will show how well the final models transfer across platform style and topic.
-
-Relevant outputs:
+Useful files:
 
 - `outputs/eda/source_diagnostic_validation_report.csv`
 - `outputs/eda/source_associated_terms_train_only.csv`
 - `outputs/eda/figures/source_diagnostic_validation_confusion.png`
 
-### Sarcasm concentrated on Reddit
+### Sarcasm is concentrated on Reddit
 
 The prepared data contains 1,432 sarcastic and 8,620 non-sarcastic texts.
 
@@ -83,7 +85,7 @@ The prepared data contains 1,432 sarcastic and 8,620 non-sarcastic texts.
 | Google | 88 | 5,011 | 1.76% |
 | Reddit | 1,344 | 5,041 | 26.66% |
 
-The Google segments have the following positive support:
+Google has very little positive support in some segments:
 
 | Segment | Train | Validation | Test |
 | --- | ---: | ---: | ---: |
@@ -91,78 +93,121 @@ The Google segments have the following positive support:
 | en-IN Google | 10 | 2 | 2 |
 | en-UK Google | 1 | 0 | 0 |
 
-Relevant outputs:
+Useful files:
 
 - `outputs/eda/sarcasm_distribution_by_source.csv`
 - `outputs/eda/sarcasm_distribution_by_split_variety_source.csv`
 - `outputs/eda/sarcasm_segment_support_recommendations.csv`
 - `outputs/eda/figures/sarcasm_rate_by_variety_source.png`
 
-## How the findings shape the project
+## How the EDA shapes the project
 
-The original project structure remains suitable:
+The original six-person structure still fits the evidence. The EDA adds four decisions that connect the roles:
 
-- Member 1 provides stable data, EDA, shared file formats and final report assembly.
-- Member 2 develops the complete sentiment stream.
-- Member 3 develops the complete sarcasm stream.
-- Member 4 develops the English-variety and variety-aware research contribution.
-- Member 5 evaluates all modelling streams with one common method.
-- Member 6 builds the application, completes user testing and assembles the poster.
+1. Every selected model reports results by English variety and source, with support counts.
+2. Text-length results guide token limits, feature limits and error analysis.
+3. The variety experiments include a source-transfer check.
+4. Sarcasm uses one shared model and support-aware evaluation for sparse Google groups.
 
-The EDA adds four useful decisions to this structure:
+## Roles and boundaries
 
-1. Every model reports performance by English variety and source.
-2. Text-length analysis supports token and feature limits.
-3. Variety experiments include a source-transfer check.
-4. Sarcasm modelling uses one shared model and support-aware evaluation for sparse Google groups.
-
-## Workload and handoff balance
-
-Each role owns one main build and one report section:
-
-| Member | Main build | Main evidence |
+| Member | Main responsibility | Main evidence |
 | --- | --- | --- |
-| 1 | Data preparation and EDA | Data quality, EDA and final report assembly |
-| 2 | Sentiment models | Baselines, Transformer, ablation and sentiment findings |
-| 3 | Sarcasm models | Imbalance experiments, threshold and sarcasm findings |
-| 4 | Variety model and variety-aware experiment | Cross-variety, source-transfer and routing findings |
-| 5 | Common evaluator | Locked metrics, uncertainty, errors and figures |
-| 6 | Web application | User study, interface revision, deployment and poster |
+| 1 | Data preparation, EDA and report assembly | Data quality, EDA findings and assembled report |
+| 2 | Sentiment modelling | Baselines, Transformer, ablation and sentiment findings |
+| 3 | Sarcasm modelling | Imbalance experiments, threshold analysis and sarcasm findings |
+| 4 | English-variety modelling and one variety-aware experiment | Variety, source-transfer and routing findings |
+| 5 | Shared evaluation | Agreed metrics, uncertainty, errors and final figures |
+| 6 | Application, user study and poster | Working interface, user evidence and poster |
 
-Model training stays with Member 2–4. Metric production and final figures stay with Member 5. Application integration and usability evidence stay with Member 6. Member 1 maintains the data interface and assembles the team-authored report sections.
+Members 2–4 own model training. Member 5 owns the shared evaluation protocol and final metric production. Member 6 owns application integration and user testing. Member 1 maintains the shared data interface and assembles the team-written report sections.
 
-## Member 1 Data EDA coordination and report assembly
+## Working evaluation agreement
 
-The early work is complete in `eda.ipynb`. The remaining work keeps the shared foundation clear through the rest of the project.
+Validation macro-F1 is the working primary metric for sentiment, sarcasm and variety classification. This gives every modelling role one comparable result to save from the beginning.
 
-## Member 2 Sentiment modelling
+Member 5 will review the project needs and propose the final evaluation protocol. The team will agree on it before final model selection. That protocol will define:
 
-### Starting data
+- secondary metrics for each task;
+- the objective used to choose the sarcasm threshold;
+- confidence or calibration analysis;
+- the uncertainty method for the main model comparisons;
+- the exact final table and figure formats.
+
+The current recommendations are:
+
+- sentiment: macro-F1, accuracy and per-class precision, recall and F1;
+- sarcasm: macro-F1, sarcastic-class precision, recall and F1, PR-AUC, balanced accuracy and a confusion matrix;
+- variety: macro-F1, accuracy, per-class results and a confusion matrix;
+- selected models: per-variety and per-source results with support counts;
+- main comparisons: paired bootstrap 95% confidence intervals when practical.
+
+For early sarcasm experiments, maximise validation macro-F1 when a threshold is required. Save validation probabilities so Member 5 can apply the agreed threshold rule later without retraining.
+
+The held-out test set is used after the protocol, model settings and thresholds are fixed. Member 5 calculates the final metrics from saved test predictions.
+
+## Member 1: data, EDA, coordination and report assembly
+
+### Work
+
+The main data and EDA work is complete in `notebooks/01_data_eda.ipynb`.
+
+Member 1 will:
+
+1. keep the notebook paths and task-file columns stable;
+2. answer data-interface questions from Members 2–5;
+3. update approved EDA outputs when the notebook changes;
+4. write the data and EDA report section;
+5. assemble the report sections supplied by all members.
+
+### Why this follows from the EDA
+
+The notebook has created a stable data interface, documented data quality and identified the main comparison groups. Keeping that interface stable lets the modelling and evaluation work proceed in parallel.
+
+### Expected result
+
+- a reproducible data and EDA notebook;
+- stable shared task files and approved EDA outputs;
+- a clear data and EDA report section;
+- one assembled report using the sections supplied by the team.
+
+### Handoff
 
 ```text
-outputs/processed/by_task/sentiment/train.csv
-outputs/processed/by_task/sentiment/validation.csv
-outputs/processed/by_task/sentiment/test.csv
+notebooks/01_data_eda.ipynb
+outputs/eda/
+report/sections/member1_data_and_eda.md
 ```
 
-### Main work
+## Member 2: sentiment modelling
+
+### Start here
+
+```text
+data/processed/by_task/sentiment/train.csv
+data/processed/by_task/sentiment/validation.csv
+data/processed/by_task/sentiment/test.csv
+```
+
+### Work
 
 1. Calculate a majority-class reference result.
 2. Train word and character TF-IDF baselines with Logistic Regression or SVM.
 3. Fine-tune one suitable Transformer sentiment classifier.
-4. Run one focused ablation covering a feature, preprocessing choice or model setting.
+4. Run one focused ablation on a feature, preprocessing choice or model setting.
 5. Choose the final configuration from validation results.
-6. Record macro-F1, per-class results, per-variety results and per-source results.
-7. Review representative errors across varieties, sources and text lengths.
-8. Export validation and final test predictions through the shared prediction format.
+6. Record validation macro-F1, per-class results, per-variety results and per-source results.
+7. Save validation probabilities for every serious candidate.
+8. Review representative errors across varieties, sources and text lengths.
+9. Produce one final test prediction file after the configuration is fixed.
 
-### EDA connection
+### Why this follows from the EDA
 
 Sentiment is balanced overall, which supports direct model comparison. The source and text-length differences guide subgroup results and the error sample.
 
 ### Purpose
 
-This work compares traditional and Transformer sentiment modelling and shows how reliably sentiment transfers across varieties and sources.
+This work compares traditional and Transformer sentiment models and shows how reliably sentiment transfers across varieties and sources.
 
 ### Expected result
 
@@ -173,53 +218,56 @@ This work compares traditional and Transformer sentiment modelling and shows how
 - overall, variety and source metric tables;
 - sentiment methods, findings and limitations text.
 
-### Upload(Save and Upload your notebook(code) and final trained model)
+### Handoff
 
 ```text
-src/models/sentiment/
-artifacts/sentiment/
-predictions/sentiment/validation.csv
-predictions/sentiment/test.csv
-results/sentiment/
-reports/sections/sentiment.md
+notebooks/02_sentiment_modelling.ipynb
+models/sentiment/
+models/sentiment/metadata.json
+outputs/predictions/sentiment/validation.csv
+outputs/predictions/sentiment/test.csv
+outputs/results/sentiment/
+report/sections/member2_sentiment.md
 ```
 
-The selected artefact includes its tokenizer or vectorizer, class order, configuration, seed and loading instructions.
+The model folder contains the selected model or its storage location, tokenizer or vectorizer, class order, configuration, seed and loading instructions.
 
-## Member 3 Sarcasm modelling
+## Member 3: sarcasm modelling
 
-### Starting data
+### Start here
 
 ```text
-outputs/processed/by_task/sarcasm/train.csv
-outputs/processed/by_task/sarcasm/validation.csv
-outputs/processed/by_task/sarcasm/test.csv
+data/processed/by_task/sarcasm/train.csv
+data/processed/by_task/sarcasm/validation.csv
+data/processed/by_task/sarcasm/test.csv
 outputs/eda/sarcasm_segment_support_recommendations.csv
 ```
 
-### Main work
+### Work
 
 1. Calculate a majority-class reference result.
-2. Train an ordinary TF-IDF sarcasm baseline.
-3. Train a class-weighted TF-IDF baseline using weights from train.
+2. Train an ordinary TF-IDF baseline.
+3. Train a class-weighted TF-IDF baseline using training data only.
 4. Fine-tune one suitable Transformer sarcasm classifier.
-5. Compare two imbalance responses, using class weighting and validation threshold selection as the core comparison. Training-only sampling or focal loss can provide an additional experiment when time allows.
-6. Select the operating threshold from validation probabilities.
-7. Record macro-F1, sarcastic precision, recall and F1, PR-AUC, balanced accuracy and confusion matrices.
-8. Add per-variety and per-source results with positive and total support.
-9. Analyse Google false positives and low-confidence sarcastic cases.
-10. Export validation and final test predictions through the shared prediction format.
-11. Supply a small support configuration for the application's `Limited segment evidence` message.
+5. Compare class weighting with validation threshold selection. Training-only sampling or focal loss can be an extra experiment if time allows.
+6. Save validation probabilities for every serious candidate.
+7. Record validation macro-F1 and the agreed sarcasm metrics.
+8. Report positive and total support beside per-variety and per-source results.
+9. Analyse Google false positives and low-confidence sarcastic examples.
+10. Produce one final test prediction file after the model and threshold are fixed.
+11. Provide a small support configuration for the application's limited-evidence message.
 
-### EDA connection
+### Sparse Google rule
 
-Google contains 88 sarcastic examples, while Reddit contains 1,344. The shared model learns from the full training set. The per-source results show how its behaviour changes between Google and Reddit.
+Use one shared sarcasm model across all varieties and sources. `en-UK Google` test has no sarcastic examples, so its positive-class recall, F1 and PR-AUC are `N/A`. Report false positives, false-positive rate, specificity and predicted-positive rate for that segment.
 
-`en-UK Google` test contains zero sarcastic examples. Its positive-class recall, F1 and PR-AUC fields use `N/A`. False positives, false-positive rate, specificity and predicted-positive rate describe this segment.
+### Why this follows from the EDA
+
+Google contains 88 sarcastic examples, while Reddit contains 1,344. `en-IN Google` has little positive support, and `en-UK Google` has one positive training example and none in validation or test. A shared model uses all available training evidence, while support-aware results make the source difference clear.
 
 ### Purpose
 
-This work measures the ability to find the rare sarcastic class and turns the Google support limitation into useful evaluation and application information.
+This work tests how well the system finds the rare sarcastic class and turns sparse-segment evidence into useful evaluation and application guidance.
 
 ### Expected result
 
@@ -232,203 +280,246 @@ This work measures the ability to find the rare sarcastic class and turns the Go
 - a focused error analysis;
 - sarcasm methods, findings and limitations text.
 
-### Upload(Save and Upload your notebook(code) and final trained model)
+### Handoff
 
 ```text
-src/models/sarcasm/
-artifacts/sarcasm/
-predictions/sarcasm/validation.csv
-predictions/sarcasm/test.csv
-results/sarcasm/
-config/sarcasm_support.json
-reports/sections/sarcasm.md
+notebooks/03_sarcasm_modelling.ipynb
+models/sarcasm/
+models/sarcasm/metadata.json
+models/sarcasm/support_config.json
+outputs/predictions/sarcasm/validation.csv
+outputs/predictions/sarcasm/test.csv
+outputs/results/sarcasm/
+report/sections/member3_sarcasm.md
 ```
 
-The selected artefact includes its tokenizer or vectorizer, class order, threshold, configuration, seed and loading instructions.
+The metadata records the class order, final threshold, configuration, seed and loading instructions.
 
-## Member 4 Variety aware innovation and cross variety analysis
+## Member 4: English variety and the variety-aware contribution
 
-### Starting data
+Member 4 keeps the branch's original research idea: build an English-variety classifier, test source transfer and use variety information in one controlled downstream experiment. The implementation below makes that experiment independent and practical.
+
+### Start here
 
 ```text
-outputs/processed/by_task/variety/train.csv
-outputs/processed/by_task/variety/validation.csv
-outputs/processed/by_task/variety/test.csv
+data/processed/by_task/variety/train.csv
+data/processed/by_task/variety/validation.csv
+data/processed/by_task/variety/test.csv
+data/processed/by_task/sentiment/train.csv
+data/processed/by_task/sentiment/validation.csv
+data/processed/by_task/sentiment/test.csv
 outputs/eda/top_character_ngrams_by_variety_train_only.csv
 outputs/eda/source_diagnostic_validation_report.csv
 ```
 
-Member 2 and Member 3 provide standard prediction files and inference artefacts for the variety-aware comparison.
+### Part A: English-variety classification
 
-### Main work
+1. Reproduce the character n-gram baseline from the EDA.
+2. Add a word-feature baseline.
+3. Train one stronger variety classifier and save `en-AU`, `en-IN` and `en-UK` probabilities.
+4. Report macro-F1, accuracy, per-class results and the confusion matrix.
+5. Report results separately for Google and Reddit.
+6. Run a source-transfer check: train on one source's training rows and evaluate on the other source's validation rows, in both directions.
+7. Choose a low-confidence point on validation for later routing.
 
-1. Reproduce the character n-gram variety baseline from the EDA.
-2. Add a word-feature variety baseline.
-3. Train one stronger English-variety classifier and save class probabilities.
-4. Assess confidence on validation and define a low-confidence routing point.
-5. Record per-variety and per-source performance.
-6. Run one source-transfer experiment to measure the effect identified by the EDA.
-7. Produce a cross-variety generalisation view.
-8. Compare the original variety-agnostic control with three variety-aware conditions:
-   - known variety as the oracle condition;
-   - predicted variety from the classifier;
-   - confidence-gated routing with a global fallback.
-9. Keep the comparison controlled so the intended variety information is the main experimental change.
-10. Export variety probabilities and the selected routing configuration.
+### Part B: controlled variety-aware sentiment experiment
 
-### EDA connection
+The core question is:
 
-The character baseline shows learnable variety signal. The stronger source result shows why source-transfer evidence belongs beside the main variety score.
+> Can predicted English variety improve a sentiment baseline compared with the same global baseline?
+
+Sentiment is used for this experiment because its labels are balanced across the project splits. Member 4 uses one lightweight TF-IDF and Logistic Regression recipe throughout, so the variety information is the main experimental change.
+
+Train:
+
+- one global sentiment model using all training rows;
+- one en-AU sentiment model;
+- one en-IN sentiment model;
+- one en-UK sentiment model.
+
+Compare four conditions on validation:
+
+1. **Global control:** always use the global sentiment model.
+2. **Oracle variety:** route with the gold variety label. This measures the upper bound of the routing idea.
+3. **Predicted variety:** route with the variety classifier from Part A.
+4. **Confidence gate:** use the predicted-variety model when variety confidence is high enough and use the global model otherwise.
+
+Use the same text features, classifier family and training rules in all four conditions. Choose the confidence gate on validation. Run the final comparison on test after the design is fixed.
+
+If routing does not improve validation performance, keep the result as evidence and give the application the global fallback. The experiment still answers the research question.
+
+### Part C: cross-variety view
+
+Use the same lightweight sentiment recipe for a small leave-one-variety-out check:
+
+- train on en-IN and en-UK, then evaluate en-AU;
+- train on en-AU and en-UK, then evaluate en-IN;
+- train on en-AU and en-IN, then evaluate en-UK.
+
+For each run, train on the training rows from two varieties and evaluate first on the validation rows from the held-out variety. After the design is fixed, produce the corresponding final test table. This measures downstream cross-variety transfer and is separate from the three-class variety-classification score.
+
+### Work boundary
+
+Member 4 owns these lightweight controlled models and can start without waiting for Members 2 or 3. Members 2 and 3 retain their Transformer searches, and their final results can be added later as reference points in the shared evaluation table.
+
+### Why this follows from the EDA
+
+The character baseline shows that English variety is learnable. The stronger source classifier shows a possible platform shortcut, so source-sliced and source-transfer evidence belongs beside the main variety score. Balanced sentiment labels make the downstream comparison practical and controlled.
 
 ### Purpose
 
-This work provides the project's distinctive variety component and measures whether variety information improves sentiment or sarcasm in realistic inference.
-
-### Workload boundary
-
-Member 4 trains the variety model and runs one shared routing experiment. Member 2 and Member 3 supply their trained models or standard predictions. Member 4 uses those handoffs without repeating their training experiments.
+This work provides the project's English-variety model and directly tests whether variety information adds value to a downstream NLP task.
 
 ### Expected result
 
 - word and character variety baselines;
 - one selected variety classifier with probabilities;
 - per-variety, per-source and source-transfer results;
-- a cross-variety generalisation view;
-- a variety-agnostic versus oracle, predicted and gated comparison;
-- a routing rule for application integration;
-- variety and innovation findings text.
+- a leave-one-variety-out sentiment result;
+- a global, oracle, predicted and confidence-gated routing comparison;
+- a routing configuration for application integration;
+- variety and routing methods, findings and limitations text.
 
-### Upload(Save and Upload your notebook(code) and final trained model)
+### Handoff
 
 ```text
-src/models/variety/
-src/models/routing/
-artifacts/variety/
-predictions/variety/validation.csv
-predictions/variety/test.csv
-results/variety/
-results/routing/
-config/routing.json
-reports/sections/variety_and_routing.md
+notebooks/04_variety_modelling.ipynb
+models/variety/
+models/variety/metadata.json
+models/variety/routing_config.json
+outputs/predictions/variety/validation.csv
+outputs/predictions/variety/test.csv
+outputs/predictions/routing/validation.csv
+outputs/predictions/routing/test.csv
+outputs/results/variety/
+outputs/results/routing/
+report/sections/member4_variety_and_routing.md
 ```
 
-## Member 5 Evaluation error analysis and figures
+## Member 5: shared evaluation, error analysis and figures
 
-### Starting material
+### Start here
 
-Use the gold task files under `outputs/processed/` and the standard prediction files from Member 2–4.
+Use the gold files under `data/processed/by_task/` and predictions from `outputs/predictions/`.
 
-### Main work
+### Work
 
-1. Build one evaluator that joins gold labels and predictions by `id`.
-2. Apply the same metric definitions and label order across comparable models.
-3. Produce overall, per-class, per-variety and per-source tables.
-4. Add support beside each detailed sarcasm result.
-5. Measure confidence or calibration for the selected models.
-6. Estimate uncertainty for the main comparisons with repeated runs or paired bootstrap resampling.
-7. Compare errors across text-length and source groups.
-8. Organise approximately 40–60 representative errors across the three modelling streams.
-9. Produce one locked results package for the report, application and poster.
-10. Create the final result figures with consistent labels and colours.
+1. Propose the final evaluation protocol and discuss it with the team before final model selection.
+2. Build one evaluator that joins gold labels and predictions by `id`.
+3. Use the same label order and metric definitions across comparable models.
+4. Produce overall, per-class, per-variety and per-source tables.
+5. Include positive and total support in detailed sarcasm results.
+6. Select a practical confidence or calibration analysis for the final models.
+7. Select an uncertainty method for the main comparisons; paired bootstrap is the recommended starting point.
+8. Compare errors across task, variety, source and text length.
+9. Organise about 40–60 representative errors across the three modelling streams.
+10. Publish one locked set of tables and figures for the report, application and poster.
 
-### EDA connection
+### Why this follows from the EDA
 
-The sample-size, source, text-length and sarcasm-support tables define the main evaluation slices. They also provide the support counts used beside detailed results.
+The sample-size, source, text-length and sarcasm-support tables define the main evaluation slices. They also provide the support counts needed to interpret detailed results.
 
 ### Purpose
 
-This work gives the team one consistent source of final numbers and connects model performance with clear findings and limitations.
+This work gives the team one source of final numbers and prevents small differences in metric code from changing the conclusions.
 
 ### Expected result
 
-- a reusable evaluator;
+- an agreed evaluation protocol and reusable evaluator;
 - one main model-comparison table;
-- per-variety and per-source results;
-- calibration or confidence evidence;
+- per-variety and per-source results with support;
+- confidence or calibration evidence;
 - uncertainty estimates for the main comparisons;
 - a structured error-analysis file;
-- locked tables and figures for every final deliverable;
-- evaluation, findings, discussion and recommendations text.
+- locked tables and figures for the final deliverables;
+- evaluation, findings and discussion text.
 
-### Upload(Save and Upload your notebook(code) and necessary file with clear explaination document)
+### Handoff
 
 ```text
-evaluation/
-results/final/
-figures/final/
-reports/sections/evaluation_and_results.md
+notebooks/05_model_evaluation.ipynb
+outputs/results/evaluation_protocol.md
+outputs/results/final/
+outputs/error_analysis/final_error_sample.csv
+outputs/figures/final/
+report/sections/member5_evaluation_and_results.md
 ```
 
-Machine-readable CSV or JSON results accompany the report-ready tables and figures.
+Machine-readable CSV or JSON results accompany report-ready tables and figures.
 
-## Member 6 Web application deployment user study and poster
+## Member 6: application, user study and poster
 
-### Starting material
+### Start here
 
-Member 2–4 provide selected inference artefacts and metadata. Member 5 provides locked result tables and figures. The EDA supplies segment support and text-length evidence.
+Members 2–4 provide selected models and metadata. Member 5 provides final tables and figures. Member 6 can build the interface early with a mock inference response.
 
-### Main work
+### Work
 
-1. Build the application early with a mock inference response.
-2. Support single-text input and CSV batch upload.
-3. Include known market or variety context in the input workflow.
-4. Show variety, sentiment and sarcasm predictions with confidence.
-5. Show the global and variety-aware comparison where it helps the analyst understand a result.
-6. Use the routing configuration from Member 4 and support configuration from Member 3.
-7. Provide filtering, text-level review, correction and export.
-8. Add a review queue for low-confidence, model-disagreement and sparse-segment cases.
-9. Integrate the final model artefacts through one inference wrapper.
-10. Provide deployed and local demonstration instructions.
-11. Run a usability study with approximately 6–12 users familiar with the three English varieties.
-12. Use common tasks covering clear sentiment, sarcasm, ambiguous text, batch review, filtering and export.
-13. Record task completion, difficulty, assistance, clarity ratings and open feedback.
-14. Implement one visible interface revision from the observations.
-15. Assemble the poster from team-supplied text, Member 5's figures and final application screenshots.
+1. Support single-text input and CSV batch upload.
+2. Ask for the known source with a Google/Reddit selector. Batch input includes `text` and `source`; `variety` is optional.
+3. Show variety, sentiment and sarcasm predictions with confidence.
+4. Use the routing configuration only when Member 4's validation evidence supports it; otherwise use the global fallback.
+5. Show the limited-evidence message from Member 3 for sparse sarcasm segments.
+6. Provide filtering, text-level review, correction and export.
+7. Add a review queue for low confidence, model disagreement and sparse evidence.
+8. Integrate the selected models through one inference wrapper.
+9. Provide local and deployed demonstration instructions.
+10. Run a usability study with about 6–12 users whose backgrounds collectively cover the three English varieties.
+11. Use common tasks covering clear sentiment, sarcasm, ambiguous text, batch review, filtering and export.
+12. Record task completion, difficulty, assistance, output clarity and open feedback.
+13. Make one visible interface revision based on the study.
+14. Assemble the poster from team text, final figures and application screenshots.
 
-### EDA connection
+### Why this follows from the EDA
 
-The source and sarcasm-support findings become plain-language confidence and evidence messages in the interface. The variety classifier supports comparison and routing. The user study checks whether people understand these outputs during a realistic review task.
+The source and sarcasm-support findings become clear confidence and evidence messages in the interface. The variety classifier supports comparison and routing. The user study checks whether people understand these outputs during a realistic review task.
 
 ### Purpose
 
-This work turns the research results into a usable analyst workflow and supplies the user-interaction evidence for the project.
-
-### Workload boundary
-
-Member 6 builds and tests the application. Member 2–4 supply loadable models and metadata. Member 5 supplies final numbers and figures. Every member supplies finished poster text for their own work.
+This work turns the modelling results into a realistic review workflow and provides evidence that users can understand and act on the outputs.
 
 ### Expected result
 
 - a working single-text and batch interface;
 - stable inference integration;
-- confidence, comparison and review features;
+- confidence, evidence and review features;
 - filters, corrections and export;
 - deployment and local-run instructions;
 - an anonymous user-study summary;
 - one documented interface revision;
 - an editable final poster.
 
-### Upload
+### Handoff
 
 ```text
 app/
-src/inference/
-config/app_models.json
-reports/user_study/
+app/app_models.json
+report/user_study/
+report/sections/member6_application_and_user_study.md
 poster/
 ```
 
+User-study files contain anonymous results and a short description of the interface change.
+
 ## Shared handoff formats
 
-### Prediction files
+### Binary prediction files
 
-Binary prediction files use:
+Sentiment and sarcasm prediction files use:
 
 ```text
 id,pred_label,prob_0,prob_1,model_name,model_version
 ```
 
-The variety prediction files add one probability column per variety and record the class order in metadata.
+### Variety prediction files
+
+Variety prediction files use:
+
+```text
+id,pred_label,prob_en_AU,prob_en_IN,prob_en_UK,model_name,model_version
+```
+
+Each prediction file has one row per input ID. Probabilities are numeric values from 0 to 1. The model metadata records the class order and the code used to create the file.
 
 ### Inference response
 
@@ -445,29 +536,35 @@ The application consumes one response structure:
 }
 ```
 
-### GitHub updates
+## What goes into Git
 
-The `data/` and `outputs/` folders stay local because `eda.ipynb` recreates them. Later work adds the files that save other members time:
+Share:
 
-- training, evaluation, inference and application code;
-- final configurations and seeds;
-- selected fitted model artefacts;
+- notebooks and reusable code;
+- approved EDA outputs;
+- selected model artefacts or model-location metadata;
 - validation and final test predictions;
-- metric tables and final figures;
-- thresholds, class order and loading metadata;
-- report sections, user-study findings and poster files.
+- agreed results, reviewed errors and final figures;
+- thresholds, class order and routing metadata;
+- report sections, anonymous user-study results and poster files.
 
-Large selected artefacts can use Git LFS or the team's shared model storage(DONT UPLOAD original data/unnecessary data). A small metadata file in Git records the artefact name, version, location and loading command.
+Keep local:
 
-## Parallel work sequence
+- `data/raw/` and `data/processed/`;
+- virtual environments and package caches;
+- temporary checkpoints and rejected experimental artefacts;
+- exploratory logs and draft figures.
 
-1. Member 1 publishes the EDA handoff and stable task files.
-2. Member 2–4 build their modelling streams in parallel.
-3. Member 5 builds the evaluator against small mock prediction files.
-4. Member 6 builds the application against a mock inference response.
-5. Member 2–4 upload selected artefacts, metadata and validation predictions.
-6. Final model settings are agreed from validation evidence.
-7. Member 2–4 produce one final test prediction file for each selected model.
-8. Member 5 publishes the results package.
-9. Member 6 integrates final artefacts, runs the user study and records the interface revision.
-10. Each member supplies their report and poster content; Member 1 assembles the report and Member 6 assembles the poster.
+## Work sequence
+
+1. Every member runs `notebooks/01_data_eda.ipynb` to create the local task files.
+2. Members 2–4 begin their modelling work in parallel.
+3. Member 5 drafts the evaluation protocol and builds the evaluator with mock predictions.
+4. Member 6 builds the application with the shared mock response.
+5. The team agrees on the evaluation protocol.
+6. Members 2–4 upload selected models, metadata and validation predictions.
+7. Final model settings and thresholds are fixed from validation evidence.
+8. Members 2–4 create one final test prediction file for each selected model.
+9. Member 5 publishes the locked result package and figures.
+10. Member 6 integrates the selected models, runs the user study and records the interface revision.
+11. Every member supplies their report and poster content. Member 1 assembles the report, and Member 6 assembles the poster.
