@@ -100,6 +100,15 @@ Useful files:
 - `outputs/eda/sarcasm_segment_support_recommendations.csv`
 - `outputs/eda/figures/sarcasm_rate_by_variety_source.png`
 
+## How the EDA shapes the project
+
+The original six-person structure still fits the evidence. The EDA adds four decisions that connect the roles:
+
+1. Every selected model reports results by English variety and source, with support counts.
+2. Text-length results guide token limits, feature limits and error analysis.
+3. The variety experiments include a source-transfer check.
+4. Sarcasm uses one shared model and support-aware evaluation for sparse Google groups.
+
 ## Roles and boundaries
 
 | Member | Main responsibility | Main evidence |
@@ -151,6 +160,17 @@ Member 1 will:
 4. write the data and EDA report section;
 5. assemble the report sections supplied by all members.
 
+### Why this follows from the EDA
+
+The notebook has created a stable data interface, documented data quality and identified the main comparison groups. Keeping that interface stable lets the modelling and evaluation work proceed in parallel.
+
+### Expected result
+
+- a reproducible data and EDA notebook;
+- stable shared task files and approved EDA outputs;
+- a clear data and EDA report section;
+- one assembled report using the sections supplied by the team.
+
 ### Handoff
 
 ```text
@@ -176,13 +196,27 @@ data/processed/by_task/sentiment/test.csv
 3. Fine-tune one suitable Transformer sentiment classifier.
 4. Run one focused ablation on a feature, preprocessing choice or model setting.
 5. Choose the final configuration from validation results.
-6. Save validation probabilities for every serious candidate.
-7. Review representative errors across varieties, sources and text lengths.
-8. Produce one final test prediction file after the configuration is fixed.
+6. Record validation macro-F1, per-class results, per-variety results and per-source results.
+7. Save validation probabilities for every serious candidate.
+8. Review representative errors across varieties, sources and text lengths.
+9. Produce one final test prediction file after the configuration is fixed.
+
+### Why this follows from the EDA
+
+Sentiment is balanced overall, which supports direct model comparison. The source and text-length differences guide subgroup results and the error sample.
 
 ### Purpose
 
 This work compares traditional and Transformer sentiment models and shows how reliably sentiment transfers across varieties and sources.
+
+### Expected result
+
+- reproducible majority, TF-IDF and Transformer results;
+- one clear ablation result;
+- a selected sentiment model;
+- validation and test predictions with probabilities;
+- overall, variety and source metric tables;
+- sentiment methods, findings and limitations text.
 
 ### Handoff
 
@@ -217,18 +251,34 @@ outputs/eda/sarcasm_segment_support_recommendations.csv
 4. Fine-tune one suitable Transformer sarcasm classifier.
 5. Compare class weighting with validation threshold selection. Training-only sampling or focal loss can be an extra experiment if time allows.
 6. Save validation probabilities for every serious candidate.
-7. Report positive and total support beside per-variety and per-source results.
-8. Analyse Google false positives and low-confidence sarcastic examples.
-9. Produce one final test prediction file after the model and threshold are fixed.
-10. Provide a small support configuration for the application's limited-evidence message.
+7. Record validation macro-F1 and the agreed sarcasm metrics.
+8. Report positive and total support beside per-variety and per-source results.
+9. Analyse Google false positives and low-confidence sarcastic examples.
+10. Produce one final test prediction file after the model and threshold are fixed.
+11. Provide a small support configuration for the application's limited-evidence message.
 
 ### Sparse Google rule
 
 Use one shared sarcasm model across all varieties and sources. `en-UK Google` test has no sarcastic examples, so its positive-class recall, F1 and PR-AUC are `N/A`. Report false positives, false-positive rate, specificity and predicted-positive rate for that segment.
 
+### Why this follows from the EDA
+
+Google contains 88 sarcastic examples, while Reddit contains 1,344. `en-IN Google` has little positive support, and `en-UK Google` has one positive training example and none in validation or test. A shared model uses all available training evidence, while support-aware results make the source difference clear.
+
 ### Purpose
 
 This work tests how well the system finds the rare sarcastic class and turns sparse-segment evidence into useful evaluation and application guidance.
+
+### Expected result
+
+- ordinary and class-weighted traditional baselines;
+- one Transformer result;
+- a comparison of imbalance responses;
+- a selected shared sarcasm model and validation threshold;
+- validation and test predictions with probabilities;
+- source-aware and support-aware metrics;
+- a focused error analysis;
+- sarcasm methods, findings and limitations text.
 
 ### Handoff
 
@@ -312,9 +362,23 @@ For each run, train on the training rows from two varieties and evaluate first o
 
 Member 4 owns these lightweight controlled models and can start without waiting for Members 2 or 3. Members 2 and 3 retain their Transformer searches, and their final results can be added later as reference points in the shared evaluation table.
 
+### Why this follows from the EDA
+
+The character baseline shows that English variety is learnable. The stronger source classifier shows a possible platform shortcut, so source-sliced and source-transfer evidence belongs beside the main variety score. Balanced sentiment labels make the downstream comparison practical and controlled.
+
 ### Purpose
 
 This work provides the project's English-variety model and directly tests whether variety information adds value to a downstream NLP task.
+
+### Expected result
+
+- word and character variety baselines;
+- one selected variety classifier with probabilities;
+- per-variety, per-source and source-transfer results;
+- a leave-one-variety-out sentiment result;
+- a global, oracle, predicted and confidence-gated routing comparison;
+- a routing configuration for application integration;
+- variety and routing methods, findings and limitations text.
 
 ### Handoff
 
@@ -351,9 +415,24 @@ Use the gold files under `data/processed/by_task/` and predictions from `outputs
 9. Organise about 40–60 representative errors across the three modelling streams.
 10. Publish one locked set of tables and figures for the report, application and poster.
 
+### Why this follows from the EDA
+
+The sample-size, source, text-length and sarcasm-support tables define the main evaluation slices. They also provide the support counts needed to interpret detailed results.
+
 ### Purpose
 
 This work gives the team one source of final numbers and prevents small differences in metric code from changing the conclusions.
+
+### Expected result
+
+- an agreed evaluation protocol and reusable evaluator;
+- one main model-comparison table;
+- per-variety and per-source results with support;
+- confidence or calibration evidence;
+- uncertainty estimates for the main comparisons;
+- a structured error-analysis file;
+- locked tables and figures for the final deliverables;
+- evaluation, findings and discussion text.
 
 ### Handoff
 
@@ -386,13 +465,29 @@ Members 2–4 provide selected models and metadata. Member 5 provides final tabl
 8. Integrate the selected models through one inference wrapper.
 9. Provide local and deployed demonstration instructions.
 10. Run a usability study with about 6–12 users whose backgrounds collectively cover the three English varieties.
-11. Record task completion, difficulty, assistance, output clarity and open feedback.
-12. Make one visible interface revision based on the study.
-13. Assemble the poster from team text, final figures and application screenshots.
+11. Use common tasks covering clear sentiment, sarcasm, ambiguous text, batch review, filtering and export.
+12. Record task completion, difficulty, assistance, output clarity and open feedback.
+13. Make one visible interface revision based on the study.
+14. Assemble the poster from team text, final figures and application screenshots.
+
+### Why this follows from the EDA
+
+The source and sarcasm-support findings become clear confidence and evidence messages in the interface. The variety classifier supports comparison and routing. The user study checks whether people understand these outputs during a realistic review task.
 
 ### Purpose
 
 This work turns the modelling results into a realistic review workflow and provides evidence that users can understand and act on the outputs.
+
+### Expected result
+
+- a working single-text and batch interface;
+- stable inference integration;
+- confidence, evidence and review features;
+- filters, corrections and export;
+- deployment and local-run instructions;
+- an anonymous user-study summary;
+- one documented interface revision;
+- an editable final poster.
 
 ### Handoff
 

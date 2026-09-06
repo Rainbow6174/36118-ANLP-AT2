@@ -59,7 +59,7 @@ data/raw/besstie/
     └── validation.csv
 ```
 
-If a file is missing, the notebook downloads the corresponding public split from the official [BESSTIE Hugging Face repository](https://huggingface.co/datasets/unswnlporg/BESSTIE). The notebook uses a fixed dataset revision, so every member reads the same source version.
+If a file is missing, the notebook downloads the corresponding public split from the official [BESSTIE Hugging Face repository](https://huggingface.co/datasets/unswnlporg/BESSTIE). Existing local files are reused, and only missing files are downloaded. The notebook uses a fixed dataset revision, so every member reads the same source version.
 
 The notebook then:
 
@@ -88,6 +88,18 @@ The notebook uses these paths:
 | Data-quality records | `data/processed/audit/` | Local, rebuilt by the notebook |
 | Approved EDA tables and figures | `outputs/eda/` | Shared through Git |
 
+The main prepared files are:
+
+```text
+data/processed/dataset_v1.csv
+data/processed/train.csv
+data/processed/validation.csv
+data/processed/test.csv
+data/processed/quality_report.json
+data/processed/validation_report.json
+data/processed/audit/removed_rows.csv
+```
+
 Important EDA outputs include:
 
 - `outputs/eda/label_balance_by_split.csv`
@@ -114,7 +126,7 @@ The task files use the same columns:
 id,text,variety,source,label
 ```
 
-Keep `id` unchanged. Later prediction files use it to join predictions to the correct gold labels.
+Keep `id` unchanged. Later prediction files use it to join predictions to the correct gold labels. Keep the shared CSV files unchanged and place model-specific tokenisation, feature extraction and scaling inside the modelling code.
 
 ## Repository map
 
@@ -170,7 +182,16 @@ Member 5 will propose the exact secondary metrics, confidence or calibration met
 
 ## Sarcasm support note
 
-The prepared data contains 88 sarcastic Google examples. `en-UK Google` contains one sarcastic example in train and none in validation or test. The sarcasm work therefore uses one shared model across varieties and sources, reports positive and total support beside subgroup results, and writes `N/A` for positive-class metrics when a subgroup has no positive examples.
+The prepared data contains 88 sarcastic Google examples. `en-IN Google` is sparse, and `en-UK Google` contains one sarcastic example in train and none in validation or test.
+
+The sarcasm work therefore:
+
+- uses one shared model across varieties and sources;
+- compares an ordinary baseline with class weighting based on training data;
+- chooses its working threshold on validation data;
+- reports positive and total support beside subgroup results;
+- writes `N/A` for positive-class metrics when a subgroup has no positive examples;
+- passes limited-evidence information to the application review workflow.
 
 ## Dataset attribution
 
