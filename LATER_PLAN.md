@@ -2,7 +2,7 @@
 
 ## What the EDA has completed
 
-Running every cell in `eda.ipynb` completes the shared data work:
+Running every cell in `notebooks/01_data_eda.ipynb` completes the shared data work:
 
 1. Find the six BESSTIE source files and download any missing file.
 2. Check columns, English-variety values, source values and labels.
@@ -10,7 +10,7 @@ Running every cell in `eda.ipynb` completes the shared data work:
 4. Remove exact and case-only duplicate text and record each removal.
 5. Use the official validation data as the held-out project test set.
 6. Create a fixed project validation split from official train with seed `36118`.
-7. Write shared and task-specific data under `outputs/processed/`.
+7. Write shared and task-specific data under `data/processed/`.
 8. Write EDA tables and figures under `outputs/eda/`.
 
 The prepared dataset contains 10,052 texts:
@@ -133,16 +133,16 @@ Model training stays with Member 2–4. Metric production and final figures stay
 
 ## Member 1 Data EDA coordination and report assembly
 
-The early work is complete in `eda.ipynb`. The remaining work keeps the shared foundation clear through the rest of the project.
+The early work is complete in `01_data_eda.ipynb`. The remaining work keeps the shared foundation clear through the rest of the project.
 
 ## Member 2 Sentiment modelling
 
 ### Starting data
 
 ```text
-outputs/processed/by_task/sentiment/train.csv
-outputs/processed/by_task/sentiment/validation.csv
-outputs/processed/by_task/sentiment/test.csv
+data/processed/by_task/sentiment/train.csv
+data/processed/by_task/sentiment/validation.csv
+data/processed/by_task/sentiment/test.csv
 ```
 
 ### Main work
@@ -176,12 +176,11 @@ This work compares traditional and Transformer sentiment modelling and shows how
 ### Upload(Save and Upload your notebook(code) and final trained model)
 
 ```text
-src/models/sentiment/
-artifacts/sentiment/
-predictions/sentiment/validation.csv
-predictions/sentiment/test.csv
-results/sentiment/
-reports/sections/sentiment.md
+notebooks/02_sentiment_modelling.ipynb
+models/sentiment/
+outputs/predictions/sentiment/
+outputs/results/sentiment/
+report/
 ```
 
 The selected artefact includes its tokenizer or vectorizer, class order, configuration, seed and loading instructions.
@@ -191,9 +190,9 @@ The selected artefact includes its tokenizer or vectorizer, class order, configu
 ### Starting data
 
 ```text
-outputs/processed/by_task/sarcasm/train.csv
-outputs/processed/by_task/sarcasm/validation.csv
-outputs/processed/by_task/sarcasm/test.csv
+data/processed/by_task/sarcasm/train.csv
+data/processed/by_task/sarcasm/validation.csv
+data/processed/by_task/sarcasm/test.csv
 outputs/eda/sarcasm_segment_support_recommendations.csv
 ```
 
@@ -235,13 +234,11 @@ This work measures the ability to find the rare sarcastic class and turns the Go
 ### Upload(Save and Upload your notebook(code) and final trained model)
 
 ```text
-src/models/sarcasm/
-artifacts/sarcasm/
-predictions/sarcasm/validation.csv
-predictions/sarcasm/test.csv
-results/sarcasm/
-config/sarcasm_support.json
-reports/sections/sarcasm.md
+notebooks/03_sarcasm_modelling.ipynb
+models/sarcasm/
+outputs/predictions/sarcasm/
+outputs/results/sarcasm/
+report/
 ```
 
 The selected artefact includes its tokenizer or vectorizer, class order, threshold, configuration, seed and loading instructions.
@@ -251,9 +248,9 @@ The selected artefact includes its tokenizer or vectorizer, class order, thresho
 ### Starting data
 
 ```text
-outputs/processed/by_task/variety/train.csv
-outputs/processed/by_task/variety/validation.csv
-outputs/processed/by_task/variety/test.csv
+data/processed/by_task/variety/train.csv
+data/processed/by_task/variety/validation.csv
+data/processed/by_task/variety/test.csv
 outputs/eda/top_character_ngrams_by_variety_train_only.csv
 outputs/eda/source_diagnostic_validation_report.csv
 ```
@@ -301,22 +298,19 @@ Member 4 trains the variety model and runs one shared routing experiment. Member
 ### Upload(Save and Upload your notebook(code) and final trained model)
 
 ```text
-src/models/variety/
-src/models/routing/
-artifacts/variety/
-predictions/variety/validation.csv
-predictions/variety/test.csv
-results/variety/
-results/routing/
-config/routing.json
-reports/sections/variety_and_routing.md
+notebooks/04_variety_modelling.ipynb
+models/variety/
+outputs/predictions/variety/
+outputs/results/variety/
+outputs/results/routing/
+report/
 ```
 
 ## Member 5 Evaluation error analysis and figures
 
 ### Starting material
 
-Use the gold task files under `outputs/processed/` and the standard prediction files from Member 2–4.
+Use the gold task files under `data/processed/by_task` and the standard prediction files from Member 2–4.
 
 ### Main work
 
@@ -353,10 +347,11 @@ This work gives the team one consistent source of final numbers and connects mod
 ### Upload(Save and Upload your notebook(code) and necessary file with clear explaination document)
 
 ```text
-evaluation/
-results/final/
-figures/final/
-reports/sections/evaluation_and_results.md
+notebooks/05_model_evaluation.ipynb
+outputs/results/
+outputs/error_analysis/
+outputs/figures/
+report/
 ```
 
 Machine-readable CSV or JSON results accompany the report-ready tables and figures.
@@ -412,9 +407,8 @@ Member 6 builds and tests the application. Member 2–4 supply loadable models a
 
 ```text
 app/
-src/inference/
-config/app_models.json
-reports/user_study/
+app/app_models.json
+report/
 poster/
 ```
 
@@ -447,7 +441,8 @@ The application consumes one response structure:
 
 ### GitHub updates
 
-The `data/` and `outputs/` folders stay local because `eda.ipynb` recreates them. Later work adds the files that save other members time:
+The project shares the BESSTIE raw data, frozen processed datasets and approved EDA outputs through GitHub so that every member works from the same data and project splits. Large temporary files, notebook checkpoints and unnecessary intermediate outputs should remain excluded through .gitignore.
+Later work adds the files that save other members time:
 
 - training, evaluation, inference and application code;
 - final configurations and seeds;

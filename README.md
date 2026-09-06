@@ -1,27 +1,42 @@
-# VarietyLens EDA Handoff
+# VarietyLens
 
-This repository is a small handoff package for the team. Start with this README, run the notebook once, then read `LATER_PLAN.md` before choosing or continuing a modelling role.
+VarietyLens is a group NLP project that investigates sentiment and
+sarcasm classification across Australian, Indian and British English.
+This repository contains the shared dataset, EDA, modelling notebooks,
+trained models, evaluation outputs, web application, report and poster.
 
-The starting handoff contains four files:
+```text
+notebooks/    Data preparation, modelling and evaluation ipynb notebooks
+data/         Raw BESSTIE files and frozen processed datasets
+models/       Selected trained models
+outputs/      EDA, predictions, evaluation results and figures
+app/          Web application
+report/       Group report
+poster/       Group poster
+```
 
-- `README.md` — where to start and where every output goes
-- `requirements.txt` — Python packages needed by the notebook
-- `eda.ipynb` — data download, preparation, validation and EDA in one place
-- `LATER_PLAN.md` — what the results mean and the next work for each role
+Start with this README, run the EDA notebook once, then read `LATER_PLAN.md` before choosing or continuing a modelling role.
 
 ## 1. Install the packages
 
 From the repository folder, run:
 
 ```bash
-python -m pip install -r requirements.txt
+uv sync
 ```
 
-Python 3.10 or newer is recommended.
+This command creates the project environment from the two files below, so every team member ends up with the same package versions:
+
+```text
+pyproject.toml
+uv.lock
+```
+
+Python 3.11 is used for this project.
 
 ## 2. Get the BESSTIE data
 
-The notebook handles downloading automatically. When `eda.ipynb` runs, it first looks for these six local files:
+When `notebooks/01_data_eda.ipynb` runs, it first checks for the six local files below.
 
 ```text
 data/raw/besstie/
@@ -36,17 +51,19 @@ data/raw/besstie/
     └── validation.csv
 ```
 
-If a file is missing, the notebook downloads it from the official [BESSTIE Hugging Face repository](https://huggingface.co/datasets/unswnlporg/BESSTIE). If you already have the files, place them in the paths above and the notebook will use the local copies.
+If any file is missing, the notebook downloads the corresponding public split from the official [BESSTIE Hugging Face repository](https://huggingface.co/datasets/unswnlporg/BESSTIE). Existing files are retained, so the download is skipped when all six files are available.
+
+The raw files are included in the repository so that all members use the same data. The automatic download step restores any missing files when required.
 
 ## 3. Run the notebook
 
-Start Jupyter from the repository folder:
+Start Jupyter from the repository root, since the notebook uses the project root to resolve its folders:
 
 ```bash
-jupyter lab
+uv run jupyter lab
 ```
 
-Open `eda.ipynb` and choose **Run All Cells**. Run the whole notebook from top to bottom; later cells use the fixed splits and tables created near the beginning.
+Open `notebooks/01_data_eda.ipynb` and choose **Run All Cells**. Run the whole notebook from top to bottom; later cells use the fixed splits and tables created near the beginning.
 
 The notebook does all shared data work:
 
@@ -59,35 +76,35 @@ The notebook does all shared data work:
 7. writes task-ready CSV files;
 8. creates the EDA tables and figures.
 
-The public BESSTIE release provides train and validation files. This project reserves the official validation files as its held-out test set. A fixed 15% stratified part of official train becomes project validation, using seed `36118`. Model and threshold choices come from train and project validation; the held-out test supports one final evaluation.
+The public BESSTIE release provides train and validation files. This project reserves the official validation files as its held-out test set. A fixed 15% stratified part of official train becomes project validation set, using seed `36118`. Model and threshold choices come from train and project validation; the held-out test supports one final evaluation.
 
 ## 4. Find the prepared data
 
 After the notebook finishes, shared data is under:
 
 ```text
-outputs/processed/
+data/processed/
 ```
 
 The main files are:
 
 ```text
-outputs/processed/dataset_v1.csv
-outputs/processed/train.csv
-outputs/processed/validation.csv
-outputs/processed/test.csv
-outputs/processed/quality_report.json
-outputs/processed/validation_report.json
-outputs/processed/audit/removed_rows.csv
+data/processed/dataset_v1.csv
+data/processed/train.csv
+data/processed/validation.csv
+data/processed/test.csv
+data/processed/quality_report.json
+data/processed/validation_report.json
+data/processed/audit/removed_rows.csv
 ```
 
 Each modelling role uses its own task folder:
 
 | Work | Read these files |
 | --- | --- |
-| English-variety modelling | `outputs/processed/by_task/variety/` |
-| Sentiment modelling | `outputs/processed/by_task/sentiment/` |
-| Sarcasm modelling | `outputs/processed/by_task/sarcasm/` |
+| English-variety modelling | `data/processed/by_task/variety/` |
+| Sentiment modelling | `data/processed/by_task/sentiment/` |
+| Sarcasm modelling | `data/processed/by_task/sarcasm/` |
 
 Each task folder contains `train.csv`, `validation.csv` and `test.csv`, with the same columns:
 
@@ -115,7 +132,7 @@ Important files include:
 - `source_diagnostic_validation_report.csv`
 - `sarcasm_distribution_by_split_variety_source.csv`
 - `sarcasm_segment_support_recommendations.csv`
-- `figures/`
+- `figures/` — PNG and SVG versions of the figures
 
 ## 6. Before starting later work
 
@@ -136,25 +153,72 @@ The full instructions and reasons are in the **Sarcasm modelling** section of `L
 
 ## 7. What the team keeps on GitHub
 
-The starting EDA handoff stays small because the notebook can rebuild its data outputs quickly. Keep these generated materials on each person's computer:
+The project repository shares the code, approved EDA outputs, modelling results, evaluation materials, application, report and poster through GitHub. The raw and processed datasets are excluded from Git, but they can be downloaded and regenerated locally by running notebooks/01_data_eda.ipynb. 
 
-- `data/` — downloaded BESSTIE source files
-- `outputs/processed/` — cleaned data, fixed splits and task CSV files
-- `outputs/eda/` — generated EDA tables and figures
-- notebook caches, temporary files and exploratory checkpoints
+### Stored in GitHub
 
-The data preparation logic remains inside `eda.ipynb`, so every person can recreate the same files by running the notebook from the top.
+```text
+data/raw/                 Original BESSTIE files
+data/processed/           Frozen project data and task splits
+notebooks/                EDA, modelling and evaluation notebooks
+outputs/eda/              Approved EDA tables and figures
+outputs/predictions/      Standard model predictions
+outputs/results/          Verified evaluation results
+outputs/figures/          Final report and poster figures
+models/                   Small trained models or model metadata
+app/                      Application code
+report/                   Group report
+poster/                   Poster material
+pyproject.toml            Project dependencies
+uv.lock                   Reproducible environment lock
+```
+
+### Excluded from GitHub
+
+```text
+.venv/
+.ipynb_checkpoints/
+__pycache__/
+temporary checkpoints
+experiment caches
+secrets and environment files
+large intermediate model files
+```
+
+The data preparation logic remains inside `notebooks/01_data_eda.ipynb`, so every person can recreate the same files by running the notebook from the top if anything needs to be rebuilt.
 
 Later modelling work adds useful, reusable project files to GitHub. Each modelling role uploads:
 
-- training and inference code;
+- modelling notebooks and any reusable inference code;
 - the final configuration and random seed;
-- the selected model artefact needed by evaluation or the application;
+- the selected trained model or model metadata;
 - validation and final test predictions with `id` and probabilities;
 - validation and test metric tables;
 - the chosen threshold, class order and model metadata;
 - the short report section explaining the result.
 
-These files let evaluation and application work continue without repeating a long training run. When a final model artefact is too large for ordinary Git, store it with Git LFS or the team's shared model storage and commit a small metadata file containing its location, version and loading instructions.
+These files let evaluation and application work continue without repeating a long training run. When a final trained model is too large for ordinary Git, store it with Git LFS or the team's shared model storage and commit a small metadata file containing its location, version and loading instructions.
 
 Member 5 uploads the shared evaluation code, locked result tables and final figures. Member 6 uploads the application, inference wrapper, anonymous user-study summary and poster material. `LATER_PLAN.md` gives the expected paths and contents for each role.
+
+## 8. Project workflow at a glance
+
+| Workstream | Primary location |
+| --- | --- |
+| Data preparation and EDA | `notebooks/01_data_eda.ipynb` |
+| Sentiment modelling | `notebooks/02_sentiment_modelling.ipynb` |
+| Sarcasm modelling | `notebooks/03_sarcasm_modelling.ipynb` |
+| Variety modelling | `notebooks/04_variety_modelling.ipynb` |
+| Model evaluation | `notebooks/05_model_evaluation.ipynb` |
+| Trained models | `models/` |
+| Predictions and results | `outputs/` |
+| Application | `app/` |
+| Report | `report/` |
+| Poster | `poster/` |
+
+## 9. Dataset attribution
+
+This project uses the BESSTIE dataset released by Srirag et al. (2025) under the CC BY 4.0 licence. The downloaded data is stored without project-level preprocessing under `data/raw/besstie/`.
+
+- Dataset: [BESSTIE on Hugging Face](https://huggingface.co/datasets/unswnlporg/BESSTIE)
+- Paper: [BESSTIE: A Benchmark for Sentiment and Sarcasm Classification for Varieties of English](https://aclanthology.org/2025.findings-acl.441/)
