@@ -1,0 +1,10 @@
+task,split,rows,exact_duplicate_rows,normalised_duplicate_rows,unique_tweet_ids,unique_image_ids
+damage_severity,test,529,12,12,523,529
+damage_severity,train,2468,315,315,2286,2468
+damage_severity,validation,529,19,19,519,529
+humanitarian,test,2237,0,2,2237,2237
+humanitarian,train,13608,3169,3173,11584,13608
+humanitarian,validation,2237,0,0,2237,2237
+informative,test,2237,0,0,2237,2237
+informative,train,13608,3169,3171,11584,13608
+informative,validation,2237,0,0,2237,2237

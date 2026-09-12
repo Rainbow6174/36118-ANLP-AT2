@@ -1,0 +1,64 @@
+{
+  "humaid": {
+    "rows": 76484,
+    "splits": {
+      "test": 15160,
+      "train": 53531,
+      "validation": 7793
+    },
+    "events": 19,
+    "event_types": [
+      "earthquake",
+      "flood",
+      "hurricane",
+      "other",
+      "wildfire"
+    ],
+    "labels_in_downloaded_files": [
+      "caution_and_advice",
+      "displaced_people_and_evacuations",
+      "infrastructure_and_utility_damage",
+      "injured_or_dead_people",
+      "missing_or_found_people",
+      "not_humanitarian",
+      "other_relevant_information",
+      "requests_or_urgent_needs",
+      "rescue_volunteering_or_donation_effort",
+      "sympathy_and_support"
+    ],
+    "exact_duplicate_rows": 12,
+    "normalised_duplicate_rows": 12,
+    "cross_split_normalised_duplicate_groups": 4,
+    "recommended_primary_task": "HumAID text-only humanitarian classification",
+    "recommended_generalisation_test": "leave-one-disaster-event-out evaluation"
+  },
+  "crisismmd": {
+    "task_rows": {
+      "damage_severity__test": 529,
+      "damage_severity__train": 2468,
+      "damage_severity__validation": 529,
+      "humanitarian__test": 2237,
+      "humanitarian__train": 13608,
+      "humanitarian__validation": 2237,
+      "informative__test": 2237,
+      "informative__train": 13608,
+      "informative__validation": 2237
+    },
+    "tasks": [
+      "damage_severity",
+      "humanitarian",
+      "informative"
+    ],
+    "humanitarian_labels": [
+      "affected_individuals",
+      "infrastructure_and_utility_damage",
+      "injured_or_dead_people",
+      "missing_or_found_people",
+      "not_humanitarian",
+      "other_relevant_information",
+      "rescue_volunteering_or_donation_effort",
+      "vehicle_damage"
+    ],
+    "image_archive_downloaded": false
+  }
+}

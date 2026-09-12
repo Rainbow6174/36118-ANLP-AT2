@@ -1,0 +1,7 @@
+task,comparison,rows,agreement_rate
+informative,label_text vs label_image,18082,0.7027983630129411
+informative,label vs label_text,18082,0.8499612874682004
+informative,label vs label_image,18082,0.8528370755447406
+humanitarian,label_text vs label_image,18082,0.4467979205840062
+humanitarian,label vs label_text,18082,0.7218228072115916
+humanitarian,label vs label_image,18082,0.7249751133724146

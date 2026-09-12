@@ -1,0 +1,4 @@
+check,value
+exact duplicate rows,12
+normalised duplicate rows,12
+normalised duplicate groups crossing splits,4

@@ -1,15 +1,17 @@
 [project]
-name = "anlp-at2"
+name = "crisis-lens"
 version = "0.1.0"
-description = "English variety-aware sentiment and sarcasm classification"
+description = "NLP-assisted organisation of new disaster messages"
 requires-python = ">=3.11"
 dependencies = [
-    "datasets>=5.0.1",
     "ipywidgets>=8.1.9",
     "jupyterlab>=4,<5",
     "matplotlib>=3.8,<4",
+    "nbclient>=0.10",
+    "nbformat>=5.9",
     "numpy>=1.26,<3",
     "pandas>=2.2,<4",
+    "pyarrow>=15",
     "scikit-learn>=1.4,<2",
     "seaborn>=0.13,<1",
 ]

@@ -1,35 +1,47 @@
-# VarietyLens
+# CrisisLens
 
-VarietyLens studies sentiment and sarcasm across Australian, Indian and British English. The project also tests whether English-variety information can make one downstream classifier more reliable.
+CrisisLens is an NLP tool for sorting new disaster messages. A user submits a message. The system chooses a humanitarian board, saves the message, opens that board, shows related messages and sends uncertain cases to a review queue.
 
-This repository is organised so that every member can start from the same notebook, rebuild the same data locally and place later work in a clear shared location.
+It helps users organise and browse information. It is not an emergency-response system. It does not verify reports or make safety-critical decisions.
+
+## Project layout
 
 ```text
-notebooks/    Data preparation, modelling and evaluation notebooks
-data/         Local raw BESSTIE files and prepared datasets created by the EDA notebook
-models/       Selected trained models or model metadata
-outputs/      EDA, predictions, evaluation results and figures
-app/          Web application
+notebooks/    Data preparation, EDA, modelling and evaluation notebooks
+data/         Local raw files and generated data (not committed)
+models/       Selected models and their settings
+outputs/      Shared EDA, predictions, evaluation results and figures
+app/          Web app, data storage and model connection
 report/       Group report and user-study material
-poster/       Group poster
+poster/       Group poster source files
+LATER_PLAN.md Detailed English work plan and shared file rules
 ```
 
-The detailed repository map below shows the exact subfolders used by each workstream.
+The old VarietyLens experiment is kept for reference in:
+
+```text
+notebooks/legacy/
+outputs/legacy_varietylens_eda/
+models/legacy_varietylens/
+outputs/legacy_varietylens_predictions/
+```
+
+Do not use those files for current CrisisLens results.
 
 ## Quick start
 
-Run the following commands from the repository root.
+Run these commands from the repository root.
 
 ### Recommended setup with uv
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) first if it is not available on your computer.
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if it is not available.
 
 ```bash
 uv sync
 uv run jupyter lab
 ```
 
-Open `notebooks/01_data_eda.ipynb` and choose **Run All Cells**.
+Open `notebooks/01_crisis_eda.ipynb` and run all cells.
 
 ### Pip alternative
 
@@ -38,164 +50,150 @@ python -m pip install -r requirements.txt
 python -m jupyter lab
 ```
 
-Python 3.11 is used for the project. Both setup methods install the packages needed by the EDA notebook, including the Hugging Face `datasets` package.
+Use Python 3.11 or later. The EDA notebook downloads and prepares its own data. No prepared local dataset is needed before it runs.
 
-When later work adds a package, update `pyproject.toml` and `requirements.txt` together and refresh `uv.lock` in the same change.
+## Data sources and notebook outputs
 
-## Data download and preparation
-
-The EDA notebook checks for these six BESSTIE files:
+The notebook downloads missing public files into `data/raw/`:
 
 ```text
-data/raw/besstie/
-├── en_AU/
-│   ├── train.csv
-│   └── validation.csv
-├── en_IN/
-│   ├── train.csv
-│   └── validation.csv
-└── en_UK/
-    ├── train.csv
-    └── validation.csv
+data/raw/
+├── humaid/
+│   ├── train-00000-of-00001.parquet
+│   ├── validation-00000-of-00001.parquet
+│   └── test-00000-of-00001.parquet
+├── humaid_events/       19 event-wise HumAID JSON groups
+└── crisismmd/           CrisisMMD label and split files
 ```
 
-If a file is missing, the notebook downloads the corresponding public split from the official [BESSTIE Hugging Face repository](https://huggingface.co/datasets/unswnlporg/BESSTIE). Existing local files are reused, and only missing files are downloaded. The notebook uses a fixed dataset revision, so every member reads the same source version.
+The sources are:
 
-The notebook then:
+- [HumAID-all](https://huggingface.co/datasets/QCRI/HumAID-all), the main ten-label text-classification dataset;
+- [HumAID-events](https://huggingface.co/datasets/QCRI/HumAID-events), which supplies event names for unseen-event testing;
+- [CrisisMMD](https://crisisnlp.qcri.org/crisismmd), used as a separate supporting label benchmark.
 
-1. checks the columns, varieties, sources and labels;
-2. cleans whitespace while preserving spelling, case, punctuation and emoji;
-3. removes duplicate text and records each removal;
-4. creates fixed train, validation and held-out test splits;
-5. validates IDs, labels and split separation;
-6. writes task-ready CSV files;
-7. creates the shared EDA tables and figures.
+The notebook downloads the small CrisisMMD label archive, not the large image archive. Keep the original licence and terms for each dataset. Check the source pages before sharing raw data, tweet text or trained models.
 
-The official BESSTIE validation files become the held-out project test set. A fixed 15% stratified sample from the official training files becomes the project validation set. The split seed is `36118`.
-
-Model choice, threshold choice and routing choice use train and validation data. The held-out test set is used after the final settings have been agreed.
-
-## Notebook inputs and outputs
-
-The notebook uses these paths:
-
-| Purpose | Path | Git policy |
-| --- | --- | --- |
-| Downloaded BESSTIE files | `data/raw/besstie/` | Local, downloaded when needed |
-| Full prepared dataset | `data/processed/dataset_v1.csv` | Local, rebuilt by the notebook |
-| Shared train/validation/test files | `data/processed/` | Local, rebuilt by the notebook |
-| Task-specific files | `data/processed/by_task/` | Local, rebuilt by the notebook |
-| Data-quality records | `data/processed/audit/` | Local, rebuilt by the notebook |
-| Approved EDA tables and figures | `outputs/eda/` | Shared through Git |
-
-The main prepared files are:
+The notebook writes shared results to:
 
 ```text
-data/processed/dataset_v1.csv
-data/processed/train.csv
-data/processed/validation.csv
-data/processed/test.csv
-data/processed/quality_report.json
-data/processed/validation_report.json
-data/processed/audit/removed_rows.csv
+outputs/eda/
+├── eda_summary.json
+├── humaid_split_summary.csv
+├── humaid_label_distribution.csv
+├── humaid_event_distribution.csv
+├── humaid_event_label_counts.csv
+├── humaid_event_holdout_plan.csv
+├── humaid_text_statistics.csv
+├── humaid_duplicate_summary.csv
+├── humaid_label_top_word_features.csv
+├── humaid_label_top_char_ngrams.csv
+├── crisismmd_task_summary.csv
+├── crisismmd_label_distribution.csv
+├── crisismmd_annotation_agreement.csv
+└── figures/
 ```
 
-Important EDA outputs include:
+All data-processing steps are inside the notebook. `tools/build_crisis_eda_notebook.py` only rebuilds the notebook. Most users should open the notebook directly.
 
-- `outputs/eda/label_balance_by_split.csv`
-- `outputs/eda/variety_source_sample_counts.csv`
-- `outputs/eda/text_length_distribution_summary.csv`
-- `outputs/eda/top_keywords_by_variety_source_train_only.csv`
-- `outputs/eda/top_character_ngrams_by_variety_train_only.csv`
-- `outputs/eda/source_diagnostic_validation_report.csv`
-- `outputs/eda/sarcasm_distribution_by_split_variety_source.csv`
-- `outputs/eda/sarcasm_segment_support_recommendations.csv`
-- `outputs/eda/figures/`
+## What the EDA found
 
-Each task folder contains `train.csv`, `validation.csv` and `test.csv`:
+HumAID contains 76,484 posts from 19 disaster events. The downloaded files contain ten labels:
 
 ```text
-data/processed/by_task/sentiment/
-data/processed/by_task/sarcasm/
-data/processed/by_task/variety/
+caution_and_advice
+displaced_people_and_evacuations
+infrastructure_and_utility_damage
+injured_or_dead_people
+missing_or_found_people
+not_humanitarian
+other_relevant_information
+requests_or_urgent_needs
+rescue_volunteering_or_donation_effort
+sympathy_and_support
 ```
 
-The task files use the same columns:
+The official split sizes are 53,531 train, 7,793 validation and 15,160 test rows. The largest class is `rescue_volunteering_or_donation_effort` with 21,278 rows; `missing_or_found_people` has 358 rows. Use macro-F1 and show support for each label. Do not use accuracy alone.
+
+Hurricanes account for 41,320 posts. The event-held-out table shows that some small events have very little test support for particular labels, so those results must be reported with support and interpreted carefully.
+
+The duplicate check found 12 exact duplicate rows and four normalised duplicate groups crossing official splits. The baseline and Transformer work should use the same text cleaning and mention these groups when interpreting scores.
+
+CrisisMMD has informative, humanitarian and damage-severity tasks. Its label files contain image-text rows, so one tweet can occur with several images. Later experiments must split or remove duplicates by `tweet_id`, not by raw row.
+
+## Product flow
+
+The classifier is only one part. The app also saves messages, shows boards and finds related messages:
 
 ```text
-id,text,variety,source,label
+user submits a message
+    -> model returns label, probabilities and confidence
+    -> application saves the message and prediction
+    -> application redirects to /boards/<predicted_label>
+    -> board page shows the new message and related historical messages
+    -> user browses boards, searches/filter messages, or corrects the board
+    -> low-confidence items remain visible in a review queue
 ```
 
-Keep `id` unchanged. Later prediction files use it to join predictions to the correct gold labels. Keep the shared CSV files unchanged and place model-specific tokenisation, feature extraction and scaling inside the modelling code.
+Historical HumAID examples are saved as read-only records with `source_type=humaid_history`. New messages use `source_type=user`. The app must not present a model guess as an official fact.
 
-## Repository map
+## Shared interfaces
 
-```text
-notebooks/              Data preparation, modelling and evaluation notebooks
-data/                   Local raw and processed data created by the EDA notebook
-models/                 Selected models or model metadata needed for inference
-outputs/eda/            Approved EDA tables and figures
-outputs/predictions/    Validation and final test predictions
-outputs/results/        Model and evaluation result tables
-outputs/error_analysis/ Reviewed error examples
-outputs/figures/        Final report and poster figures
-app/                    Web application and inference integration
-report/                 Report sections and user-study material
-poster/                 Poster source files
+Every classification model must accept one text string and return:
+
+```json
+{
+  "predicted_label": "requests_or_urgent_needs",
+  "probabilities": {"requests_or_urgent_needs": 0.82},
+  "confidence": 0.82,
+  "model_version": "baseline-v1",
+  "needs_review": false
+}
 ```
 
-`LATER_PLAN.md` gives the work package, purpose and exact handoff paths for each member.
+The retrieval component accepts `search(query, board_label, k)` and returns records in this shape:
 
-## Shared Git files
+```json
+{
+  "id": "history-123",
+  "similarity": 0.74,
+  "text_preview": "...",
+  "source_type": "humaid_history"
+}
+```
 
-Git contains the material that the team needs to read directly or would take significant time to recreate:
-
-- notebooks and reusable code;
-- the dependency files;
-- approved EDA tables and figures;
-- selected model artefacts or model-location metadata;
-- validation and final test predictions;
-- agreed metric tables and final figures;
-- routing and threshold settings;
-- report sections, anonymous user-study results and poster files.
-
-The `data/` folder stays local. The notebook downloads and rebuilds it from the fixed BESSTIE revision. Local virtual environments, caches, temporary checkpoints and exploratory outputs also stay outside Git.
-
-Large selected model artefacts can use Git LFS or the team's shared model storage. In that case, commit a small metadata file with the model version, location and loading instructions.
+The stored message record contains `message_id`, `text`, `board_label`, `source_type`, `confidence`, `model_version`, `needs_review`, `created_at` and an optional `user_correction`.
 
 ## Work areas
 
-| Work | Main notebook | Main output area |
+| Work | Main location | Responsibility |
 | --- | --- | --- |
-| Data preparation and EDA | `notebooks/01_data_eda.ipynb` | `outputs/eda/` |
-| Sentiment modelling | `notebooks/02_sentiment_modelling.ipynb` | `models/sentiment/`, `outputs/results/sentiment/` |
-| Sarcasm modelling | `notebooks/03_sarcasm_modelling.ipynb` | `models/sarcasm/`, `outputs/results/sarcasm/` |
-| Variety modelling and variety-aware experiment | `notebooks/04_variety_modelling.ipynb` | `models/variety/`, `outputs/results/variety/`, `outputs/results/routing/` |
-| Shared evaluation | `notebooks/05_model_evaluation.ipynb` | `outputs/results/final/`, `outputs/figures/final/` |
-| Application and user study | `app/` | `report/user_study/`, `poster/` |
+| Data and EDA | `notebooks/01_crisis_eda.ipynb`, `outputs/eda/` | Download, prepare and explain the common data contract |
+| Text baseline | `models/text_baseline/`, `outputs/results/baseline/` | Majority, TF-IDF word/character and linear models |
+| Contextual model | `models/transformer/`, `outputs/results/transformer/` | Compact Transformer and imbalance treatment |
+| New-event evaluation | `evaluation/cross_event/`, `outputs/results/cross_event/` | Test on one unseen event at a time |
+| Retrieval | `models/retrieval/`, `outputs/results/retrieval/` | Related historical messages and duplicate grouping |
+| Application and user study | `app/`, `report/user_study/`, `poster/` | Storage, boards, routing, review flow and user evidence |
 
-## Working evaluation agreement
+Read `LATER_PLAN.md` for each member's tasks, goal, expected files and shared rules.
 
-Validation macro-F1 is the shared working primary metric. It gives the three modelling roles a common result to record while Member 5 prepares the final evaluation protocol.
+## Evaluation agreement
 
-Member 5 will propose the exact secondary metrics, confidence or calibration method and uncertainty method. The team will agree on that protocol before final model selection and before anyone runs the held-out test evaluation. All modelling roles save validation probabilities so threshold or metric decisions can be applied without retraining.
+The main classification metric is macro-F1. Each serious run reports precision, recall, F1 and support for every label, plus balanced accuracy, a confusion matrix and run time. The final app model also reports how well its confidence scores match its results.
 
-## Sarcasm support note
+The main test uses the official HumAID train, validation and test split. The new-event test trains on 18 events and tests on one unseen event at a time. Use the official test set only after settings and thresholds are fixed.
 
-The prepared data contains 88 sarcastic Google examples. `en-IN Google` is sparse, and `en-UK Google` contains one sarcastic example in train and none in validation or test.
+Retrieval reports precision@k or recall@k on a small checked set and records search time. The user study reports task completion, time, board choice, confidence understanding and corrections.
 
-The sarcasm work therefore:
+## What belongs in Git
 
-- uses one shared model across varieties and sources;
-- compares an ordinary baseline with class weighting based on training data;
-- chooses its working threshold on validation data;
-- reports positive and total support beside subgroup results;
-- writes `N/A` for positive-class metrics when a subgroup has no positive examples;
-- passes limited-evidence information to the application review workflow.
+Commit files that another member needs or would take a long time to recreate:
 
-## Dataset attribution
+- notebooks and reusable code;
+- approved EDA tables and figures;
+- model metadata, loading instructions and selected checkpoints when needed;
+- validation and final predictions;
+- evaluation tables, reviewed errors and final figures;
+- anonymous user-study results, report sections and poster sources.
 
-This project uses the BESSTIE dataset released by Srirag et al. (2025) under the CC BY 4.0 licence.
-
-- [BESSTIE on Hugging Face](https://huggingface.co/datasets/unswnlporg/BESSTIE)
-- [BESSTIE: A Benchmark for Sentiment and Sarcasm Classification for Varieties of English](https://aclanthology.org/2025.findings-acl.441/)
+Keep raw downloads, generated local datasets, virtual environments, temporary checkpoints and caches out of Git. `data/` is ignored and is rebuilt by the notebook. Large model files may use Git LFS or shared storage, but the repository must contain the version, location and loading instructions.

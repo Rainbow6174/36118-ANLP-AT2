@@ -1,0 +1,151 @@
+feature_kind,class_label,rank,feature,mean_tfidf,distinctive_ratio
+word,caution_and_advice,1,warning including,0.001976,14.179
+word,caution_and_advice,2,am cdt,0.001758,14.179
+word,caution_and_advice,3,warning continues,0.001675,14.179
+word,caution_and_advice,4,warning for,0.00705,13.706
+word,caution_and_advice,5,warning has,0.002303,13.409
+word,caution_and_advice,6,15 am,0.001279,13.393
+word,caution_and_advice,7,warning issued,0.004596,13.341
+word,caution_and_advice,8,flood warning,0.008004,13.332
+word,caution_and_advice,9,storm warning,0.004322,13.288
+word,caution_and_advice,10,tornado warning,0.006965,13.25
+word,caution_and_advice,11,tornado warnings,0.002567,12.876
+word,caution_and_advice,12,hurricane warning,0.003688,12.782
+word,caution_and_advice,13,emergency ahead,0.001243,12.702
+word,caution_and_advice,14,usertoken tornado,0.002358,12.646
+word,caution_and_advice,15,tornado watch,0.001967,12.447
+word,displaced_people_and_evacuations,1,evacuations as,0.002839,19.126
+word,displaced_people_and_evacuations,2,orders mandatory,0.002455,19.126
+word,displaced_people_and_evacuations,3,evacuation ordered,0.002251,19.126
+word,displaced_people_and_evacuations,4,work camps,0.002229,19.126
+word,displaced_people_and_evacuations,5,evacuations for,0.004263,18.899
+word,displaced_people_and_evacuations,6,mandatory evacuations,0.012381,18.819
+word,displaced_people_and_evacuations,7,under mandatory,0.003601,18.647
+word,displaced_people_and_evacuations,8,evacuees are,0.00193,18.578
+word,displaced_people_and_evacuations,9,ordered for,0.003522,18.551
+word,displaced_people_and_evacuations,10,camps north,0.002158,18.514
+word,displaced_people_and_evacuations,11,issued mandatory,0.001335,18.418
+word,displaced_people_and_evacuations,12,evacuation for,0.004579,18.33
+word,displaced_people_and_evacuations,13,usertoken mandatory,0.001919,18.298
+word,displaced_people_and_evacuations,14,mandatory,0.029575,18.262
+word,displaced_people_and_evacuations,15,mandatory evacuation,0.018766,18.249
+word,infrastructure_and_utility_damage,1,irmas damage,0.001433,9.061
+word,infrastructure_and_utility_damage,2,telescope,0.000965,9.032
+word,infrastructure_and_utility_damage,3,severely damaged,0.001457,8.945
+word,infrastructure_and_utility_damage,4,maria damage,0.002272,8.905
+word,infrastructure_and_utility_damage,5,tree damage,0.000879,8.87
+word,infrastructure_and_utility_damage,6,was damaged,0.001804,8.834
+word,infrastructure_and_utility_damage,7,minor damage,0.000903,8.832
+word,infrastructure_and_utility_damage,8,destroys homes,0.001089,8.688
+word,infrastructure_and_utility_damage,9,irma damage,0.007071,8.646
+word,infrastructure_and_utility_damage,10,surveying the,0.00108,8.644
+word,infrastructure_and_utility_damage,11,destroyed everything,0.001314,8.575
+word,infrastructure_and_utility_damage,12,island destroyed,0.000929,8.51
+word,infrastructure_and_utility_damage,13,surveying,0.001888,8.393
+word,infrastructure_and_utility_damage,14,flood damaged,0.001443,8.365
+word,infrastructure_and_utility_damage,15,damage after,0.001766,8.357
+word,injured_or_dead_people,1,irma death,0.003347,10.473
+word,injured_or_dead_people,2,272,0.00231,10.473
+word,injured_or_dead_people,3,to 42,0.001936,10.473
+word,injured_or_dead_people,4,toll jumps,0.001884,10.473
+word,injured_or_dead_people,5,breaking death,0.001781,10.473
+word,injured_or_dead_people,6,to 233,0.001513,10.473
+word,injured_or_dead_people,7,least 77,0.00136,10.473
+word,injured_or_dead_people,8,killed after,0.001211,10.473
+word,injured_or_dead_people,9,500 injured,0.001142,10.473
+word,injured_or_dead_people,10,earthquake rises,0.001085,10.473
+word,injured_or_dead_people,11,fires death,0.001066,10.473
+word,injured_or_dead_people,12,five people,0.000955,10.473
+word,injured_or_dead_people,13,19 people,0.000937,10.473
+word,injured_or_dead_people,14,people confirmed,0.00093,10.473
+word,injured_or_dead_people,15,usertoken death,0.005546,10.341
+word,missing_or_found_people,1,missing after,0.043574,162.056
+word,missing_or_found_people,2,after flash,0.014171,138.019
+word,missing_or_found_people,3,national guardsman,0.023456,129.443
+word,missing_or_found_people,4,guardsman,0.027456,129.108
+word,missing_or_found_people,5,for missing,0.014886,121.394
+word,missing_or_found_people,6,missing in,0.053147,112.191
+word,missing_or_found_people,7,missing persons,0.009987,108.856
+word,missing_or_found_people,8,missing as,0.013088,106.01
+word,missing_or_found_people,9,maryland flash,0.00984,101.974
+word,missing_or_found_people,10,eddison,0.014038,94.595
+word,missing_or_found_people,11,army national,0.007755,91.185
+word,missing_or_found_people,12,hermond,0.014536,88.993
+word,missing_or_found_people,13,reported missing,0.014038,87.436
+word,missing_or_found_people,14,eddison hermond,0.010741,86.802
+word,missing_or_found_people,15,guard member,0.007646,86.311
+word,not_humanitarian,1,foodporn,0.00147,11.47
+word,not_humanitarian,2,hiring careerarc,0.001513,11.19
+word,not_humanitarian,3,careerarc,0.002237,11.124
+word,not_humanitarian,4,job jobs,0.000856,11.095
+word,not_humanitarian,5,foodie,0.001588,10.827
+word,not_humanitarian,6,you recommend,0.000977,10.798
+word,not_humanitarian,7,this job,0.001366,10.781
+word,not_humanitarian,8,anyone for,0.000973,10.184
+word,not_humanitarian,9,hiring,0.002369,10.094
+word,not_humanitarian,10,im at,0.001764,10.037
+word,not_humanitarian,11,kills me,0.001259,9.427
+word,not_humanitarian,12,blame the,0.000745,9.374
+word,not_humanitarian,13,punishment,0.001333,9.022
+word,not_humanitarian,14,finland,0.00139,8.971
+word,not_humanitarian,15,zinke,0.001435,8.919
+word,other_relevant_information,1,cop telling,0.000764,5.329
+word,other_relevant_information,2,marias aid,0.0008,5.308
+word,other_relevant_information,3,ricos cop,0.000606,4.958
+word,other_relevant_information,4,truth about,0.000812,4.786
+word,other_relevant_information,5,telling the,0.000776,4.754
+word,other_relevant_information,6,mullaperiyar,0.00058,4.639
+word,other_relevant_information,7,gallons of,0.000505,4.216
+word,other_relevant_information,8,tides,0.000453,4.146
+word,other_relevant_information,9,gallons,0.000517,3.904
+word,other_relevant_information,10,shows how,0.000422,3.885
+word,other_relevant_information,11,of rainfall,0.000358,3.874
+word,other_relevant_information,12,conditions in,0.00078,3.837
+word,other_relevant_information,13,stories from,0.000384,3.805
+word,other_relevant_information,14,trillion,0.000346,3.779
+word,other_relevant_information,15,bayou,0.000399,3.748
+word,requests_or_urgent_needs,1,help needed,0.003608,21.326
+word,requests_or_urgent_needs,2,desperately need,0.002681,21.089
+word,requests_or_urgent_needs,3,need food,0.004286,19.73
+word,requests_or_urgent_needs,4,urgently,0.00539,19.542
+word,requests_or_urgent_needs,5,needed in,0.003365,19.267
+word,requests_or_urgent_needs,6,urgent need,0.002351,18.409
+word,requests_or_urgent_needs,7,baby food,0.001507,18.129
+word,requests_or_urgent_needs,8,rico needs,0.002977,17.798
+word,requests_or_urgent_needs,9,need water,0.002355,17.413
+word,requests_or_urgent_needs,10,dire need,0.00246,16.884
+word,requests_or_urgent_needs,11,urgently needed,0.001434,16.742
+word,requests_or_urgent_needs,12,needs help,0.005984,16.46
+word,requests_or_urgent_needs,13,help now,0.003988,16.43
+word,requests_or_urgent_needs,14,requirement,0.001998,16.277
+word,requests_or_urgent_needs,15,desperately,0.004821,16.21
+word,rescue_volunteering_or_donation_effort,1,donates rs,0.000932,3.594
+word,rescue_volunteering_or_donation_effort,2,cross volunteers,0.000818,3.594
+word,rescue_volunteering_or_donation_effort,3,usertoken donated,0.000781,3.594
+word,rescue_volunteering_or_donation_effort,4,donated rs,0.000633,3.594
+word,rescue_volunteering_or_donation_effort,5,donating million,0.000578,3.594
+word,rescue_volunteering_or_donation_effort,6,usertoken donates,0.000502,3.594
+word,rescue_volunteering_or_donation_effort,7,attawapiskat,0.000445,3.594
+word,rescue_volunteering_or_donation_effort,8,who donated,0.000436,3.594
+word,rescue_volunteering_or_donation_effort,9,salary for,0.000424,3.594
+word,rescue_volunteering_or_donation_effort,10,10 donation,0.000422,3.594
+word,rescue_volunteering_or_donation_effort,11,also donate,0.000406,3.594
+word,rescue_volunteering_or_donation_effort,12,000 donation,0.000395,3.594
+word,rescue_volunteering_or_donation_effort,13,rs 25,0.000376,3.594
+word,rescue_volunteering_or_donation_effort,14,100k to,0.000375,3.594
+word,rescue_volunteering_or_donation_effort,15,lakhs towards,0.000363,3.594
+word,sympathy_and_support,1,usertoken prayers,0.002318,8.564
+word,sympathy_and_support,2,thoughts prayers,0.00131,8.564
+word,sympathy_and_support,3,my love,0.001074,8.564
+word,sympathy_and_support,4,for everyones,0.000856,8.564
+word,sympathy_and_support,5,everyones safety,0.000782,8.564
+word,sympathy_and_support,6,usertoken praying,0.003674,8.493
+word,sympathy_and_support,7,prayer for,0.002431,8.413
+word,sympathy_and_support,8,prayers going,0.000915,8.361
+word,sympathy_and_support,9,prayers go,0.006863,8.329
+word,sympathy_and_support,10,usertoken pray,0.003193,8.312
+word,sympathy_and_support,11,say prayer,0.000835,8.298
+word,sympathy_and_support,12,my prayers,0.004689,8.255
+word,sympathy_and_support,13,prayers with,0.00273,8.243
+word,sympathy_and_support,14,prayers are,0.012224,8.223
+word,sympathy_and_support,15,amp prayers,0.006119,8.216

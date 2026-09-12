@@ -1,0 +1,151 @@
+feature_kind,class_label,rank,feature,mean_tfidf,distinctive_ratio
+character,caution_and_advice,1,ado w,0.004184,12.53
+character,caution_and_advice,2,warni,0.013922,11.753
+character,caution_and_advice,3,arnin,0.013788,11.3
+character,caution_and_advice,4, warn,0.013992,11.179
+character,caution_and_advice,5,arni,0.01376,11.151
+character,caution_and_advice,6,warn,0.014445,11.103
+character,caution_and_advice,7,d war,0.003766,10.892
+character,caution_and_advice,8,mi wa,0.003532,10.227
+character,caution_and_advice,9, edt,0.002901,10.073
+character,caution_and_advice,10,ami w,0.003543,9.818
+character,caution_and_advice,11,mi w,0.003537,9.727
+character,caution_and_advice,12,f eme,0.00451,9.695
+character,caution_and_advice,13,orm w,0.003026,9.683
+character,caution_and_advice,14,lared,0.003383,9.524
+character,caution_and_advice,15,of em,0.004464,9.4
+character,displaced_people_and_evacuations,1,ndato,0.01089,18.266
+character,displaced_people_and_evacuations,2,ory e,0.009822,18.222
+character,displaced_people_and_evacuations,3,andat,0.010907,18.184
+character,displaced_people_and_evacuations,4,ry ev,0.010434,18.173
+character,displaced_people_and_evacuations,5,dator,0.010894,18.09
+character,displaced_people_and_evacuations,6,dato,0.010894,18.09
+character,displaced_people_and_evacuations,7,manda,0.010858,17.732
+character,displaced_people_and_evacuations,8, mand,0.008555,17.53
+character,displaced_people_and_evacuations,9,y eva,0.014957,17.412
+character,displaced_people_and_evacuations,10,atory,0.01079,17.085
+character,displaced_people_and_evacuations,11,cuati,0.03487,16.778
+character,displaced_people_and_evacuations,12,s eva,0.00677,16.571
+character,displaced_people_and_evacuations,13,uees ,0.011561,16.343
+character,displaced_people_and_evacuations,14,vacua,0.041726,16.165
+character,displaced_people_and_evacuations,15,acua,0.041726,16.165
+character,infrastructure_and_utility_damage,1,ma da,0.003159,8.405
+character,infrastructure_and_utility_damage,2,a dam,0.004416,7.872
+character,infrastructure_and_utility_damage,3,s dam,0.00572,7.46
+character,infrastructure_and_utility_damage,4,maged,0.007941,7.285
+character,infrastructure_and_utility_damage,5,mage ,0.02301,7.193
+character,infrastructure_and_utility_damage,6,y dam,0.004224,7.187
+character,infrastructure_and_utility_damage,7,amage,0.030977,7.122
+character,infrastructure_and_utility_damage,8,f dam,0.002924,7.095
+character,infrastructure_and_utility_damage,9,damag,0.031042,7.091
+character,infrastructure_and_utility_damage,10,amag,0.031041,7.09
+character,infrastructure_and_utility_damage,11,dama,0.031026,7.071
+character,infrastructure_and_utility_damage,12, dama,0.030064,7.066
+character,infrastructure_and_utility_damage,13,mage,0.031328,6.895
+character,infrastructure_and_utility_damage,14,e dam,0.010992,6.846
+character,infrastructure_and_utility_damage,15, dam,0.030052,6.807
+character,injured_or_dead_people,1,h tol,0.022549,9.955
+character,injured_or_dead_people,2,oll f,0.005508,9.893
+character,injured_or_dead_people,3,oll r,0.008064,9.87
+character,injured_or_dead_people,4,ath t,0.022518,9.803
+character,injured_or_dead_people,5,eath ,0.022974,9.764
+character,injured_or_dead_people,6,toll ,0.022549,9.76
+character,injured_or_dead_people,7,rises,0.008883,9.693
+character,injured_or_dead_people,8, toll,0.022889,9.684
+character,injured_or_dead_people,9,: dea,0.005453,9.674
+character,injured_or_dead_people,10,toll,0.023001,9.664
+character,injured_or_dead_people,11,oll i,0.005115,9.663
+character,injured_or_dead_people,12,oll ,0.022462,9.592
+character,injured_or_dead_people,13,death,0.027099,9.57
+character,injured_or_dead_people,14,deat,0.027096,9.566
+character,injured_or_dead_people,15, deat,0.024581,9.539
+character,missing_or_found_people,1,issin,0.06482,74.1
+character,missing_or_found_people,2,tt ci,0.016259,60.334
+character,missing_or_found_people,3,ott c,0.016249,60.053
+character,missing_or_found_people,4, elli,0.015492,58.854
+character,missing_or_found_people,5,tt c,0.016167,57.75
+character,missing_or_found_people,6, ell,0.015361,55.275
+character,missing_or_found_people,7,licot,0.017279,53.79
+character,missing_or_found_people,8,icott,0.016961,53.55
+character,missing_or_found_people,9,ellic,0.017016,53.498
+character,missing_or_found_people,10,llico,0.016999,53.114
+character,missing_or_found_people,11,icot,0.017235,52.908
+character,missing_or_found_people,12,ssing,0.060493,52.622
+character,missing_or_found_people,13,llic,0.016955,52.051
+character,missing_or_found_people,14,ssin,0.060158,51.127
+character,missing_or_found_people,15,missi,0.060149,51.124
+character,not_humanitarian,1,#foo,0.001607,6.399
+character,not_humanitarian,2,lago,0.001725,5.94
+character,not_humanitarian,3,fuck,0.001919,5.911
+character,not_humanitarian,4,fuc,0.001935,5.864
+character,not_humanitarian,5, fuck,0.001666,5.855
+character,not_humanitarian,6, fuc,0.001684,5.848
+character,not_humanitarian,7,ooooo,0.000228,5.713
+character,not_humanitarian,8, blam,0.002549,5.605
+character,not_humanitarian,9,blam,0.002592,5.593
+character,not_humanitarian,10,vot,0.001585,5.505
+character,not_humanitarian,11,blame,0.002111,5.362
+character,not_humanitarian,12, @ ,0.003769,5.05
+character,not_humanitarian,13, trum,0.005988,4.796
+character,not_humanitarian,14,job,0.001821,4.782
+character,not_humanitarian,15,oooo,0.000324,4.685
+character,other_relevant_information,1,nfall,0.000726,2.804
+character,other_relevant_information,2,ainfa,0.000726,2.793
+character,other_relevant_information,3,infal,0.000726,2.793
+character,other_relevant_information,4,nfal,0.000726,2.793
+character,other_relevant_information,5,rainf,0.000733,2.763
+character,other_relevant_information,6,nditi,0.001585,2.649
+character,other_relevant_information,7,ondit,0.001585,2.646
+character,other_relevant_information,8,condi,0.001584,2.643
+character,other_relevant_information,9,ndit,0.001606,2.634
+character,other_relevant_information,10,telli,0.000833,2.589
+character,other_relevant_information,11,ainf,0.000743,2.536
+character,other_relevant_information,12,infa,0.000725,2.428
+character,other_relevant_information,13,ter l,0.000789,2.388
+character,other_relevant_information,14,nfa,0.00083,2.379
+character,other_relevant_information,15,clima,0.001681,2.35
+character,requests_or_urgent_needs,1,rgent,0.005785,14.516
+character,requests_or_urgent_needs,2,urgen,0.00583,14.47
+character,requests_or_urgent_needs,3,gent ,0.003672,13.334
+character,requests_or_urgent_needs,4,eed h,0.007059,13.019
+character,requests_or_urgent_needs,5,eed y,0.003757,12.477
+character,requests_or_urgent_needs,6,lp!,0.005129,12.137
+character,requests_or_urgent_needs,7,help!,0.005129,12.137
+character,requests_or_urgent_needs,8,elp!,0.005129,12.137
+character,requests_or_urgent_needs,9,ase h,0.010239,12.128
+character,requests_or_urgent_needs,10,y nee,0.007596,12.113
+character,requests_or_urgent_needs,11,we ne,0.006424,12.073
+character,requests_or_urgent_needs,12,gent,0.005643,11.754
+character,requests_or_urgent_needs,13,se he,0.010158,11.6
+character,requests_or_urgent_needs,14,we n,0.006453,11.47
+character,requests_or_urgent_needs,15,esper,0.003098,11.141
+character,rescue_volunteering_or_donation_effort,1,nates,0.001714,3.476
+character,rescue_volunteering_or_donation_effort,2,nated,0.003413,3.359
+character,rescue_volunteering_or_donation_effort,3,donat,0.017026,3.336
+character,rescue_volunteering_or_donation_effort,4,onate,0.011951,3.331
+character,rescue_volunteering_or_donation_effort,5,o don,0.004018,3.328
+character,rescue_volunteering_or_donation_effort,6,es $,0.001297,3.328
+character,rescue_volunteering_or_donation_effort,7,onati,0.008661,3.324
+character,rescue_volunteering_or_donation_effort,8,onat,0.017017,3.323
+character,rescue_volunteering_or_donation_effort,9, dona,0.016029,3.315
+character,rescue_volunteering_or_donation_effort,10,g don,0.001442,3.313
+character,rescue_volunteering_or_donation_effort,11,fund.,0.000962,3.282
+character,rescue_volunteering_or_donation_effort,12,r don,0.00212,3.27
+character,rescue_volunteering_or_donation_effort,13,dona,0.016932,3.266
+character,rescue_volunteering_or_donation_effort,14,a don,0.001082,3.242
+character,rescue_volunteering_or_donation_effort,15,nteer,0.004343,3.241
+character,sympathy_and_support,1,; pra,0.002508,8.07
+character,sympathy_and_support,2,d pra,0.009608,8.043
+character,sympathy_and_support,3,rayer,0.017589,7.92
+character,sympathy_and_support,4,praye,0.017617,7.903
+character,sympathy_and_support,5,raye,0.017619,7.886
+character,sympathy_and_support,6,y pra,0.002444,7.836
+character,sympathy_and_support,7, pray,0.023675,7.816
+character,sympathy_and_support,8,my th,0.004459,7.757
+character,sympathy_and_support,9,prayi,0.007029,7.734
+character,sympathy_and_support,10,rayin,0.007016,7.725
+character,sympathy_and_support,11,hts a,0.011,7.723
+character,sympathy_and_support,12,rs go,0.003178,7.72
+character,sympathy_and_support,13,pray ,0.009465,7.716
+character,sympathy_and_support,14,ayers,0.016534,7.677
+character,sympathy_and_support,15,e pra,0.004888,7.649

@@ -1,0 +1,10 @@
+task,split,rows
+damage_severity,test,529
+damage_severity,train,2468
+damage_severity,validation,529
+humanitarian,test,2237
+humanitarian,train,13608
+humanitarian,validation,2237
+informative,test,2237
+informative,train,13608
+informative,validation,2237
