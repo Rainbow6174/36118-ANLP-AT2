@@ -194,3 +194,23 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# Legacy BESSTIE/VarietyLens material.
+# Old local copies are not part of the current CrisisLens branch.
+brief/
+config/
+models/legacy_varietylens/
+notebooks/legacy/
+outputs/legacy_varietylens_eda/
+outputs/legacy_varietylens_predictions/
+project_management/
+reports/
+team_planning/
+outputs/processed/
+tmp/
+src/
+build_team_work_plan.py
+requirements-data-pipeline.txt
+tests/test_data_pipeline.py
+tools/build_eda_notebook.py
+CrisisLens_Revised_Project_Proposal.pdf

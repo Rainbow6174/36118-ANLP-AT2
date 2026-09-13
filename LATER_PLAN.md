@@ -91,13 +91,13 @@ Historical HumAID examples are read-only records with source_type=humaid_history
 | Member | Main responsibility | Main results |
 | --- | --- | --- |
 | 1 | Data preparation, EDA and shared data rules | EDA results, labels, splits and data guidance |
-| 2 | Transparent text baselines | Majority, TF-IDF word/character models and baseline findings |
-| 3 | Contextual text model and imbalance treatment | Compact Transformer, probabilities and model findings |
-| 4 | New-event performance | Leave-one-event-out tests and error analysis |
-| 5 | Retrieval and related-message results | Search quality, duplicate grouping and search time |
-| 6 | Application, user study and poster | Storage, boards, full flow, user results and poster |
+| 2 | Transparent text baseline and model packaging | Majority, TF-IDF word/character models and baseline findings |
+| 3 | Contextual text model, imbalance treatment and calibration | Compact Transformer, confidence scores and model findings |
+| 4 | Backend, database, API and shared evaluation harness | Working service, database schema, integration tests and reusable evaluation code |
+| 5 | Retrieval and search | Related-message index, search quality and retrieval findings |
+| 6 | Frontend, UI/UX and user study | User flow, interface evidence and user-study findings |
 
-Members 2 and 3 train models. Member 4 tests new-event performance. Member 5 builds retrieval. Member 6 builds the app and runs the user study. Member 1 keeps the data files stable and assembles the report.
+Members 2 and 3 train and package the classification models. Member 4 owns the thin backend service and a reusable evaluator; Members 2 and 3 use that evaluator for their own event-held-out runs. Member 5 owns retrieval and search. Member 6 owns the frontend and user study. Every member supplies their own report section and evidence. Member 1 keeps the shared data rules stable and assembles the report structure, not all of the report text.
 
 ## Working evaluation agreement
 
@@ -105,7 +105,11 @@ Macro-F1 is the shared main classification metric. Each serious run reports prec
 
 The final app model also reports whether its confidence scores match its results. New-event results report the mean and range across events and flag labels with very little support. Retrieval reports precision@k or recall@k and search time. The user study reports task completion, time, board choice, confidence understanding and corrections.
 
-## Member 1: data, EDA, coordination and report assembly
+### Dependency changes
+
+The checked-in environment covers the EDA and shared project code. If a work area needs another package, install and test it locally first. After the local test works, update `pyproject.toml`, `requirements.txt` and `uv.lock` together, record the version and tell the team before changing the shared files. A planned package is not added to the repository until it has passed a local test.
+
+## Member 1: data, EDA and shared data contract
 
 ### Start here
 
@@ -123,7 +127,7 @@ README.md
 4. Answer data-interface questions from Members 2–6.
 5. Maintain the event-held-out support table and record-source convention.
 6. Write the data and EDA report section.
-7. Assemble report sections supplied by the team.
+7. Keep the report outline and shared evidence list up to date. Each member writes their own section.
 
 ### Why and purpose
 
@@ -138,6 +142,8 @@ report/sections/member1_data_and_eda.md
 ~~~
 
 Member 1 does not train the final classifier or build a second copy of the application.
+
+After the EDA outputs and shared interfaces are published, treat `outputs/eda/` and the ten-label list as read-only. Later changes need a team decision.
 
 ## Member 2: transparent text baselines
 
@@ -160,11 +166,12 @@ data/raw/humaid_events/
 7. Report macro-F1, per-label results, confusion matrix and run time.
 8. Review errors for large and small classes.
 9. Produce one final test prediction after settings are fixed.
-10. Wrap the selected model as predict(text) with the shared response format.
+10. Wrap the selected model as `classify(text)` with the shared response format.
+11. Run the common event-held-out evaluator supplied by Member 4 and save the baseline results.
 
 ### Purpose and expected result
 
-This gives a clear lower bound. Member 4 can use it for the first new-event test. Member 6 can use it for the first app demo.
+This gives a clear lower bound. Member 4 can use the packaged model and its common evaluator. Member 6 can use the wrapper in the first app demo.
 
 ### Handoff
 
@@ -173,6 +180,7 @@ models/text_baseline/
 models/text_baseline/metadata.json
 outputs/predictions/baseline/
 outputs/results/baseline/
+outputs/results/cross_event/baseline/
 report/sections/member2_text_baseline.md
 ~~~
 
@@ -195,7 +203,8 @@ outputs/eda/humaid_text_statistics.csv
 5. Save validation probabilities and per-label results.
 6. Review errors between other_relevant_information, rescue_volunteering_or_donation_effort and the small classes.
 7. Select one model from validation and produce final test predictions after the test plan is fixed.
-8. Wrap it as the same predict(text) interface as Member 2.
+8. Wrap it as the same `classify(text)` interface as Member 2.
+9. Run the common event-held-out evaluator supplied by Member 4 and save the Transformer results.
 
 ### Purpose and expected result
 
@@ -208,43 +217,53 @@ models/transformer/
 models/transformer/metadata.json
 outputs/predictions/transformer/
 outputs/results/transformer/
+outputs/results/cross_event/transformer/
 report/sections/member3_contextual_model.md
 ~~~
 
-## Member 4: performance on new events
+## Member 4: backend, database, API and shared evaluation harness
 
 ### Start here
 
 ~~~
-data/raw/humaid_events/
-outputs/eda/humaid_event_holdout_plan.csv
-models/text_baseline/
+README.md
+LATER_PLAN.md
+outputs/eda/eda_summary.json
+app/
+evaluation/cross_event/
 ~~~
 
 ### Work
 
-1. Build an evaluator that accepts any model with the shared interface.
-2. Start with Member 2's baseline while Member 3 is training.
-3. For each event, train on official training rows from the other 18 events.
-4. Use held-out validation rows for design choices and held-out test rows for the final event result.
-5. Report macro-F1 for each event, per-label scores, support and confusion summaries.
-6. Group results by disaster type where support allows.
-7. Repeat with the selected Transformer if it is chosen for the app.
-8. Explain errors caused by new-event language, rare labels or missing support.
+1. Build a small FastAPI service around the shared model and retrieval interfaces.
+2. Create the SQLite schema and keep raw text, prediction, user correction, source, status and timestamps separate.
+3. Implement the required REST endpoints in `README.md` and return the documented JSON fields.
+4. Use mock model and retrieval responses while Members 2, 3 and 5 are still working.
+5. Build a reusable event-held-out evaluator in `evaluation/cross_event/` that accepts any model with the shared `classify(text)` interface.
+6. Let Members 2 and 3 run their own baseline and Transformer event tests with this evaluator. Member 4 maintains the script and combines the result tables.
+7. Add integration tests for analyse -> save -> browse -> search and for category correction.
+8. Record API response time, failures and the final end-to-end test results.
+9. Document the local run command and sample requests.
 
 ### Purpose and expected result
 
-This answers whether CrisisLens can sort messages from a disaster that was not in training.
+This gives the team one stable service and one fair way to compare models on a disaster that was not in training. It keeps backend work separate from model experiments.
 
 ### Handoff
 
 ~~~
+app/backend/
+app/schema.sql
+app/app_models.json
 evaluation/cross_event/
 outputs/results/cross_event/
-report/sections/member4_cross_event.md
+outputs/results/system/
+report/sections/member4_backend_and_evaluation.md
 ~~~
 
-Member 4 can start before the final model is chosen.
+The current repository has placeholder folders only. Member 4 will create the backend implementation, `app/schema.sql`, `app/app_models.json` and the event-held-out evaluator.
+
+Member 4 can start with mock responses before the final model is chosen. Members 2 and 3 provide the model-specific event results through the shared evaluator.
 
 ## Member 5: related messages and duplicate grouping
 
@@ -261,8 +280,8 @@ outputs/eda/humaid_label_top_word_features.csv
 1. Build a historical-message index.
 2. Start with TF-IDF cosine similarity.
 3. Test sentence embeddings only if they give better results.
-4. Implement search(query, board_label, k).
-5. Return ID, similarity, text preview and source type.
+4. Implement `retrieve(text, k, filters=None)` for related reports and `search(query, filters=None, k=20)` for keyword/filter search.
+5. Return ID, similarity, text preview, board label and source type.
 6. Create a small query set and check it by hand.
 7. Report precision@k or recall@k, duplicate behaviour and search time.
 8. Keep similarity separate from classification and fact checking.
@@ -279,53 +298,49 @@ outputs/results/retrieval/
 report/sections/member5_retrieval.md
 ~~~
 
-## Member 6: application, storage, user study and poster
+## Member 6: frontend, UI/UX and user study
 
 ### Start here
 
-Member 6 can use mock model and retrieval responses. The app does not need to wait for model training.
+Member 6 can use mock model and retrieval responses. The app does not need to wait for model training. The current frontend folder contains a placeholder only; Member 6 will add the interface implementation.
 
 ~~~
-app/
+app/frontend/
 outputs/eda/eda_summary.json
 ~~~
 
 ### Work
 
 1. Build a single-message submission page.
-2. Call the model wrapper and show label, confidence and review state.
-3. Save each message to SQLite or another simple documented store.
-4. Keep historical records and user submissions distinguishable.
-5. Provide a board list and one page for every label.
-6. Redirect to /boards/<predicted_label> after submission.
-7. Show the new message at the top of the board.
-8. Query historical messages from the same board.
-9. Add related messages from Member 5.
-10. Add board search/filtering and a low-confidence review queue.
-11. Allow confirmation or correction without changing the original prediction.
-12. Provide local-run and deployment steps.
-13. Run a user study with people from different English backgrounds.
-14. Test submit, classify, save, redirect and find historical/related messages.
-15. Record task completion, time, board choice, confidence understanding and corrections.
-16. Make one visible interface revision from the study.
-17. Assemble the poster from the final story, figures and screenshots.
+2. Call the backend API and show the predicted board, confidence and review state.
+3. Provide a board list and one page for every label.
+4. Show the new message at the top of the selected board after submission.
+5. Show historical and related messages returned by the API.
+6. Add the agreed board search/filter controls and a low-confidence review view.
+7. Allow category confirmation or correction without changing the original model prediction.
+8. Add clear loading, empty, error and API response states.
+9. Run a small user study with people from different English backgrounds.
+10. Test submit, classify, save, redirect and find historical/related messages.
+11. Record task completion, time, board choice, confidence understanding and corrections.
+12. Make one visible interface revision from the study.
+13. Provide frontend local-run steps and screenshots for the report and poster.
 
 ### Purpose and expected result
 
-This turns model outputs into a complete board workflow. The final demo must show saving and board navigation, not only a prediction label.
+This turns model outputs into a complete board workflow. The final demo must show saving and board navigation, not only a prediction label. The backend and database remain Member 4's responsibility.
 
 ### Handoff
 
 ~~~
-app/
-app/app_models.json
-app/schema.sql
+app/frontend/
 report/user_study/
-report/sections/member6_application_and_user_study.md
-poster/
+report/sections/member6_frontend_and_user_study.md
+outputs/figures/application/
 ~~~
 
 Do not store unnecessary personal information in the app database or user-study files.
+
+Member 6 supplies screenshots and layout suggestions for the poster. All members supply their own poster text, figures and contribution evidence.
 
 ## Shared handoff formats
 
@@ -334,12 +349,25 @@ Do not store unnecessary personal information in the app database or user-study 
 ~~~
 {
   "predicted_label": "requests_or_urgent_needs",
-  "probabilities": {"requests_or_urgent_needs": 0.82},
-  "confidence": 0.82,
+  "probabilities": {
+    "caution_and_advice": 0.03,
+    "displaced_people_and_evacuations": 0.02,
+    "infrastructure_and_utility_damage": 0.03,
+    "injured_or_dead_people": 0.01,
+    "missing_or_found_people": 0.01,
+    "not_humanitarian": 0.02,
+    "other_relevant_information": 0.06,
+    "requests_or_urgent_needs": 0.78,
+    "rescue_volunteering_or_donation_effort": 0.02,
+    "sympathy_and_support": 0.02
+  },
+  "confidence": 0.78,
   "model_version": "baseline-v1",
   "needs_review": false
 }
 ~~~
+
+`probabilities` should contain all ten labels in a fixed order. `predicted_label` is the model result. The model wrapper does not write to the database.
 
 ### Retrieval response
 
@@ -347,9 +375,18 @@ Do not store unnecessary personal information in the app database or user-study 
 {
   "id": "history-123",
   "similarity": 0.74,
+  "board_label": "requests_or_urgent_needs",
   "text_preview": "...",
   "source_type": "humaid_history"
 }
+~~~
+
+The required Python-style interfaces are:
+
+~~~
+classify(text) -> classification response
+retrieve(text, k, filters=None) -> ranked related reports
+search(query, filters=None, k=20) -> ranked/filtered reports
 ~~~
 
 ### Stored message
@@ -357,6 +394,7 @@ Do not store unnecessary personal information in the app database or user-study 
 ~~~
 message_id
 text
+predicted_label
 board_label
 source_type
 confidence
@@ -364,23 +402,26 @@ model_version
 needs_review
 created_at
 user_correction
+status
 ~~~
+
+`predicted_label` keeps the original model result. `board_label` is the board shown by the application and defaults to `predicted_label`. A user correction changes `board_label` but does not overwrite `predicted_label`. New user records use `source_type=user` and `status=unverified`. Historical records use `source_type=humaid_history` and are read-only.
+
+The MVP status values are `unverified`, `needs_review` and `resolved`. They describe the application's handling of a report, not the truth of its content.
 
 All members use the same ten labels. A model may use its own label numbers, but its label order and loading steps must be recorded.
 
 ## What goes into Git
 
-Commit notebooks, reusable code, approved EDA outputs, model settings, selected checkpoints when needed, validation and final predictions, result tables, reviewed errors, final figures, report sections, anonymous user-study results and poster sources.
+Commit notebooks, reusable code, approved EDA outputs, model settings, selected checkpoints when needed, validation and final predictions, result tables, reviewed errors, final figures, report sections, anonymous user-study results and poster sources. Each member commits to their own work path and does not replace another member's internal implementation.
 
 Keep raw downloads, generated local datasets, virtual environments, temporary checkpoints, rejected experiments and personal study data local. Large model files may use Git LFS or shared storage, but the repository must contain the model version, location and loading steps.
 
 ## Parallel work sequence
 
-1. Member 1 publishes the EDA outputs and shared label/interface rules.
-2. Members 2–5 start in parallel. Member 4 starts with the baseline; Member 5 starts with TF-IDF retrieval.
-3. Member 6 builds the complete app flow with mock responses.
-4. Member 4 finishes the new-event evaluator and Member 5 finishes the retrieval checks.
-5. The team selects the app model using validation and new-event results.
-6. Member 6 replaces mocks with the selected model and retrieval index.
-7. The team runs submit -> classify -> save -> redirect -> find the new message -> view historical/related messages.
-8. The team runs the user study, locks final results, writes the report and prepares the poster.
+1. Member 1 publishes the EDA outputs, ten-label list and shared interfaces.
+2. Members 2 and 3 start model work. Member 4 starts the API and evaluation harness with mocks. Member 5 starts TF-IDF retrieval. Member 6 starts the frontend with mock API responses.
+3. Members 2 and 3 run their official-split and event-held-out evaluations through Member 4's evaluator.
+4. Member 4 connects the selected model and retrieval implementation to the API.
+5. Member 6 connects the frontend to the real API and the team runs submit -> classify -> save -> redirect -> find the new message -> view historical/related messages.
+6. The team runs the user study, locks final results, writes the report and prepares the poster together.
