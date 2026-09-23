@@ -1,0 +1,12 @@
+{
+  "seed_42": {
+    "run_id": "A4",
+    "test_macro_f1": 0.7621
+  },
+  "seed_123": {
+    "run_id": "A4_s123",
+    "test_macro_f1": 0.7664
+  },
+  "mean_test_macro_f1": 0.7642,
+  "range": 0.0043
+}

@@ -1,0 +1,7 @@
+run,encoder,imbalance,val_F1,test_F1,train_min,missing_f1,requests_f1,displaced_f1
+A1,distilbert-base-uncased,plain,0.7526,0.7547,29.9,0.8028,0.5966,0.898
+A2,distilbert-base-uncased,class_weighted,0.7408,0.7451,29.9,0.7453,0.5712,0.8865
+A3,distilbert-base-uncased,focal,0.714,0.7141,29.9,0.7578,0.4796,0.8699
+A4,twitter-roberta-base,plain,0.7589,0.7621,59.8,0.7826,0.6072,0.8913
+A5,twitter-roberta-base,class_weighted,0.7449,0.7508,59.6,0.7671,0.5898,0.884
+A6,twitter-roberta-base,focal,0.7107,0.7111,59.5,0.7532,0.4876,0.8656

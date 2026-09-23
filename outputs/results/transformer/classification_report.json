@@ -1,0 +1,65 @@
+{
+  "macro_f1": 0.7621,
+  "per_label": {
+    "caution_and_advice": {
+      "precision": 0.7014,
+      "recall": 0.7243,
+      "f1": 0.7126,
+      "support": 1070
+    },
+    "displaced_people_and_evacuations": {
+      "precision": 0.8565,
+      "recall": 0.9291,
+      "f1": 0.8913,
+      "support": 790
+    },
+    "infrastructure_and_utility_damage": {
+      "precision": 0.7807,
+      "recall": 0.8584,
+      "f1": 0.8177,
+      "support": 1617
+    },
+    "injured_or_dead_people": {
+      "precision": 0.9117,
+      "recall": 0.9489,
+      "f1": 0.9299,
+      "support": 1447
+    },
+    "missing_or_found_people": {
+      "precision": 0.8182,
+      "recall": 0.75,
+      "f1": 0.7826,
+      "support": 72
+    },
+    "not_humanitarian": {
+      "precision": 0.6228,
+      "recall": 0.6193,
+      "f1": 0.621,
+      "support": 1245
+    },
+    "other_relevant_information": {
+      "precision": 0.6206,
+      "recall": 0.4865,
+      "f1": 0.5454,
+      "support": 2407
+    },
+    "requests_or_urgent_needs": {
+      "precision": 0.6137,
+      "recall": 0.6008,
+      "f1": 0.6072,
+      "support": 521
+    },
+    "rescue_volunteering_or_donation_effort": {
+      "precision": 0.8541,
+      "recall": 0.9002,
+      "f1": 0.8765,
+      "support": 4219
+    },
+    "sympathy_and_support": {
+      "precision": 0.8381,
+      "recall": 0.8352,
+      "f1": 0.8366,
+      "support": 1772
+    }
+  }
+}
