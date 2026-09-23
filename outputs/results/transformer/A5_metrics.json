@@ -1,0 +1,72 @@
+{
+  "run_id": "A5",
+  "encoder": "cardiffnlp/twitter-roberta-base",
+  "imbalance": "class_weighted",
+  "seed": 42,
+  "val_macro_f1": 0.7449,
+  "test_macro_f1": 0.7508,
+  "train_time_sec": 3573.5,
+  "inference_time_per_sample_sec": 0.004119,
+  "per_label": {
+    "caution_and_advice": {
+      "precision": 0.6379,
+      "recall": 0.8,
+      "f1": 0.7098,
+      "support": 1070
+    },
+    "displaced_people_and_evacuations": {
+      "precision": 0.83,
+      "recall": 0.9456,
+      "f1": 0.884,
+      "support": 790
+    },
+    "infrastructure_and_utility_damage": {
+      "precision": 0.7878,
+      "recall": 0.8541,
+      "f1": 0.8196,
+      "support": 1617
+    },
+    "injured_or_dead_people": {
+      "precision": 0.9024,
+      "recall": 0.9516,
+      "f1": 0.9263,
+      "support": 1447
+    },
+    "missing_or_found_people": {
+      "precision": 0.7568,
+      "recall": 0.7778,
+      "f1": 0.7671,
+      "support": 72
+    },
+    "not_humanitarian": {
+      "precision": 0.5684,
+      "recall": 0.7277,
+      "f1": 0.6383,
+      "support": 1245
+    },
+    "other_relevant_information": {
+      "precision": 0.6357,
+      "recall": 0.4067,
+      "f1": 0.4961,
+      "support": 2407
+    },
+    "requests_or_urgent_needs": {
+      "precision": 0.4942,
+      "recall": 0.7313,
+      "f1": 0.5898,
+      "support": 521
+    },
+    "rescue_volunteering_or_donation_effort": {
+      "precision": 0.8973,
+      "recall": 0.8097,
+      "f1": 0.8512,
+      "support": 4219
+    },
+    "sympathy_and_support": {
+      "precision": 0.8073,
+      "recall": 0.8442,
+      "f1": 0.8254,
+      "support": 1772
+    }
+  }
+}

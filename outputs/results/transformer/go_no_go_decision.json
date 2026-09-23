@@ -1,0 +1,35 @@
+{
+  "winner_run_id": "A4",
+  "encoder": "cardiffnlp/twitter-roberta-base",
+  "imbalance": "plain",
+  "val_macro_f1": 0.7589,
+  "test_macro_f1": 0.7621,
+  "distilbert_decisions": {
+    "A2": {
+      "imbalance": "class_weighted",
+      "macro_drop": 0.0118,
+      "small_classes_improved": 0,
+      "adopt": false
+    },
+    "A3": {
+      "imbalance": "focal",
+      "macro_drop": 0.0386,
+      "small_classes_improved": 0,
+      "adopt": false
+    }
+  },
+  "roberta_decisions": {
+    "A5": {
+      "imbalance": "class_weighted",
+      "macro_drop": 0.014,
+      "small_classes_improved": 0,
+      "adopt": false
+    },
+    "A6": {
+      "imbalance": "focal",
+      "macro_drop": 0.0482,
+      "small_classes_improved": 0,
+      "adopt": false
+    }
+  }
+}

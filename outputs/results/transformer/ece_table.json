@@ -1,0 +1,11 @@
+{
+  "temperature": 1.3509,
+  "validation": {
+    "ece_before": 0.096,
+    "ece_after": 0.0369
+  },
+  "test": {
+    "ece_before": 0.0931,
+    "ece_after": 0.0351
+  }
+}

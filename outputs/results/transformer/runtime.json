@@ -1,0 +1,32 @@
+{
+  "winner_run_id": "A4",
+  "encoder": "cardiffnlp/twitter-roberta-base",
+  "train_time_sec": 3586.6,
+  "inference_time_per_sample_sec": 0.004099,
+  "all_runs": {
+    "A1": {
+      "train_time_sec": 1794.0,
+      "inference_time_per_sample_sec": 0.00223
+    },
+    "A2": {
+      "train_time_sec": 1791.8,
+      "inference_time_per_sample_sec": 0.00222
+    },
+    "A3": {
+      "train_time_sec": 1791.0,
+      "inference_time_per_sample_sec": 0.002223
+    },
+    "A4": {
+      "train_time_sec": 3586.6,
+      "inference_time_per_sample_sec": 0.004099
+    },
+    "A5": {
+      "train_time_sec": 3573.5,
+      "inference_time_per_sample_sec": 0.004119
+    },
+    "A6": {
+      "train_time_sec": 3572.6,
+      "inference_time_per_sample_sec": 0.004125
+    }
+  }
+}
