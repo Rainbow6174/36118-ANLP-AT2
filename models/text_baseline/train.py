@@ -24,8 +24,9 @@ RESULTS_DIR = PROJECT_ROOT / "outputs" / "results" / "baseline"
 EXPECTED_SPLIT_SIZES = {
     "train": 53_531,
     "validation": 7_793,
-    "test": 15_160,
 }
+
+FINAL_TEST_SIZE = 15_160
 
 REQUIRED_COLUMNS = {
     "tweet_text",
@@ -168,7 +169,7 @@ def main() -> None:
     print(f"HumAID directory: {HUMAID_DIR}")
     print()
 
-    for split_name in ("train", "validation", "test"):
+    for split_name in ("train", "validation"):
         frame = splits[split_name]
         print(
             f"{split_name:<10} "
@@ -182,7 +183,7 @@ def main() -> None:
         print(f"{index:>2}. {label}")
 
     print()
-    print("Official HumAID data contract validated successfully.")
+    print("HumAID training/validation data contract validated successfully.")
 
     majority_result = evaluate_majority_baseline(
         splits["train"],
