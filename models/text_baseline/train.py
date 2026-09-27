@@ -7,14 +7,18 @@ from pathlib import Path
 from time import perf_counter
 
 import pandas as pd
+from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import (
     balanced_accuracy_score,
     classification_report,
     confusion_matrix,
     f1_score,
 )
+from sklearn.pipeline import FeatureUnion, Pipeline
+from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
 
-from models.text_baseline.baseline import LABEL_ORDER
+from models.text_baseline.baseline import LABEL_ORDER, clean_text
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -146,6 +150,523 @@ def evaluate_majority_baseline(
 
     return result
 
+
+def evaluate_word_tfidf_linearsvc_screening(
+    train_frame: pd.DataFrame,
+    validation_frame: pd.DataFrame,
+    class_weight: str | None = None,
+    C: float = 1.0,
+) -> dict:
+    """Run an uncalibrated word TF-IDF + LinearSVC validation screen."""
+    x_train = train_frame["tweet_text"].map(clean_text)
+    y_train = train_frame["class_label"]
+
+    x_validation = validation_frame["tweet_text"].map(clean_text)
+    y_validation = validation_frame["class_label"]
+
+    model = Pipeline(
+        steps=[
+            (
+                "tfidf",
+                TfidfVectorizer(
+                    analyzer="word",
+                    ngram_range=(1, 2),
+                    min_df=5,
+                    max_features=12_000,
+                    sublinear_tf=True,
+                ),
+            ),
+            (
+                "classifier",
+                LinearSVC(
+                    C=C,
+                    class_weight=class_weight,
+                    dual="auto",
+                    random_state=42,
+                ),
+            ),
+        ]
+    )
+
+    training_start = perf_counter()
+    model.fit(x_train, y_train)
+    training_runtime = perf_counter() - training_start
+
+    inference_start = perf_counter()
+    y_pred = model.predict(x_validation)
+    inference_runtime = perf_counter() - inference_start
+
+    evaluation_start = perf_counter()
+
+    macro_f1 = f1_score(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+        average="macro",
+        zero_division=0,
+    )
+
+    balanced_accuracy = balanced_accuracy_score(
+        y_validation,
+        y_pred,
+    )
+
+    report = classification_report(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+        output_dict=True,
+        zero_division=0,
+    )
+
+    matrix = confusion_matrix(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+    )
+
+    evaluation_runtime = perf_counter() - evaluation_start
+
+    accuracy = float(
+        (y_validation.to_numpy() == y_pred).mean()
+    )
+
+    result = {
+        "model": "word_tfidf_linearsvc",
+        "experiment_stage": "validation_screening",
+        "calibrated": False,
+        "probabilities_available": False,
+        "evaluation_split": "validation",
+        "train_rows": int(len(train_frame)),
+        "validation_rows": int(len(validation_frame)),
+        "configuration": {
+            "preprocessing": "models.text_baseline.baseline.clean_text",
+            "analyzer": "word",
+            "ngram_range": [1, 2],
+            "min_df": 5,
+            "max_features": 12_000,
+            "sublinear_tf": True,
+            "classifier": "LinearSVC",
+            "C": C,
+            "class_weight": class_weight,
+            "dual": "auto",
+            "random_state": 42,
+        },
+        "accuracy": accuracy,
+        "macro_f1": float(macro_f1),
+        "balanced_accuracy": float(balanced_accuracy),
+        "training_runtime_seconds": float(training_runtime),
+        "inference_runtime_seconds": float(inference_runtime),
+        "evaluation_runtime_seconds": float(evaluation_runtime),
+        "label_order": LABEL_ORDER,
+        "classification_report": report,
+        "confusion_matrix": matrix.tolist(),
+    }
+
+    return result
+
+
+def evaluate_char_tfidf_linearsvc_screening(
+    train_frame: pd.DataFrame,
+    validation_frame: pd.DataFrame,
+    class_weight: str | None = None,
+    C: float = 1.0,
+) -> dict:
+    """Run an uncalibrated character TF-IDF + LinearSVC validation screen."""
+    x_train = train_frame["tweet_text"].map(clean_text)
+    y_train = train_frame["class_label"]
+
+    x_validation = validation_frame["tweet_text"].map(clean_text)
+    y_validation = validation_frame["class_label"]
+
+    model = Pipeline(
+        steps=[
+            (
+                "tfidf",
+                TfidfVectorizer(
+                    analyzer="char",
+                    ngram_range=(3, 5),
+                    min_df=10,
+                    max_features=16_000,
+                    sublinear_tf=True,
+                ),
+            ),
+            (
+                "classifier",
+                LinearSVC(
+                    C=C,
+                    class_weight=class_weight,
+                    dual="auto",
+                    random_state=42,
+                ),
+            ),
+        ]
+    )
+
+    training_start = perf_counter()
+    model.fit(x_train, y_train)
+    training_runtime = perf_counter() - training_start
+
+    inference_start = perf_counter()
+    y_pred = model.predict(x_validation)
+    inference_runtime = perf_counter() - inference_start
+
+    evaluation_start = perf_counter()
+
+    macro_f1 = f1_score(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+        average="macro",
+        zero_division=0,
+    )
+
+    balanced_accuracy = balanced_accuracy_score(
+        y_validation,
+        y_pred,
+    )
+
+    report = classification_report(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+        output_dict=True,
+        zero_division=0,
+    )
+
+    matrix = confusion_matrix(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+    )
+
+    evaluation_runtime = perf_counter() - evaluation_start
+
+    accuracy = float(
+        (y_validation.to_numpy() == y_pred).mean()
+    )
+
+    result = {
+        "model": "char_tfidf_linearsvc",
+        "experiment_stage": "validation_screening",
+        "calibrated": False,
+        "probabilities_available": False,
+        "evaluation_split": "validation",
+        "train_rows": int(len(train_frame)),
+        "validation_rows": int(len(validation_frame)),
+        "configuration": {
+            "preprocessing": "models.text_baseline.baseline.clean_text",
+            "analyzer": "char",
+            "ngram_range": [3, 5],
+            "min_df": 10,
+            "max_features": 16_000,
+            "sublinear_tf": True,
+            "classifier": "LinearSVC",
+            "C": C,
+            "class_weight": class_weight,
+            "dual": "auto",
+            "random_state": 42,
+        },
+        "accuracy": accuracy,
+        "macro_f1": float(macro_f1),
+        "balanced_accuracy": float(balanced_accuracy),
+        "training_runtime_seconds": float(training_runtime),
+        "inference_runtime_seconds": float(inference_runtime),
+        "evaluation_runtime_seconds": float(evaluation_runtime),
+        "label_order": LABEL_ORDER,
+        "classification_report": report,
+        "confusion_matrix": matrix.tolist(),
+    }
+
+    return result
+
+def evaluate_combined_tfidf_linearsvc_screening(
+    train_frame: pd.DataFrame,
+    validation_frame: pd.DataFrame,
+    class_weight: str | None = None,
+    C: float = 0.25,
+) -> dict:
+    """Run an uncalibrated word+character TF-IDF LinearSVC validation screen."""
+    x_train = train_frame["tweet_text"].map(clean_text)
+    y_train = train_frame["class_label"]
+
+    x_validation = validation_frame["tweet_text"].map(clean_text)
+    y_validation = validation_frame["class_label"]
+
+    features = FeatureUnion(
+        transformer_list=[
+            (
+                "word_tfidf",
+                TfidfVectorizer(
+                    analyzer="word",
+                    ngram_range=(1, 2),
+                    min_df=5,
+                    max_features=12_000,
+                    sublinear_tf=True,
+                ),
+            ),
+            (
+                "char_tfidf",
+                TfidfVectorizer(
+                    analyzer="char",
+                    ngram_range=(3, 5),
+                    min_df=10,
+                    max_features=16_000,
+                    sublinear_tf=True,
+                ),
+            ),
+        ]
+    )
+
+    model = Pipeline(
+        steps=[
+            ("features", features),
+            (
+                "classifier",
+                LinearSVC(
+                    C=C,
+                    class_weight=class_weight,
+                    dual="auto",
+                    random_state=42,
+                ),
+            ),
+        ]
+    )
+
+    training_start = perf_counter()
+    model.fit(x_train, y_train)
+    training_runtime = perf_counter() - training_start
+
+    inference_start = perf_counter()
+    y_pred = model.predict(x_validation)
+    inference_runtime = perf_counter() - inference_start
+
+    evaluation_start = perf_counter()
+
+    macro_f1 = f1_score(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+        average="macro",
+        zero_division=0,
+    )
+
+    balanced_accuracy = balanced_accuracy_score(
+        y_validation,
+        y_pred,
+    )
+
+    report = classification_report(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+        output_dict=True,
+        zero_division=0,
+    )
+
+    matrix = confusion_matrix(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+    )
+
+    evaluation_runtime = perf_counter() - evaluation_start
+
+    accuracy = float(
+        (y_validation.to_numpy() == y_pred).mean()
+    )
+
+    result = {
+        "model": "word_char_tfidf_linearsvc",
+        "experiment_stage": "validation_screening",
+        "calibrated": False,
+        "probabilities_available": False,
+        "evaluation_split": "validation",
+        "train_rows": int(len(train_frame)),
+        "validation_rows": int(len(validation_frame)),
+        "configuration": {
+            "preprocessing": "models.text_baseline.baseline.clean_text",
+            "word_tfidf": {
+                "analyzer": "word",
+                "ngram_range": [1, 2],
+                "min_df": 5,
+                "max_features": 12_000,
+                "sublinear_tf": True,
+            },
+            "char_tfidf": {
+                "analyzer": "char",
+                "ngram_range": [3, 5],
+                "min_df": 10,
+                "max_features": 16_000,
+                "sublinear_tf": True,
+            },
+            "classifier": "LinearSVC",
+            "C": C,
+            "class_weight": class_weight,
+            "dual": "auto",
+            "random_state": 42,
+        },
+        "accuracy": accuracy,
+        "macro_f1": float(macro_f1),
+        "balanced_accuracy": float(balanced_accuracy),
+        "training_runtime_seconds": float(training_runtime),
+        "inference_runtime_seconds": float(inference_runtime),
+        "evaluation_runtime_seconds": float(evaluation_runtime),
+        "label_order": LABEL_ORDER,
+        "classification_report": report,
+        "confusion_matrix": matrix.tolist(),
+    }
+
+    return result
+
+def evaluate_combined_tfidf_logreg_screening(
+    train_frame: pd.DataFrame,
+    validation_frame: pd.DataFrame,
+    class_weight: str | None = None,
+    C: float = 1.0,
+) -> dict:
+    """Run a word+character TF-IDF Logistic Regression validation screen."""
+    x_train = train_frame["tweet_text"].map(clean_text)
+    y_train = train_frame["class_label"]
+
+    x_validation = validation_frame["tweet_text"].map(clean_text)
+    y_validation = validation_frame["class_label"]
+
+    features = FeatureUnion(
+        transformer_list=[
+            (
+                "word_tfidf",
+                TfidfVectorizer(
+                    analyzer="word",
+                    ngram_range=(1, 2),
+                    min_df=5,
+                    max_features=12_000,
+                    sublinear_tf=True,
+                ),
+            ),
+            (
+                "char_tfidf",
+                TfidfVectorizer(
+                    analyzer="char",
+                    ngram_range=(3, 5),
+                    min_df=10,
+                    max_features=16_000,
+                    sublinear_tf=True,
+                ),
+            ),
+        ]
+    )
+
+    model = Pipeline(
+        steps=[
+            ("features", features),
+            (
+                "classifier",
+                LogisticRegression(
+                    C=C,
+                    class_weight=class_weight,
+                    solver="lbfgs",
+                    max_iter=1000,
+                    random_state=42,
+                ),
+            ),
+        ]
+    )
+
+    training_start = perf_counter()
+    model.fit(x_train, y_train)
+    training_runtime = perf_counter() - training_start
+
+    inference_start = perf_counter()
+    y_pred = model.predict(x_validation)
+    probabilities = model.predict_proba(x_validation)
+    inference_runtime = perf_counter() - inference_start
+
+    evaluation_start = perf_counter()
+
+    macro_f1 = f1_score(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+        average="macro",
+        zero_division=0,
+    )
+
+    balanced_accuracy = balanced_accuracy_score(
+        y_validation,
+        y_pred,
+    )
+
+    report = classification_report(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+        output_dict=True,
+        zero_division=0,
+    )
+
+    matrix = confusion_matrix(
+        y_validation,
+        y_pred,
+        labels=LABEL_ORDER,
+    )
+
+    evaluation_runtime = perf_counter() - evaluation_start
+
+    accuracy = float(
+        (y_validation.to_numpy() == y_pred).mean()
+    )
+
+    probability_row_sums = probabilities.sum(axis=1)
+
+    result = {
+        "model": "word_char_tfidf_logistic_regression",
+        "experiment_stage": "validation_screening",
+        "calibrated": False,
+        "probabilities_available": True,
+        "evaluation_split": "validation",
+        "train_rows": int(len(train_frame)),
+        "validation_rows": int(len(validation_frame)),
+        "configuration": {
+            "preprocessing": "models.text_baseline.baseline.clean_text",
+            "word_tfidf": {
+                "analyzer": "word",
+                "ngram_range": [1, 2],
+                "min_df": 5,
+                "max_features": 12_000,
+                "sublinear_tf": True,
+            },
+            "char_tfidf": {
+                "analyzer": "char",
+                "ngram_range": [3, 5],
+                "min_df": 10,
+                "max_features": 16_000,
+                "sublinear_tf": True,
+            },
+            "classifier": "LogisticRegression",
+            "C": C,
+            "class_weight": class_weight,
+            "solver": "lbfgs",
+            "max_iter": 1000,
+            "random_state": 42,
+        },
+        "accuracy": accuracy,
+        "macro_f1": float(macro_f1),
+        "balanced_accuracy": float(balanced_accuracy),
+        "training_runtime_seconds": float(training_runtime),
+        "inference_runtime_seconds": float(inference_runtime),
+        "evaluation_runtime_seconds": float(evaluation_runtime),
+        "probability_row_sum_min": float(probability_row_sums.min()),
+        "probability_row_sum_max": float(probability_row_sums.max()),
+        "label_order": LABEL_ORDER,
+        "model_class_order": model.named_steps[
+            "classifier"
+        ].classes_.tolist(),
+        "classification_report": report,
+        "confusion_matrix": matrix.tolist(),
+    }
+
+    return result
 
 def save_majority_result(result: dict) -> Path:
     """Save the majority validation result as reproducible JSON."""
