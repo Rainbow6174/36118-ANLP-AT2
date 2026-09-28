@@ -33,6 +33,8 @@ EXPECTED_SPLIT_SIZES = {
 
 FINAL_TEST_SIZE = 15_160
 ECE_BINS = 15
+TARGET_RISK = 0.05
+THRESHOLD_POINTS = 200
 
 REQUIRED_COLUMNS = {
     "tweet_text",
@@ -587,6 +589,63 @@ def compute_expected_calibration_error(
     return float(ece), bin_data
 
 
+
+def compute_coverage_risk_curve(
+    confidences,
+    correct_mask,
+    n_points: int = THRESHOLD_POINTS,
+) -> dict:
+    """Compute validation coverage and accepted-sample risk over thresholds."""
+    if n_points <= 1:
+        raise ValueError("n_points must be greater than 1.")
+
+    taus = [index / (n_points - 1) for index in range(n_points)]
+    coverage = []
+    risk = []
+
+    for tau in taus:
+        accepted = confidences >= tau
+        accepted_coverage = float(accepted.mean())
+
+        if accepted_coverage == 0.0:
+            accepted_risk = 0.0
+        else:
+            accepted_risk = float(
+                1.0 - correct_mask[accepted].mean()
+            )
+
+        coverage.append(accepted_coverage)
+        risk.append(accepted_risk)
+
+    return {
+        "tau": taus,
+        "coverage": coverage,
+        "risk": risk,
+    }
+
+
+def select_review_threshold(
+    curve_data: dict,
+    target_risk: float = TARGET_RISK,
+) -> tuple[float, float, float]:
+    """Select maximum-coverage threshold satisfying the target risk."""
+    best_tau = 1.0
+    best_coverage = 0.0
+    best_risk = 0.0
+
+    for tau, coverage, risk in zip(
+        curve_data["tau"],
+        curve_data["coverage"],
+        curve_data["risk"],
+    ):
+        if risk <= target_risk and coverage > best_coverage:
+            best_tau = float(tau)
+            best_coverage = float(coverage)
+            best_risk = float(risk)
+
+    return best_tau, best_coverage, best_risk
+
+
 def evaluate_combined_tfidf_logreg_screening(
     train_frame: pd.DataFrame,
     validation_frame: pd.DataFrame,
@@ -698,6 +757,26 @@ def evaluate_combined_tfidf_logreg_screening(
         n_bins=ECE_BINS,
     )
 
+    confidences = probabilities.max(axis=1)
+    correct_mask = y_pred == y_validation.to_numpy()
+
+    coverage_risk_data = compute_coverage_risk_curve(
+        confidences,
+        correct_mask,
+        n_points=THRESHOLD_POINTS,
+    )
+
+    (
+        review_threshold,
+        validation_coverage,
+        validation_risk,
+    ) = select_review_threshold(
+        coverage_risk_data,
+        target_risk=TARGET_RISK,
+    )
+
+    validation_review_rate = 1.0 - validation_coverage
+
     probability_row_sums = probabilities.sum(axis=1)
 
     result = {
@@ -740,6 +819,16 @@ def evaluate_combined_tfidf_logreg_screening(
         "ece_method": "top_label_equal_width",
         "confidence_definition": "max_predict_proba",
         "ece_bin_data": ece_bin_data,
+        "probability_calibration_assessed": True,
+        "additional_calibration_applied": False,
+        "probability_method": "native_logistic_regression_predict_proba",
+        "target_risk": TARGET_RISK,
+        "threshold_points": THRESHOLD_POINTS,
+        "review_threshold": float(review_threshold),
+        "validation_coverage": float(validation_coverage),
+        "validation_risk": float(validation_risk),
+        "validation_review_rate": float(validation_review_rate),
+        "coverage_risk_data": coverage_risk_data,
         "training_runtime_seconds": float(training_runtime),
         "inference_runtime_seconds": float(inference_runtime),
         "evaluation_runtime_seconds": float(evaluation_runtime),
