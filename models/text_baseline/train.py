@@ -32,6 +32,7 @@ EXPECTED_SPLIT_SIZES = {
 }
 
 FINAL_TEST_SIZE = 15_160
+ECE_BINS = 15
 
 REQUIRED_COLUMNS = {
     "tweet_text",
@@ -520,6 +521,72 @@ def evaluate_combined_tfidf_linearsvc_screening(
 
     return result
 
+
+def compute_expected_calibration_error(
+    probabilities,
+    y_true: pd.Series,
+    y_pred,
+    n_bins: int = ECE_BINS,
+) -> tuple[float, list[dict]]:
+    """Compute top-label ECE with equal-width confidence bins."""
+    if n_bins <= 0:
+        raise ValueError("n_bins must be a positive integer.")
+
+    if not (
+        len(probabilities) == len(y_true) == len(y_pred)
+    ):
+        raise ValueError(
+            "probabilities, y_true, and y_pred must have equal lengths."
+        )
+
+    confidences = probabilities.max(axis=1)
+    correct = (y_pred == y_true.to_numpy()).astype(float)
+
+    ece = 0.0
+    bin_data: list[dict] = []
+
+    for index in range(n_bins):
+        bin_lower = index / n_bins
+        bin_upper = (index + 1) / n_bins
+
+        mask = (
+            (confidences > bin_lower)
+            & (confidences <= bin_upper)
+        )
+        count = int(mask.sum())
+
+        if count == 0:
+            bin_data.append(
+                {
+                    "bin_lower": float(bin_lower),
+                    "bin_upper": float(bin_upper),
+                    "count": 0,
+                    "avg_confidence": 0.0,
+                    "avg_accuracy": 0.0,
+                }
+            )
+            continue
+
+        avg_confidence = float(confidences[mask].mean())
+        avg_accuracy = float(correct[mask].mean())
+
+        ece += (
+            count / len(y_true)
+        ) * abs(avg_accuracy - avg_confidence)
+
+        bin_data.append(
+            {
+                "bin_lower": float(bin_lower),
+                "bin_upper": float(bin_upper),
+                "count": count,
+                "avg_confidence": avg_confidence,
+                "avg_accuracy": avg_accuracy,
+            }
+        )
+
+    return float(ece), bin_data
+
+
 def evaluate_combined_tfidf_logreg_screening(
     train_frame: pd.DataFrame,
     validation_frame: pd.DataFrame,
@@ -624,6 +691,13 @@ def evaluate_combined_tfidf_logreg_screening(
         labels=LABEL_ORDER,
     )
 
+    validation_ece, ece_bin_data = compute_expected_calibration_error(
+        probabilities,
+        y_validation,
+        y_pred,
+        n_bins=ECE_BINS,
+    )
+
     probability_row_sums = probabilities.sum(axis=1)
 
     result = {
@@ -661,6 +735,11 @@ def evaluate_combined_tfidf_logreg_screening(
         "macro_f1": float(macro_f1),
         "balanced_accuracy": float(balanced_accuracy),
         "log_loss": float(validation_log_loss),
+        "expected_calibration_error": float(validation_ece),
+        "ece_bins": ECE_BINS,
+        "ece_method": "top_label_equal_width",
+        "confidence_definition": "max_predict_proba",
+        "ece_bin_data": ece_bin_data,
         "training_runtime_seconds": float(training_runtime),
         "inference_runtime_seconds": float(inference_runtime),
         "evaluation_runtime_seconds": float(evaluation_runtime),
