@@ -1,0 +1,120 @@
+{
+  "model_version": "baseline-v1",
+  "model_name": "word_char_tfidf_logistic_regression",
+  "model_artifact": "model.joblib",
+  "task": "HumAID text-only humanitarian classification",
+  "data": {
+    "train_rows": 53531,
+    "validation_rows": 7793,
+    "test_rows": 15160
+  },
+  "environment": {
+    "python": "3.11.16",
+    "scikit_learn": "1.9.1",
+    "joblib": "1.6.0"
+  },
+  "canonical_label_order": [
+    "caution_and_advice",
+    "displaced_people_and_evacuations",
+    "infrastructure_and_utility_damage",
+    "injured_or_dead_people",
+    "missing_or_found_people",
+    "not_humanitarian",
+    "other_relevant_information",
+    "requests_or_urgent_needs",
+    "rescue_volunteering_or_donation_effort",
+    "sympathy_and_support"
+  ],
+  "preprocessing": {
+    "function": "models.text_baseline.baseline.clean_text",
+    "operations": [
+      "remove URLs",
+      "replace @mentions with @user",
+      "remove # while retaining hashtag text",
+      "collapse repeated whitespace",
+      "strip leading/trailing whitespace"
+    ]
+  },
+  "feature_pipeline": {
+    "combiner": "FeatureUnion",
+    "word_tfidf": {
+      "analyzer": "word",
+      "ngram_range": [
+        1,
+        2
+      ],
+      "min_df": 5,
+      "max_features": 12000,
+      "sublinear_tf": true
+    },
+    "char_tfidf": {
+      "analyzer": "char",
+      "ngram_range": [
+        3,
+        5
+      ],
+      "min_df": 10,
+      "max_features": 16000,
+      "sublinear_tf": true
+    }
+  },
+  "classifier": {
+    "type": "LogisticRegression",
+    "C": 1.0,
+    "class_weight": null,
+    "solver": "lbfgs",
+    "max_iter": 1000,
+    "random_state": 42
+  },
+  "probability": {
+    "method": "native_logistic_regression_predict_proba",
+    "calibration_assessed": true,
+    "additional_calibration_applied": false,
+    "confidence_definition": "max_predict_proba",
+    "ece_bins": 15,
+    "ece_method": "top_label_equal_width"
+  },
+  "validation": {
+    "accuracy": 0.7514436032336712,
+    "macro_f1": 0.725844404073381,
+    "balanced_accuracy": 0.7008478794921923,
+    "log_loss": 0.7074275800454689,
+    "expected_calibration_error": 0.02322904638973236
+  },
+  "review_policy": {
+    "target_accepted_risk": 0.05,
+    "threshold_points": 200,
+    "selection_rule": "maximum validation coverage with accepted-sample risk <= target",
+    "review_threshold": 0.8894472361809045,
+    "auto_accept_rule": "confidence >= review_threshold",
+    "needs_review_rule": "confidence < review_threshold",
+    "validation_operating_point": {
+      "coverage": 0.3604516874117798,
+      "risk": 0.04734781060875759,
+      "review_rate": 0.6395483125882202
+    }
+  },
+  "final_official_test": {
+    "accuracy": 0.7556728232189973,
+    "macro_f1": 0.7262421450728274,
+    "balanced_accuracy": 0.7049898407538653,
+    "log_loss": 0.6941362147946659,
+    "expected_calibration_error": 0.021443191530003174,
+    "coverage": 0.36477572559366755,
+    "risk": 0.04755877034358047,
+    "review_rate": 0.6352242744063324,
+    "auto_accepted": 5530,
+    "needs_review": 9630
+  },
+  "packaging": {
+    "training_split": "official training split only",
+    "train_rows": 53531,
+    "retrained_on_train_plus_validation": false,
+    "class_order_verified": true
+  },
+  "cross_event_evaluation": {
+    "status": "pending Member 4 shared harness",
+    "protocol": "train on 18 events, hold out 1 unseen event, repeat across all 19 events",
+    "result": null
+  }
+}
