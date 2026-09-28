@@ -13,6 +13,7 @@ from sklearn.metrics import (
     classification_report,
     confusion_matrix,
     f1_score,
+    log_loss,
 )
 from sklearn.pipeline import FeatureUnion, Pipeline
 from sklearn.linear_model import LogisticRegression
@@ -617,6 +618,12 @@ def evaluate_combined_tfidf_logreg_screening(
         (y_validation.to_numpy() == y_pred).mean()
     )
 
+    validation_log_loss = log_loss(
+        y_validation,
+        probabilities,
+        labels=LABEL_ORDER,
+    )
+
     probability_row_sums = probabilities.sum(axis=1)
 
     result = {
@@ -653,6 +660,7 @@ def evaluate_combined_tfidf_logreg_screening(
         "accuracy": accuracy,
         "macro_f1": float(macro_f1),
         "balanced_accuracy": float(balanced_accuracy),
+        "log_loss": float(validation_log_loss),
         "training_runtime_seconds": float(training_runtime),
         "inference_runtime_seconds": float(inference_runtime),
         "evaluation_runtime_seconds": float(evaluation_runtime),
