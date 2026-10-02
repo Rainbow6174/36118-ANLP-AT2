@@ -214,3 +214,6 @@ requirements-data-pipeline.txt
 tests/test_data_pipeline.py
 tools/build_eda_notebook.py
 CrisisLens_Revised_Project_Proposal.pdf
+
+# Member 4: local SQLite DB (schema is in app/schema.sql)
+app/backend/*.db
