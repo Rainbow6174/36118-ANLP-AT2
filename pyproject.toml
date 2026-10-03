@@ -9,6 +9,7 @@ dependencies = [
     "matplotlib>=3.8,<4",
     "nbclient>=0.10",
     "nbformat>=5.9",
+    "nicegui==3.17.1",
     "numpy>=1.26,<3",
     "pandas>=2.2,<4",
     "pyarrow>=15",
