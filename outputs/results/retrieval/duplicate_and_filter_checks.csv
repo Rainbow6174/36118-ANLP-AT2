@@ -1,0 +1,72 @@
+part,check,method,value,passed,details
+threshold sensitivity,copies caught (%) at 0.80,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,potential grouping rate (%) at 0.80,tfidf,4.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: case_punctuation (%) at 0.80,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: link (%) at 0.80,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: retweet (%) at 0.80,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,copies caught (%) at 0.85,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,potential grouping rate (%) at 0.85,tfidf,4.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: case_punctuation (%) at 0.85,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: link (%) at 0.85,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: retweet (%) at 0.85,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,copies caught (%) at 0.90,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,potential grouping rate (%) at 0.90,tfidf,4.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: case_punctuation (%) at 0.90,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: link (%) at 0.90,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: retweet (%) at 0.90,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,copies caught (%) at 0.95,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,potential grouping rate (%) at 0.95,tfidf,4.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: case_punctuation (%) at 0.95,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: link (%) at 0.95,tfidf,100.0,False,passed = threshold meets the rule
+threshold sensitivity,caught: retweet (%) at 0.95,tfidf,100.0,False,passed = threshold meets the rule
+real duplicates,member queries,tfidf,52.0,,
+real duplicates,Duplicate Recall@5 (%),tfidf,100.0,,
+real duplicates,Duplicate Recall@10 (%),tfidf,100.0,,
+real duplicates,member queries,semantic,52.0,,
+real duplicates,Duplicate Recall@5 (%),semantic,94.23076923076923,,
+real duplicates,Duplicate Recall@10 (%),semantic,96.15384615384616,,
+"suppression, grouping off",queries,tfidf,30.0,,
+"suppression, grouping off",mean repeated family members in top 10,tfidf,3.0,,
+"suppression, grouping off",queries with any repeat (%),tfidf,100.0,,
+"suppression, grouping off",mean distinct messages in top 10 (up to 10),tfidf,7.0,,
+"suppression, grouping on",queries,tfidf,30.0,,
+"suppression, grouping on",mean repeated family members in top 10,tfidf,0.0,,
+"suppression, grouping on",queries with any repeat (%),tfidf,0.0,,
+"suppression, grouping on",mean distinct messages in top 10 (up to 10),tfidf,10.0,,
+"suppression, grouping off",queries,semantic,30.0,,
+"suppression, grouping off",mean repeated family members in top 10,semantic,3.0,,
+"suppression, grouping off",queries with any repeat (%),semantic,100.0,,
+"suppression, grouping off",mean distinct messages in top 10 (up to 10),semantic,7.0,,
+"suppression, grouping on",queries,semantic,30.0,,
+"suppression, grouping on",mean repeated family members in top 10,semantic,0.0,,
+"suppression, grouping on",queries with any repeat (%),semantic,0.0,,
+"suppression, grouping on",mean distinct messages in top 10 (up to 10),semantic,10.0,,
+filters,category filter,tfidf,,True,10 results
+filters,ranked order after filtering,tfidf,,True,
+filters,time filter,tfidf,,True,20 results
+filters,source filter,tfidf,,True,10 results
+filters,category and time together,tfidf,,True,20 results
+filters,empty filter values ignored,tfidf,,True,
+filters,unknown filter rejected,tfidf,,True,"Unknown filter 'colour'. Supported filters: board_label, source_type, status, ne"
+filters,category filter,semantic,,True,10 results
+filters,ranked order after filtering,semantic,,True,
+filters,time filter,semantic,,True,20 results
+filters,source filter,semantic,,True,10 results
+filters,category and time together,semantic,,True,20 results
+filters,empty filter values ignored,semantic,,True,
+filters,unknown filter rejected,semantic,,True,"Unknown filter 'colour'. Supported filters: board_label, source_type, status, ne"
+filters,S10 empty-query category filter,both,,True,"20 results, newest first"
+filters,country filter (case-insensitive),tfidf,,True,"returned ['test-melbourne', 'test-sydney']"
+filters,region filter,tfidf,,True,returned ['test-melbourne']
+filters,city filter,tfidf,,True,returned ['test-kl']
+filters,status filter,tfidf,,True,returned ['test-melbourne']
+filters,needs_review filter,tfidf,,True,returned ['test-melbourne']
+filters,needs_review filter given as text,tfidf,,True,returned ['test-melbourne']
+filters,country filter (case-insensitive),semantic,,True,"returned ['test-melbourne', 'test-sydney']"
+filters,region filter,semantic,,True,returned ['test-melbourne']
+filters,city filter,semantic,,True,returned ['test-kl']
+filters,status filter,semantic,,True,returned ['test-melbourne']
+filters,needs_review filter,semantic,,True,returned ['test-melbourne']
+filters,needs_review filter given as text,semantic,,True,returned ['test-melbourne']
+filters,word only in a new user report found by search(),tfidf,,True,returned ['test-new-word']
+filters,temporary reports removed by reset_index(),both,,True,0 user reports left
