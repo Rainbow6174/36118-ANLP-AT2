@@ -1,76 +1,135 @@
-# Retrieval and search (Member 5)
+# Retrieval and Search (Member 5)
 
-This folder provides related reports and keyword search for CrisisLens. `retrieve()` returns earlier reports that describe the same type of situation as a new message, and `search()` finds reports containing the words a user types. Similarity is context for the user, not a classification or a fact check.
+This folder contains the retrieval and search functions of CrisisLens. The functions show
+earlier reports related to a new message and allow users to search the boards by keyword.
+The similarity score is provided as context for the user, not as a classification or a fact
+check.
+
+## Key Deliverables
+
+Five functions are delivered for the backend, with `retrieve()` and `search()` as the two
+main functions.
+
+- **`retrieve(text, k, filters=None)`:** returns up to `k` earlier reports that describe the
+  same type of need, damage or situation as a new message.
+  - Model adopted: semantic retrieval with the sentence model `all-MiniLM-L6-v2`.
+  - The model selection is presented in Section 4 (Evaluation of retrieve() and search()) of
+    `notebooks/member5/retrieval_experiments.ipynb`.
+- **`search(query, filters=None, k=20)`:** returns reports containing the words in the query,
+  with optional filters. An empty query lists the filtered reports from newest to oldest.
+  - Model adopted: TF-IDF word matching, with every word kept in the index.
+  - The model selection is presented in Section 5.5 (Name Search) of the same notebook.
+- **`add_to_index(message)`:** adds a saved user report to the index, or updates the report
+  if its `message_id` already exists, allowing both functions to return it.
+- **`warm_up()`:** loads the indexes and the sentence model and builds the search index in
+  advance, ensuring that the first request does not wait.
+- **`reset_index()`:** reloads the saved indexes and removes the reports added in memory.
+
+Additionally, both `retrieve()` and `search()` group near-identical messages under one result
+and accept the filters listed in the notes for Member 4.
+
+## Dependency Change for the Group
+
+One dependency, namely `sentence-transformers` (version 6.1 or later, below 7), is added for
+the retrieval functions.
+
+- **Recorded files:** the dependency was tested locally and recorded in `pyproject.toml`,
+  `requirements.txt` and `uv.lock` together.
+- **Related packages:** `torch` (2.14.1) and `transformers` (5.17.0) are installed with it.
+- **Action required:** `uv sync` should be run after pulling these changes.
 
 ## Setup
 
-Run once from the repository root, after `notebooks/01_crisis_eda.ipynb` has downloaded the HumAID data:
+The indexes are not committed to the repository and should be built once on each machine.
 
-```bash
-uv run python models/retrieval/prepare.py
-uv run python models/retrieval/tfidf_retriever.py
-uv run python models/retrieval/semantic_retriever.py
-```
+1. `notebooks/01_crisis_eda.ipynb` should be run once to download the HumAID data into
+   `data/raw/`.
+2. The indexes are then built from the repository root with the command below.
 
-The scripts write about 150 MB to `models/retrieval/index/`, which is not committed. The last step embeds 76,484 messages and takes 2 to 3 minutes on a CPU. The first run also downloads the sentence model `all-MiniLM-L6-v2` (about 90 MB) from Hugging Face, which is then cached.
+   ```bash
+   uv run python models/retrieval/build_index.py
+   ```
 
-The component adds one dependency, `sentence-transformers` (version 6.1 or later, below 7), recorded in `pyproject.toml`, `requirements.txt` and `uv.lock`. It also installs `torch` (2.14.1) and `transformers` (5.17.0).
+   - **Process:** the script cleans the 76,484 HumAID messages, builds the TF-IDF index and
+     embeds the messages with the sentence model.
+   - **Output:** approximately 150 MB is written to `models/retrieval/index/`, which is
+     excluded from Git.
+   - **Run time:** the build takes 2 to 3 minutes on a CPU. The first run also downloads the
+     sentence model (approximately 90 MB), which is cached for later runs.
 
-## Usage
+## Notes for Member 4
 
-```python
-from models.retrieval.retrieval import retrieve, search, add_to_index, warm_up, reset_index
+**When the server starts**
 
-warm_up()  # once at server start, after adding the saved user reports
+- Add each user report stored in the database with `add_to_index()`. User reports are held in
+  memory only, so they are cleared whenever the server stops.
+- Then call `warm_up()` once, which loads the sentence model in advance (approximately 8
+  seconds).
 
-related = retrieve("Families need drinking water at the shelter", k=5)
-results = search("bridge", filters={"board_label": "infrastructure_and_utility_damage"}, k=20)
-```
+**When a report is saved or its board is corrected**
 
-| Function | Purpose |
-| --- | --- |
-| `retrieve(text, k, filters=None)` | Up to `k` reports related to a message, ranked by meaning (semantic retrieval) |
-| `search(query, filters=None, k=20)` | Keyword search ranked by TF-IDF word matching (an empty query lists the filtered reports newest first) |
-| `add_to_index(message)` | Adds a saved user report, or updates it if its `message_id` is already indexed |
-| `warm_up()` | Loads the indexes and the model and builds the search index, so the first request is fast |
-| `reset_index()` | Reloads the saved indexes and drops reports added in memory |
+- Call `add_to_index()` with the report, so both functions can return it straight away,
+  including its new words in `search()`.
 
-Both `retrieve()` and `search()` also accept `method="tfidf"` or `method="semantic"`, and `exclude_ids` to leave out given IDs.
+**When showing results**
 
-## Result fields
+- For a saved report, pass `exclude_ids=[message_id]` to `retrieve()`. Otherwise, the report is
+  returned as its own first result.
+- A message or query with no words left after cleaning (for example, only a link or an
+  @username) returns no reports, while an empty query lists reports from newest to oldest.
 
-Each result is a dictionary of plain Python values, ready to return as JSON:
+**Errors and parallel requests**
+
+- An unknown filter or method raises a `ValueError`, which can be returned as a 422 error.
+- The functions run one at a time through a shared lock, so they are safe to call from
+  parallel requests.
+
+**Differences from the plan**
+
+The functions follow the plan, with the additions below. All filter names in the plan are
+kept.
+
+- **Extra functions:** `add_to_index()`, `warm_up()` and `reset_index()` are added to keep
+  user reports in the index and to load the model before the first request.
+- **Extra parameter:** `exclude_ids` leaves out the given IDs, such as the report being
+  viewed.
+- **Extra result fields:** `duplicate_count` and `duplicate_ids` show the near-identical
+  messages grouped under each result. These fields are not part of the planned response and
+  should be added to the API response if they are to be shown.
+- **Extra filters:** `created_after` and `created_before` filter reports by posting time.
+
+**Result fields**
+
+Each result is returned as a dictionary with the fields below.
 
 | Field | Meaning |
 | --- | --- |
-| `id` | `history-<tweet_id>` for historical messages, or the `message_id` of a user report |
-| `similarity` | Cosine similarity, higher is closer (`None` for an empty search) |
+| `id` | `history-<tweet_id>` or the `message_id` of a user report |
+| `similarity` | Cosine similarity, higher is closer |
 | `board_label` | Board of the report |
 | `text_preview` | Original message, cut at 200 characters |
 | `source_type` | `humaid_history` or `user` |
 | `duplicate_count`, `duplicate_ids` | Near-identical messages grouped under this result |
 
-## Filters
+**Filters**
 
-Each filter takes one value or a list. Empty values are ignored.
+Each filter accepts one value or a list of values, and empty values are ignored.
 
-| Filter | Applies to | Behaviour |
-| --- | --- | --- |
-| `board_label`, `source_type` | All reports | Exact match |
-| `status`, `needs_review` | User reports | Exact match (`needs_review` also accepts "true" or "false" as text) |
-| `country`, `region`, `city` | User reports | Match ignoring capitals and surrounding spaces |
-| `created_after`, `created_before` | All reports | Posting time on or after, and on or before, the given date (UTC) |
+- **`board_label` and `source_type`:** exact match, applied to all reports.
+- **`status` and `needs_review`:** exact match, applied to user reports. `needs_review` also
+  accepts "true" or "false" as text.
+- **`country`, `region` and `city`:** match ignoring capital letters and surrounding spaces,
+  applied to user reports.
+- **`created_after` and `created_before`:** posting time on or after, and on or before, the
+  given date and time (UTC), applied to all reports. A date without a time means midnight at
+  the start of that day.
 
-## Notes for the backend
+## Files
 
-- **User reports:** call `add_to_index()` after each report is saved and again after a board correction. Reports are held in memory, so add the saved reports again when the server starts, before `warm_up()`.
-- **Related reports for a saved report:** pass `exclude_ids=[message_id]`, otherwise the report itself is returned first with similarity 1.0.
-- **New words:** the first `search()` after `add_to_index()` rebuilds the search index (under a second), so every word in the new report can be searched.
-- **Errors:** an unknown filter name or method raises `ValueError`, which the API can return as a 422 response.
-- **Empty text:** `retrieve()` returns no reports for a message with no words left after cleaning, such as only a link or an @username.
-- **Several requests at once:** the functions take turns through one lock, so they are safe to call from parallel requests.
-- **Word forms:** `search()` matches whole words only, so "bridge" does not find "bridges".
+The folder contains the files below.
 
-## Evidence
-
-The evaluation is in `notebooks/member5/retrieval_experiments.ipynb`, with results in `outputs/results/retrieval/`. `metadata.json` records the selected methods and their evidence, the model version, the cleaning steps and the filters.
+| File | Contents |
+| --- | --- |
+| `retrieval.py` | The functions above |
+| `build_index.py` | Cleaning and index building |
+| `evaluate.py` | Helper functions for the evaluation |

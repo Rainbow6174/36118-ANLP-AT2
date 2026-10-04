@@ -1,4 +1,4 @@
-"""Retrieval and search interface used by the backend (Member 4).
+"""Retrieval and search functions used by the backend (Member 4).
 
     from models.retrieval.retrieval import retrieve, search, add_to_index, warm_up
 
@@ -15,9 +15,7 @@ not a label prediction or a fact check.
 
 Setup (once, from the repository root, after the EDA notebook):
 
-    uv run python models/retrieval/prepare.py
-    uv run python models/retrieval/tfidf_retriever.py
-    uv run python models/retrieval/semantic_retriever.py
+    uv run python models/retrieval/build_index.py
 
 retrieve() ranks with DEFAULT_METHOD (semantic), selected by the evaluation
 in notebooks/member5/. search() is designed for keyword searching, so it ranks
@@ -45,15 +43,15 @@ import pandas as pd
 from scipy import sparse
 
 try:
-    from models.retrieval.prepare import HISTORY_PATH, clean_text, repair_text
-    from models.retrieval.semantic_retriever import (
-        embed_texts, load_embeddings, load_model, semantic_scores,
+    from models.retrieval.build_index import (
+        HISTORY_PATH, SEARCH_SETTINGS, clean_text, embed_texts, fit_tfidf, load_embeddings,
+        load_model, load_tfidf, repair_text, semantic_scores, tfidf_scores,
     )
-    from models.retrieval.tfidf_retriever import SEARCH_SETTINGS, fit_tfidf, load_tfidf, tfidf_scores
 except ModuleNotFoundError:  # run as a script from models/retrieval/
-    from prepare import HISTORY_PATH, clean_text, repair_text
-    from semantic_retriever import embed_texts, load_embeddings, load_model, semantic_scores
-    from tfidf_retriever import SEARCH_SETTINGS, fit_tfidf, load_tfidf, tfidf_scores
+    from build_index import (
+        HISTORY_PATH, SEARCH_SETTINGS, clean_text, embed_texts, fit_tfidf, load_embeddings,
+        load_model, load_tfidf, repair_text, semantic_scores, tfidf_scores,
+    )
 
 # Two results are grouped when their TF-IDF similarity to each other reaches
 # this value. The same rule is used whichever method ranks the results.
@@ -95,7 +93,7 @@ def _get_state() -> dict:
     if _state is None:
         if not HISTORY_PATH.exists():
             raise FileNotFoundError(
-                f"{HISTORY_PATH} not found. Run models/retrieval/prepare.py first."
+                f"{HISTORY_PATH} not found. Run models/retrieval/build_index.py first."
             )
         history = pd.read_parquet(HISTORY_PATH)
         for column in ("needs_review", "country", "region", "city"):
@@ -316,11 +314,14 @@ def search(
 ) -> list[dict]:
     """Keyword search with filters, ranked by TF-IDF word matching.
 
-    An empty query returns the reports that match the filters, newest first.
-    Their similarity is None.
+    An empty query returns the reports that match the filters, newest first,
+    with similarity None. A query with text but no words left after cleaning
+    (for example only a link or an @username) returns no reports.
     """
     if clean_text(query):
         return _rank(_scores(query, method, for_search=True), k, filters, exclude_ids)
+    if query is not None and str(query).strip():
+        return []
 
     records = _get_state()["records"]
     mask = _filter_mask(records, filters)

@@ -1,4 +1,10 @@
 part,check,method,value,passed,details
+real duplicates,member queries,tfidf,52.0,,
+real duplicates,Duplicate Recall@5 (%),tfidf,100.0,,
+real duplicates,Duplicate Recall@10 (%),tfidf,100.0,,
+real duplicates,member queries,semantic,52.0,,
+real duplicates,Duplicate Recall@5 (%),semantic,94.23076923076923,,
+real duplicates,Duplicate Recall@10 (%),semantic,96.15384615384616,,
 threshold sensitivity,copies caught (%) at 0.80,tfidf,100.0,False,passed = threshold meets the rule
 threshold sensitivity,potential grouping rate (%) at 0.80,tfidf,4.0,False,passed = threshold meets the rule
 threshold sensitivity,caught: case_punctuation (%) at 0.80,tfidf,100.0,False,passed = threshold meets the rule
@@ -19,12 +25,12 @@ threshold sensitivity,potential grouping rate (%) at 0.95,tfidf,4.0,False,passed
 threshold sensitivity,caught: case_punctuation (%) at 0.95,tfidf,100.0,False,passed = threshold meets the rule
 threshold sensitivity,caught: link (%) at 0.95,tfidf,100.0,False,passed = threshold meets the rule
 threshold sensitivity,caught: retweet (%) at 0.95,tfidf,100.0,False,passed = threshold meets the rule
-real duplicates,member queries,tfidf,52.0,,
-real duplicates,Duplicate Recall@5 (%),tfidf,100.0,,
-real duplicates,Duplicate Recall@10 (%),tfidf,100.0,,
-real duplicates,member queries,semantic,52.0,,
-real duplicates,Duplicate Recall@5 (%),semantic,94.23076923076923,,
-real duplicates,Duplicate Recall@10 (%),semantic,96.15384615384616,,
+normalised duplicate groups,member queries,tfidf,52.0,,
+normalised duplicate groups,Duplicate Recall@5 (%),tfidf,100.0,,
+normalised duplicate groups,Duplicate Recall@10 (%),tfidf,100.0,,
+normalised duplicate groups,member queries,semantic,52.0,,
+normalised duplicate groups,Duplicate Recall@5 (%),semantic,94.23076923076923,,
+normalised duplicate groups,Duplicate Recall@10 (%),semantic,96.15384615384616,,
 "suppression, grouping off",queries,tfidf,30.0,,
 "suppression, grouping off",mean repeated family members in top 10,tfidf,3.0,,
 "suppression, grouping off",queries with any repeat (%),tfidf,100.0,,

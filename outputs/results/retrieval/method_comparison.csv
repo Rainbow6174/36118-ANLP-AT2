@@ -3,32 +3,26 @@ tfidf_settings,all,all,L1,messages,53531.0
 tfidf_settings,all,all,L2,messages,53531.0
 tfidf_settings,all,all,L1,vocabulary,20242.0
 tfidf_settings,all,all,L2,vocabulary,113949.0
-tfidf_settings,all,all,L1,build_seconds,0.45
-tfidf_settings,all,all,L2,build_seconds,1.08
+tfidf_settings,all,all,L1,build_seconds,0.47
+tfidf_settings,all,all,L2,build_seconds,1.38
 tfidf_settings,all,all,L1,size_mb,12.6
 tfidf_settings,all,all,L2,size_mb,24.1
-tfidf_settings,all,all,L1,label_match@5,0.499
-tfidf_settings,all,all,L2,label_match@5,0.5
-tfidf_settings,all,all,L1,label_match@10,0.483
-tfidf_settings,all,all,L2,label_match@10,0.483
-tfidf_settings,all,all,L1,mean_query_ms,26.158
-tfidf_settings,all,all,L2,mean_query_ms,36.678
 tfidf_settings,all,all,L1,precision@5,0.64
 tfidf_settings,all,all,L2,precision@5,0.72
 tfidf_settings,all,all,L1,precision@10,0.63
 tfidf_settings,all,all,L2,precision@10,0.65
 tfidf_settings,all,all,L1,selected,1.0
 tfidf_settings,all,all,L2,selected,0.0
-query_time_and_cost,all,all,tfidf,mean_query_ms,25.52916904186042
-query_time_and_cost,all,all,semantic,mean_query_ms,31.975068394781257
+query_time_and_cost,all,all,tfidf,mean_query_ms,28.05490747231465
+query_time_and_cost,all,all,semantic,mean_query_ms,33.97009101090356
 query_time_and_cost,all,all,tfidf,timed_queries,195.0
 query_time_and_cost,all,all,semantic,timed_queries,195.0
-query_time_and_cost,all,all,tfidf,build_seconds,0.6
-query_time_and_cost,all,all,semantic,build_seconds,119.41
+query_time_and_cost,all,all,tfidf,build_seconds,0.58
+query_time_and_cost,all,all,semantic,build_seconds,123.48
 query_time_and_cost,all,all,tfidf,size_mb,14.4
 query_time_and_cost,all,all,semantic,size_mb,94.2
 query_time_and_cost,all,all,tfidf,model_load_seconds,0.0
-query_time_and_cost,all,all,semantic,model_load_seconds,8.0
+query_time_and_cost,all,all,semantic,model_load_seconds,8.05
 final_comparison,retrieval,all,semantic,precision@5,0.8
 final_comparison,retrieval,all,tfidf,precision@5,0.6066666666666667
 final_comparison,retrieval by origin,original,semantic,precision@5,0.79
@@ -167,7 +161,7 @@ method_selection,retrieve(),all,semantic vs tfidf,Precision@5 gain,0.193
 method_selection,retrieve(),all,semantic vs tfidf,required gain,0.05
 method_selection,retrieve(),all,semantic vs tfidf,at least as good (count),9.0
 method_selection,retrieve(),all,semantic vs tfidf,compared,10.0
-method_selection,retrieve(),all,semantic vs tfidf,semantic mean ms,32.0
+method_selection,retrieve(),all,semantic vs tfidf,semantic mean ms,34.0
 method_selection,retrieve(),all,semantic vs tfidf,semantic selected,1.0
 name_search,1 message,all,tfidf,names in collection,6607.0
 name_search,1 message,all,tfidf,names searched,20.0

@@ -16,15 +16,11 @@ import numpy as np
 import pandas as pd
 
 try:
-    from models.retrieval.prepare import clean_text
+    from models.retrieval.build_index import clean_text, embed_texts, fit_tfidf, semantic_scores, tfidf_scores
     from models.retrieval.retrieval import rank_scores
-    from models.retrieval.semantic_retriever import embed_texts, semantic_scores
-    from models.retrieval.tfidf_retriever import fit_tfidf, tfidf_scores
 except ModuleNotFoundError:  # run from models/retrieval/
-    from prepare import clean_text
+    from build_index import clean_text, embed_texts, fit_tfidf, semantic_scores, tfidf_scores
     from retrieval import rank_scores
-    from semantic_retriever import embed_texts, semantic_scores
-    from tfidf_retriever import fit_tfidf, tfidf_scores
 
 TFIDF_SETTINGS = {
     "L1": {"lowercase": True, "ngram_range": (1, 1), "min_df": 2, "sublinear_tf": True, "norm": "l2"},
@@ -88,26 +84,6 @@ def build_semantic_index(tfidf_index: dict, model, batch_size: int = 64) -> dict
 def rank_semantic(index: dict, text: str, k: int, model, exclude_ids=None, filters=None) -> list[dict]:
     scores = semantic_scores(text, model, index["embeddings"])
     return rank_scores(scores, k, index["records"], index["matrix"], filters, exclude_ids)
-
-
-def label_match(index: dict, queries: pd.DataFrame, ks: tuple[int, ...] = (5, 10)) -> pd.DataFrame:
-    """Share of each query's top k results with the same HumAID label as the query.
-
-    An approximate, automatic score: one label covers many situations and some
-    labels are inconsistent, so it is used only to compare settings. Missing
-    results count as non-matching. Also records the time of each query.
-    """
-    rows = []
-    for query in queries.itertuples():
-        start = time.perf_counter()
-        results = rank_tfidf(index, query.text_display, max(ks))
-        seconds = time.perf_counter() - start
-        labels = [r["board_label"] for r in results]
-        row = {"query_id": query.id, "board_label": query.board_label, "query_ms": seconds * 1000}
-        for k in ks:
-            row[f"label_match@{k}"] = sum(label == query.board_label for label in labels[:k]) / k
-        rows.append(row)
-    return pd.DataFrame(rows)
 
 
 def rankings_table(results_by_method: dict[str, dict[str, list[dict]]]) -> pd.DataFrame:
