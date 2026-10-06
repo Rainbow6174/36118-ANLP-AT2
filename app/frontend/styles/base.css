@@ -1,0 +1,46 @@
+/* Page defaults, keyboard focus ring and the type scale. */
+
+body {
+    background-color: var(--color-background);
+    color: var(--color-text-main);
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+}
+
+a {
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Keyboard focus ring. */
+:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        transition-duration: 0.001ms !important;
+        animation-duration: 0.001ms !important;
+    }
+}
+
+/* Type scale: Display / H1 / H2 / H3 / Body / Body small / Caption. */
+.text-display { font-size: 40px; line-height: 48px; font-weight: 700; }
+.text-h1 { font-size: 32px; line-height: 40px; font-weight: 700; }
+.text-h2 { font-size: 24px; line-height: 32px; font-weight: 700; }
+.text-h3 { font-size: 18px; line-height: 26px; font-weight: 600; }
+.text-body { font-size: 16px; line-height: 24px; font-weight: 400; }
+.text-body-sm {
+    font-size: 14px;
+    line-height: 20px;
+    color: var(--color-text-secondary);
+}
+.text-caption { font-size: 12px; line-height: 16px; font-weight: 500; }
+
+/* Links need their own rule: the global one does not reach them. */
+a:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+}

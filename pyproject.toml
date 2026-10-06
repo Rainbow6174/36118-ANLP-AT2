@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "NLP-assisted organisation of new disaster messages"
 requires-python = ">=3.11"
 dependencies = [
+    "httpx>=0.28.1",
     "ipywidgets>=8.1.9",
     "jupyterlab>=4,<5",
     "matplotlib>=3.8,<4",
@@ -22,3 +23,7 @@ dev = [
     "pytest>=9.1.1",
     "ruff>=0.16.6",
 ]
+
+[tool.ruff.lint.per-file-ignores]
+"app/frontend/layout.py" = ["SIM117"]
+"app/frontend/pages/*.py" = ["SIM117"]

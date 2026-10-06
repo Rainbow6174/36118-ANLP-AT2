@@ -41,6 +41,25 @@ python -m jupyter lab
 
 Use Python 3.11 or later. The EDA notebook downloads and prepares its own data. No prepared local dataset is needed before it runs.
 
+### Run the frontend
+
+The web app is in `app/frontend/` (NiceGUI). From the repository root:
+
+```bash
+uv sync
+uv run python app/frontend/main.py
+```
+
+Open http://localhost:8080. Without a backend address it runs in demo mode (built-in sample reports and a keyword classifier, with a "Demo mode" notice). To use the real REST API:
+
+```bash
+CRISISLENS_API_URL=http://localhost:8000 uv run python app/frontend/main.py
+```
+
+On PowerShell: `$env:CRISISLENS_API_URL="http://localhost:8000"; uv run python app/frontend/main.py`
+
+Restart the app after editing Python or CSS files.
+
 ### Dependency changes
 
 The checked-in environment covers the EDA and shared project code. If your work needs another package, install and test it locally first. After the local test works, update `pyproject.toml`, `requirements.txt` and `uv.lock` together, record the version and tell the team before changing the shared files. A planned package is not added to the repository until it has passed a local test.

@@ -1,0 +1,268 @@
+.crisis-home {
+    width: 100%;
+    gap: 24px;
+}
+
+.crisis-home-hero {
+    width: 100%;
+    background:
+        radial-gradient(
+            circle at 88% 20%,
+            rgba(15, 107, 102, 0.10),
+            transparent 32%
+        ),
+        var(--color-primary-soft);
+    border: 1px solid rgba(15, 107, 102, 0.08);
+    border-radius: 20px;
+    padding: 24px 32px;
+    gap: 10px;
+}
+
+.crisis-hero-title {
+    color: var(--color-text-main);
+    font-size: 34px;
+    line-height: 42px;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+.crisis-hero-copy {
+    color: var(--color-text-secondary);
+    font-size: 16px;
+    line-height: 26px;
+}
+
+/* Action row: the main button and the search box, side by side. */
+.crisis-hero-actions {
+    align-items: center;
+    margin-top: 4px;
+}
+
+.crisis-hero-actions > .crisis-btn {
+    padding: 0 24px;
+}
+
+/* A limited width and a white field, so the dark button does not outweigh the search box. */
+.crisis-hero-actions .q-field {
+    flex: 0 1 520px;
+}
+
+.crisis-hero-actions .q-field--outlined .q-field__control {
+    background: var(--color-surface);
+}
+
+.crisis-search-examples {
+    align-items: center;
+    gap: 4px 8px;
+    color: var(--color-text-secondary);
+    font-size: 14px;
+}
+
+.crisis-search-examples a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 14px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-primary);
+    font-weight: 500;
+}
+
+.crisis-search-examples a:hover {
+    border-color: var(--color-primary);
+    background: var(--color-primary-soft);
+}
+
+/* Categories on the left, recent reports on the right. */
+.crisis-home-discovery {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) minmax(0, 2fr);
+    align-items: start;
+    gap: 24px;
+    width: 100%;
+}
+
+.crisis-home-categories,
+.crisis-home-updates {
+    width: 100%;
+    min-width: 0;
+    gap: 12px;
+}
+
+/* Both column titles stay on one line, level with each other; the heading shrinks first. */
+.crisis-home-categories .crisis-section-head,
+.crisis-home-updates .crisis-section-head {
+    flex-wrap: nowrap;
+    min-height: 44px;
+}
+
+.crisis-home-categories .crisis-section-head > :first-child,
+.crisis-home-updates .crisis-section-head > :first-child {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.crisis-home-categories .crisis-section-head .crisis-btn,
+.crisis-home-updates .crisis-section-head .crisis-btn {
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+/* A narrow column keeps only the button's icon (font-size 0, as Quasar's display rules win). */
+@container (max-width: 289px) {
+    .crisis-home-categories .crisis-section-head .crisis-btn .block {
+        font-size: 0;
+    }
+
+    .crisis-home-categories .crisis-section-head .crisis-btn .q-icon {
+        margin: 0;
+    }
+}
+
+/* Lets the category boxes size their text from the width of this column. */
+.crisis-home-categories {
+    container-type: inline-size;
+}
+
+.crisis-home-category-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    width: 100%;
+}
+
+/* Expanded list: two columns whose padding and text scale with the column width. */
+.crisis-home-category-list--expanded {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.crisis-home-category-list--expanded .crisis-home-category-link {
+    gap: clamp(6px, 2cqw, 10px);
+    padding: 8px clamp(8px, 2.6cqw, 12px);
+    font-size: clamp(12px, 3.8cqw, 14px);
+    line-height: 1.25;
+}
+
+.crisis-home-category-list--expanded .crisis-home-category-link .q-icon {
+    font-size: clamp(16px, 5cqw, 20px);
+}
+
+@container (max-width: 259px) {
+    .crisis-home-category-list--expanded {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+.crisis-home-category-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 10px 14px;
+
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-left: 4px solid var(--category-accent);
+    border-radius: 10px;
+
+    color: var(--color-text-main);
+    font-weight: 500;
+}
+
+.crisis-home-category-link .q-icon {
+    flex-shrink: 0;
+    color: var(--category-accent);
+}
+
+.crisis-home-category-link > div,
+.crisis-home-category-link > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.crisis-home-category-link:hover {
+    background: var(--color-surface);
+    border-color: var(--category-accent);
+}
+
+.crisis-home-report-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+/* Recent reports: tinted by category, text cut to two lines. */
+.crisis-home-updates .crisis-report-card {
+    padding: 14px 16px;
+    gap: 8px;
+    background: color-mix(
+        in srgb,
+        var(--category-bg) 45%,
+        white
+    );
+}
+
+.crisis-home-updates .crisis-report-text {
+    -webkit-line-clamp: 2;
+}
+
+.crisis-home-updates .crisis-category-badge {
+    background: rgba(255, 255, 255, 0.82);
+    border: 1px solid var(--category-accent);
+    color: var(--category-accent);
+}
+
+/* Small screens. */
+@media (max-width: 760px) {
+    .crisis-home-hero {
+        padding: 24px;
+    }
+
+    .crisis-hero-title {
+        font-size: 30px;
+        line-height: 38px;
+    }
+
+    .crisis-hero-actions > .crisis-btn {
+        width: 100%;
+    }
+
+    .crisis-hero-actions .q-field {
+        flex-basis: 100%;
+    }
+
+    /* One example fewer, so they fit on two lines. */
+    .crisis-search-examples a:nth-child(5) {
+        display: none;
+    }
+
+    .crisis-home-discovery {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    /* Stacked columns need no alignment, so the title may wrap. */
+    .crisis-home-updates .crisis-section-head {
+        flex-wrap: wrap;
+    }
+
+    .crisis-home-updates .crisis-section-head > :first-child {
+        white-space: normal;
+    }
+
+    .crisis-home-category-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .crisis-home-category-link {
+        padding: 10px;
+        font-size: 13px;
+    }
+}

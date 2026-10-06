@@ -1,0 +1,251 @@
+/* Page frame: top navigation, content width, and layout helpers shared by pages. */
+
+/* Skip link: off screen until a keyboard user tabs to it. */
+.crisis-skip-link {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 3000;
+    padding: 10px 16px;
+    border-radius: var(--radius-control);
+    background: var(--color-primary);
+    color: #FFFFFF;
+    font-weight: 500;
+    transform: translateY(-200%);
+}
+
+.crisis-skip-link:focus {
+    transform: translateY(0);
+}
+
+/* Top navigation */
+.crisis-header {
+    width: 100%;
+    background: var(--color-header-background) !important;
+    border-bottom: 1px solid var(--color-header-border);
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.crisis-nav {
+    width: 100%;
+    max-width: 1600px;
+    min-height: 64px;
+    margin: 0 auto;
+    padding: 0 48px;
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.crisis-logo {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    min-height: 44px;
+    text-decoration: none;
+}
+
+.crisis-brand-image {
+    display: block;
+    width: 200px;
+    height: auto;
+}
+
+.crisis-nav-links {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.crisis-nav-link {
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 16px;
+    border-radius: 999px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--color-text-secondary);
+    transition: background-color 150ms, color 150ms;
+}
+
+.crisis-nav-link:hover,
+.crisis-nav-link--active {
+    background-color: var(--color-primary-soft);
+    color: var(--color-primary);
+}
+
+/* Negative margins cancel NiceGUI's 16px page padding, so the bands are full width. */
+.crisis-notices {
+    width: calc(100% + 32px);
+    margin: -16px -16px 0;
+}
+
+/* The safety line: calm colours, not an alarm. */
+.crisis-safety-strip {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 6px 48px;
+    background: var(--color-notice-soft);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    line-height: 20px;
+    text-align: center;
+}
+
+.crisis-safety-strip .q-icon {
+    flex-shrink: 0;
+    color: var(--color-primary);
+}
+
+/* Shown only in demo mode. */
+.crisis-demo-banner {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 8px 48px;
+    background: var(--color-review-soft);
+    border-bottom: 1px solid var(--color-review-border);
+    color: var(--color-review);
+    font-size: 14px;
+    line-height: 20px;
+    text-align: center;
+}
+
+/* Hamburger button, shown on small screens only. */
+.crisis-mobile-menu {
+    display: none !important;
+    color: var(--color-primary) !important;
+    min-width: 44px;
+    min-height: 44px;
+}
+
+/* Page content */
+.crisis-main {
+    width: 100%;
+    max-width: 1360px;
+    margin: 0 auto;
+    padding: 24px 48px 64px;
+    gap: 32px;
+    box-sizing: border-box;
+}
+
+@media (max-width: 920px) {
+    .crisis-nav {
+        min-height: 56px;
+        padding: 0 20px;
+        flex-wrap: nowrap;
+        gap: 12px;
+    }
+
+    .crisis-nav-links {
+        display: none !important;
+    }
+
+    .crisis-mobile-menu {
+        display: inline-flex !important;
+    }
+
+    .crisis-brand-image {
+        width: min(170px, 50vw);
+    }
+
+    .crisis-main {
+        padding: 16px 20px 48px;
+        gap: 24px;
+    }
+
+    .crisis-demo-banner {
+        padding: 8px 20px;
+    }
+
+    .crisis-safety-strip {
+        padding: 6px 20px;
+    }
+}
+
+/* Layout helpers used by several pages */
+.crisis-page {
+    width: 100%;
+    gap: 24px;
+    align-items: stretch;
+}
+
+.crisis-section {
+    width: 100%;
+    gap: 16px;
+    align-items: stretch;
+}
+
+.crisis-section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+.crisis-category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    width: 100%;
+}
+
+.crisis-search-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+    width: 100%;
+}
+
+.crisis-search-row .q-field {
+    flex: 1 1 260px;
+    width: auto;
+    min-width: 0;
+}
+
+.crisis-search-row .crisis-btn {
+    min-height: 56px;
+}
+
+/* Search and filters stay under the header while results scroll. */
+.crisis-search-controls {
+    position: sticky;
+    top: var(--header-height);
+    z-index: 10;
+    width: 100%;
+    gap: 16px;
+    padding: 12px 0;
+    background: var(--color-background);
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* On a phone the stacked filters would fill the screen, so they scroll away. */
+@media (max-width: 600px) {
+    .crisis-search-controls {
+        position: static;
+        border-bottom: 0;
+    }
+}
+
+.crisis-filter-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 16px;
+    width: 100%;
+}
+
+@media (max-width: 700px) {
+    .crisis-category-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
