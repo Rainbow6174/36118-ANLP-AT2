@@ -243,13 +243,29 @@ The comparison also helps interpret the source of model improvements. The baseli
 
 ## Cross-event generalisation
 
-The project requires a common leave-one-event-out evaluation in which the model is trained on 18 disaster events, tested on the remaining unseen event, and the procedure is repeated across all 19 events.
+For the final shared cross-event comparison, the team standardised on the 13-event `events_set1_47K` subset and held out `cyclone_idai_2019` as the unseen disaster. This is the same event subset and held-out test event used by the contextual-model evaluation.
 
-Member 2's cross-event result is currently **pending the shared Member 4 evaluation harness**.
+All `cyclone_idai_2019` training and validation rows were removed before fitting the cross-event baseline. The previously frozen TF-IDF and Logistic Regression configuration was reused without further tuning. The model was trained on the 27,628 training messages from the remaining 12 events; the 4,021 non-held-out validation messages were not used to retune the baseline. Evaluation used Member 4's shared cross-event harness on the 779 `cyclone_idai_2019` test messages.
 
-No cross-event score is reported here yet. In particular, Member 3's earlier experiment using a 13-event subset with `cyclone_idai_2019` held out is a different protocol and is not treated as directly comparable to the planned shared Member 2 evaluation.
+| Metric | Held-out `cyclone_idai_2019` |
+| --- | ---: |
+| Macro-F1 | **0.5760** |
+| Balanced accuracy | 0.5593 |
+| Log loss | 0.6882 |
+| ECE | 0.0772 |
+| Auto-accept coverage | 26.83% |
+| Accepted-sample risk | 5.26% |
+| Review rate | 73.17% |
+| Auto-accepted messages | 209 |
+| Messages requiring review | 570 |
 
-When the common harness is available, the packaged baseline will be evaluated with the shared 18-train / 1-held-out protocol and the resulting cross-event metrics will be added to this section.
+The held-out macro-F1 of 0.5760 is 0.1502 below the baseline's official seen-test macro-F1 of 0.7262. This difference should not be interpreted as a pure within-model distribution-shift estimate because the cross-event model is retrained on the smaller 12-event training subset rather than the full official training split. It nevertheless shows that the lexical baseline is substantially less effective in this unseen-event setting.
+
+The frozen review threshold of `0.8894472361809045` was transferred unchanged from the official validation analysis. On the held-out event it reduced automatic coverage to 26.83%, but accepted-sample risk was 5.26%, slightly above the original 5% target. The threshold was not retuned on the held-out event. This is an important reliability result: a threshold selected on seen data does not guarantee the same risk level after distribution shift.
+
+Per-label performance also varies substantially. `injured_or_dead_people` remained strong (F1 0.9240), followed by `rescue_volunteering_or_donation_effort` (0.8629) and `infrastructure_and_utility_damage` (0.8529). In contrast, `caution_and_advice` fell to 0.3478, `not_humanitarian` to 0.3784, and `requests_or_urgent_needs` to 0.4000. `missing_or_found_people` has only four held-out examples and therefore must not be interpreted as a stable class-level estimate.
+
+Under the same 13-event / `cyclone_idai_2019` evaluation setup, Member 3 reports unseen-event macro-F1 of approximately 0.697 for DistilBERT and 0.718 for Twitter-RoBERTa. The baseline's 0.5760 therefore supports the conclusion that contextual models generalise better than the sparse lexical baseline on this held-out disaster. Because the evidence comes from a single held-out event, it should still be treated as a targeted distribution-shift stress test rather than proof of general robustness across all disasters.
 
 ## Limitations
 
@@ -259,7 +275,7 @@ First, TF-IDF is fundamentally lexical. It can represent discriminative words, p
 
 Second, the EDA identified a small number of duplicate messages, including normalised duplicate groups crossing official split boundaries. This creates a limited potential source of leakage and should be acknowledged when interpreting official-split results.
 
-Third, event-specific words, hashtags, locations and named entities may become shortcuts for a lexical model. Strong performance on the official random-style split therefore does not establish robustness to unseen disasters; this is why the project also requires common cross-event evaluation.
+Third, event-specific words, hashtags, locations and named entities may become shortcuts for a lexical model. The held-out `cyclone_idai_2019` result confirms that performance can fall substantially outside the official seen-event setting. However, only one event is held out in the final 13-event protocol, so this experiment does not establish robustness across all disaster types.
 
 Fourth, the human-review threshold is deliberately conservative. It captures most test errors but requires review of more than sixty percent of messages, which may be operationally expensive at scale.
 

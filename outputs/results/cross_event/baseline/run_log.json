@@ -1,0 +1,11 @@
+{
+  "model_name": "word_char_tfidf_logistic_regression_cross_event",
+  "events_dir": "data/raw/humaid_events",
+  "out_dir": "outputs/results/cross_event/baseline",
+  "events_evaluated": [
+    "cyclone_idai_2019"
+  ],
+  "n_events": 1,
+  "total_runtime_seconds": 6.806639200076461,
+  "source_test_file": "data/raw/humaid_events/cyclone_idai_2019__test.json"
+}

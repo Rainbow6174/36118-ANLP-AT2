@@ -113,8 +113,58 @@
     "class_order_verified": true
   },
   "cross_event_evaluation": {
-    "status": "pending Member 4 shared harness",
-    "protocol": "train on 18 events, hold out 1 unseen event, repeat across all 19 events",
-    "result": null
+    "status": "complete",
+    "protocol_name": "team_agreed_13_event_single_holdout",
+    "protocol": "13-event subset; hold out cyclone_idai_2019 completely from training and validation; train on the remaining 12 event train splits; evaluate on cyclone_idai_2019 test only",
+    "held_out_event": "cyclone_idai_2019",
+    "events": [
+      "canada_wildfires_2016",
+      "cyclone_idai_2019",
+      "ecuador_earthquake_2016",
+      "greece_wildfires_2018",
+      "hurricane_harvey_2017",
+      "hurricane_irma_2017",
+      "hurricane_maria_2017",
+      "hurricane_matthew_2016",
+      "italy_earthquake_aug_2016",
+      "kaikoura_earthquake_2016",
+      "maryland_floods_2018",
+      "puebla_mexico_earthquake_2017",
+      "srilanka_floods_2017"
+    ],
+    "n_events_in_subset": 13,
+    "rows": {
+      "train_after_holdout": 27628,
+      "dev_after_holdout": 4021,
+      "heldout_test": 779
+    },
+    "training_policy": {
+      "training_data": "train splits from the 12 non-held-out events only",
+      "dev_used_for_tuning": false,
+      "frozen_configuration_reused": true,
+      "heldout_event_used_for_tuning": false
+    },
+    "shared_evaluator": "Member 4 evaluation/cross_event harness",
+    "heldout_metrics": {
+      "macro_f1": 0.5759964954723269,
+      "balanced_accuracy": 0.5593271722540388,
+      "log_loss": 0.6881711651785555,
+      "expected_calibration_error": 0.07724912739770247
+    },
+    "selective_prediction": {
+      "review_threshold": 0.8894472361809045,
+      "threshold_source": "frozen official-split validation threshold",
+      "target_risk": 0.05,
+      "coverage": 0.2682926829268293,
+      "risk": 0.052631578947368474,
+      "review_rate": 0.7317073170731707,
+      "auto_accepted": 209,
+      "needs_review": 570,
+      "retuned_on_heldout_event": false
+    },
+    "low_support_labels": {
+      "missing_or_found_people": 4
+    },
+    "training_runtime_seconds": 30.331965000135824
   }
 }
