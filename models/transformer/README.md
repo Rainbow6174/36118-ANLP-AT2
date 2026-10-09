@@ -23,12 +23,10 @@ models/transformer/
 
 ## Dependencies
 
-```
-torch
-transformers
-```
-
-Pin to whatever the API side already uses to avoid version drift.
+The shared environment records `torch >=2.2,<3` and
+`transformers >=4.40,<5` in `pyproject.toml`, `requirements.txt` and
+`uv.lock`. Run `uv sync` from the repository root. Do not install a separate
+Transformer version for this model package.
 
 ## Public contract (matches repo README)
 

@@ -59,24 +59,27 @@ The indexes are not committed to the repository and should be built once on each
      run also downloads the sentence model (approximately 90 MB), which is cached for later
      runs.
 
-## Notes for Member 4
+## Backend integration
+
+`app/backend/services.py` already connects this module to the FastAPI service
+without moving its files.
 
 **When the server starts**
 
-- Add each user report stored in the database with `add_to_index()`. User reports are held in
-  memory only, so they are cleared whenever the server stops.
-- Then call `warm_up()` once, which loads the sentence model in advance (approximately 8
-  seconds).
+- The service calls `reset_index()`, replays each saved user report from SQLite
+  with `add_to_index()`, and then calls `warm_up()` once. User additions are
+  held in memory and are rebuilt from SQLite after a restart.
 
 **When a report is saved or its board is corrected**
 
-- Call `add_to_index()` with the report, so both functions can return it straight away,
-  including its new words in `search()`.
+- The service calls `add_to_index()` with the saved or corrected report, so
+  both functions can return it straight away, including its new words in
+  `search()`.
 
 **When showing results**
 
-- For a saved report, pass `exclude_ids=[message_id]` to `retrieve()`. Otherwise, the report is
-  returned as its own first result.
+- The report-detail endpoint passes `exclude_ids=[message_id]` to
+  `retrieve()`, so a saved report is not returned as its own first result.
 - A message or query with no words left after cleaning (for example, only a link or an
   @username) returns no reports, while an empty query lists reports from newest to oldest.
 
@@ -95,9 +98,9 @@ kept.
   user reports in the index and to load the model before the first request.
 - **Extra parameter:** `exclude_ids` leaves out the given IDs, such as the report being
   viewed.
-- **Extra result fields:** `duplicate_count` and `duplicate_ids` show the near-identical
-  messages grouped under each result. These fields are not part of the planned response and
-  should be added to the API response if they are to be shown.
+- **Extra result fields:** `duplicate_count` and `duplicate_ids` show the
+  near-identical messages grouped under each result. The API schema includes
+  both fields and the frontend shows the duplicate count.
 - **Extra filters:** `created_after` and `created_before` filter reports by posting time.
 
 **Result fields**
@@ -111,6 +114,10 @@ Each result is returned as a dictionary with the fields below.
 | `board_label` | Board of the report |
 | `text_preview` | Original message, cut at 200 characters |
 | `source_type` | `humaid_history` or `user` |
+| `created_at` | Posting time when available |
+| `status` | Application status for user reports |
+| `country`, `region`, `city` | Saved location fields for user reports |
+| `latitude`, `longitude` | Saved coordinates for user reports |
 | `duplicate_count`, `duplicate_ids` | Near-identical messages grouped under this result |
 
 **Filters**

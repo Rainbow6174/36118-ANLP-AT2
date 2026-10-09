@@ -2,10 +2,10 @@
 
 Owner: Member 4. Consumers: Members 2 and 3.
 
-Evaluates any classifier that implements the shared `classify(text)`
-interface against each of the 19 HumAID event test splits, one at a time.
-Produces per-event, per-label and summary tables under the chosen
-output directory.
+This folder provides reusable loading, metric and output functions for
+event-based evaluation. The command-line example runs the mock classifier over
+all event test files. The final Member 2 and Member 3 experiments use their own
+training code because the held-out event must be removed before training.
 
 ## What the evaluator does
 
@@ -27,10 +27,10 @@ Then it writes:
 └── run_log.json               model_name, events_evaluated, total_runtime_seconds
 ```
 
-The classifier is called **as-is**; the evaluator does not train. If the
-classifier was trained on all 18 non-held-out events, pass that one
-classifier to the run. If each held-out variant is a different model,
-register a different name in `__main__._MODEL_REGISTRY` for each.
+The generic evaluator calls a classifier **as-is** and does not train it. It is
+useful for checking a packaged model on a set of event files, but a model that
+has already seen an event during training is not evidence of unseen-event
+performance.
 
 ## Running against the mock model
 
@@ -44,31 +44,21 @@ python -m evaluation.cross_event \
 `data/raw/humaid_events/` must exist. The EDA notebook
 (`notebooks/01_crisis_eda.ipynb`) downloads it.
 
-## Adding your model (Members 2 and 3)
+## Final shared stress test
 
-1. Package your trained model inside `models/text_baseline/` or
-   `models/transformer/` with a loader that returns an object exposing
-   `classify(text) -> app.backend.schemas.Prediction`.
-2. In `evaluation/cross_event/__main__.py`, register the loader:
+The final comparison uses the 13-event `events_set1_47K` subset. It removes
+`cyclone_idai_2019` from training and validation, trains on the other 12 events
+and evaluates on the held-out event's 779 test messages.
 
-   ```python
-   def _load_text_baseline():
-       from models.text_baseline.loader import load_classifier
-       return load_classifier()
+- Member 2 runs `models/text_baseline/cross_event.py`. Its saved results are in
+  `outputs/results/cross_event/baseline/`.
+- Member 3's run is recorded in
+  `notebooks/member3/nb3_cross_event_with output.ipynb`. Its saved results are
+  in `outputs/results/cross_event/transformer/`.
+- Both use the same ten-label metrics and output conventions supplied here.
 
-   _MODEL_REGISTRY["baseline"] = _load_text_baseline
-   ```
-
-3. Run:
-
-   ```
-   python -m evaluation.cross_event \
-       --model baseline \
-       --out-dir outputs/results/cross_event/baseline
-   ```
-
-4. Commit the output directory. Member 4 combines the per-model tables
-   into the final cross-event comparison.
+This is a focused distribution-shift test on one held-out event. It should not
+be described as proof that the model is robust to every unseen disaster.
 
 ## What the shared `classify(text)` interface requires
 
@@ -76,17 +66,19 @@ python -m evaluation.cross_event \
 from app.backend.schemas import Prediction
 
 class MyClassifier:
-    def classify(self, text: str) -> Prediction: ...
+    def classify(self, text: str) -> Prediction | dict: ...
 ```
 
 `Prediction` carries `predicted_label`, `probabilities` (all 10 labels in
 alphabetical order), `confidence`, `model_version`, `needs_review`.
-See `app/backend/ports/classifier.py` for a worked example.
+The evaluator validates either a `Prediction` object or the documented
+JSON-like dictionary. See `app/backend/ports/classifier.py` for a worked
+example.
 
 ## Smoke test
 
 ```
-.venv/Scripts/python.exe -m pytest tests/test_cross_event.py -v
+uv run pytest tests/test_cross_event.py -v
 ```
 
 Uses a synthetic 3-event fixture under `tmp_path`; no HumAID download

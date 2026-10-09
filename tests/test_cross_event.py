@@ -8,7 +8,7 @@ files have the right shape.
 from __future__ import annotations
 
 import json
-from pathlib import Path  # noqa: F401 - used in fixture type hints at runtime
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -115,6 +115,21 @@ def test_compute_perfect_classifier(events_dir):
     assert m.per_label.shape == (10, 5)
     # Confusion diagonal sums to n_examples when predictions are perfect.
     assert int(m.confusion.values.diagonal().sum()) == 3
+
+
+def test_evaluator_accepts_dictionary_predictions(events_dir):
+    """Packaged project models may return the documented JSON-like dict."""
+
+    class DictionaryClassifier(PerfectClassifier):
+        def classify(self, text: str) -> dict:
+            return super().classify(text).model_dump()
+
+    frame = evaluator.load_event_test(events_dir / "event_a__test.json")
+    truth = dict(zip(frame["tweet_text"], frame["class_label"]))
+    result = evaluator.evaluate_event(
+        DictionaryClassifier(truth_map=truth), "event_a", frame
+    )
+    assert result.macro_f1 == pytest.approx(0.3)
 
 
 def test_full_run_writes_expected_outputs(events_dir, tmp_path):

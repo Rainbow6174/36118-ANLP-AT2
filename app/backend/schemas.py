@@ -9,7 +9,7 @@ from typing import Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
-from .labels import LABELS, LABEL_SET
+from .labels import LABEL_SET, LABELS
 
 SourceType = Literal["user", "humaid_history"]
 Status = Literal["unverified", "needs_review", "resolved"]
@@ -99,7 +99,9 @@ class ReportCreate(BaseModel):
     text: str = Field(min_length=1)
     predicted_label: str
     board_label: Optional[str] = None
-    source_type: SourceType = "user"
+    # Historical HumAID examples live in the read-only retrieval index.
+    # The public create endpoint only accepts messages submitted by users.
+    source_type: Literal["user"] = "user"
     confidence: float = Field(ge=0.0, le=1.0)
     model_version: str
     needs_review: bool = False

@@ -29,7 +29,7 @@ from .metrics import EventMetrics, compute, summarise
 
 
 class Classifier(Protocol):
-    def classify(self, text: str) -> Prediction: ...
+    def classify(self, text: str) -> Prediction | dict: ...
 
 
 def discover_test_events(events_dir: Path) -> dict[str, Path]:
@@ -73,7 +73,10 @@ def evaluate_event(
     classifier: Classifier, event: str, frame: pd.DataFrame
 ) -> EventMetrics:
     start = time.perf_counter()
-    predictions = [classifier.classify(t).predicted_label for t in frame["tweet_text"]]
+    predictions = [
+        Prediction.model_validate(classifier.classify(t)).predicted_label
+        for t in frame["tweet_text"]
+    ]
     elapsed = time.perf_counter() - start
     return compute(
         event=event,

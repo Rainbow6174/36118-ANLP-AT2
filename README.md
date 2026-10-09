@@ -13,9 +13,23 @@ models/       Selected models and their settings
 outputs/      Shared EDA, predictions, evaluation results and figures
 app/          Backend API, database schema and frontend
 report/       Group report and user-study material
-poster/       Group poster source files
+poster/       Group poster exports and supporting files
 LATER_PLAN.md Detailed English work plan and shared file rules
 ```
+
+## Current implementation state
+
+The repository now contains the six members' integrated work. Member 3's
+DistilBERT package is the selected application classifier, Member 2's
+word-and-character TF-IDF model is the transparent comparison, and Member 5's
+index provides semantic retrieval and keyword search. The FastAPI backend and
+NiceGUI frontend are connected through the shared interfaces below.
+
+Large model and index files are prepared separately, so a fresh clone starts
+in `auto` mode and may use the mock components until those files are present.
+The remaining project evidence is the verified real-stack walkthrough, system
+timing and failure results, user-study results, deployment record, final report
+and poster.
 
 ## Quick start
 
@@ -122,11 +136,14 @@ Follow "Run the frontend" above. To serve other devices on the same network, run
 
 | Item | Value |
 | --- | --- |
-| Frontend URL | _to be added_ |
-| Backend API URL | _to be added_ |
-| Hosting service | _to be added_ |
+| Frontend URL | Not deployed yet |
+| Backend API URL | Not deployed yet |
+| Hosting service | Not selected yet |
 
-Deployment steps: to be added by the team.
+No shared cloud deployment has been verified on this branch. After deployment,
+record the service, both URLs and any platform-specific start command here.
+First confirm that `/api/health` reports the real runtime and complete the full
+submit, save, redirect, search and correction flow.
 
 ### Dependency changes
 
@@ -150,7 +167,7 @@ The sources are:
 
 - [HumAID-all](https://huggingface.co/datasets/QCRI/HumAID-all), the main ten-label text-classification dataset;
 - [HumAID-events](https://huggingface.co/datasets/QCRI/HumAID-events), which supplies event names for unseen-event testing;
-- [CrisisMMD](https://crisisnlp.qcri.org/crisismmd), used as a separate supporting label benchmark.
+- [CrisisMMD](https://crisisnlp.qcri.org/crisismmd), used for a separate supporting label profile in the EDA.
 
 The notebook downloads the small CrisisMMD label archive, not the large image archive. Keep the original licence and terms for each dataset. Check the source pages before sharing raw data, tweet text or trained models.
 
@@ -217,7 +234,10 @@ user submits a message
     -> low-confidence items remain visible in a review queue
 ```
 
-Historical HumAID examples are saved as read-only records with `source_type=humaid_history`. New messages use `source_type=user`. The app must not present a model guess as an official fact.
+Historical HumAID examples stay in Member 5's read-only retrieval index with
+`source_type=humaid_history`. New messages are saved in SQLite with
+`source_type=user`. The public report-creation endpoint accepts user messages
+only. The app must not present a model guess as an official fact.
 
 ## Shared interfaces
 
@@ -284,7 +304,12 @@ user_correction
 status
 ```
 
-`predicted_label` keeps the original model result. `board_label` is the board shown by the application and defaults to `predicted_label`. A correction changes `board_label` but does not overwrite `predicted_label`. New user records use `source_type=user` and `status=unverified`. Historical records use `source_type=humaid_history` and are read-only.
+`predicted_label` keeps the original model result. `board_label` is the board
+shown by the application and defaults to `predicted_label`. A correction
+changes `board_label` but does not overwrite `predicted_label`. New user
+records use `source_type=user` and `status=unverified`. Historical HumAID
+results use `source_type=humaid_history`, come from the read-only retrieval
+index and are not created through this database interface.
 
 The MVP status values are `unverified`, `needs_review` and `resolved`. They describe the application's handling of a report, not the truth of its content.
 
@@ -295,11 +320,15 @@ Member 4 owns these endpoints. Member 6 calls the API and does not call models o
 | Method and path | Request | Minimum response |
 | --- | --- | --- |
 | `POST /api/analyse` | `{"text": "...", "location": {...}}` | `prediction`, `related_reports`, optional `extraction` |
-| `POST /api/reports` | `text`, prediction, optional location | `message_id`, `board_label`, `status`, `created_at` |
+| `POST /api/reports` | new user message, prediction, optional location | `message_id`, `board_label`, `status`, `created_at` |
 | `GET /api/reports` | board, source, status and location filters | paginated report list |
 | `GET /api/reports/{message_id}` | message ID | one report and related reports |
 | `GET /api/search` | `q`, filters and `k` | ranked report list |
 | `PATCH /api/reports/{message_id}` | category correction or permitted status update | updated report |
+
+`GET /api/reports` lists the user messages persisted in SQLite.
+`GET /api/search` and the `related_reports` fields can also return the
+read-only HumAID examples from the retrieval index.
 
 Use these query names for list and search endpoints: `q`, `k`, `page`, `board_label`, `source_type`, `status`, `country`, `region`, `city` and `needs_review`. Members may add a filter only when its stored field and behaviour are documented.
 

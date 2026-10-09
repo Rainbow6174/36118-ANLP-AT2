@@ -18,6 +18,10 @@ data/raw/humaid_events/      local event data
 
 The remaining team work is to review the integrated flow, finish the user study, select final figures and combine the six report sections. Expensive model training does not need to be repeated when the selected artefacts and saved results are available.
 
+The role sections below preserve the agreed division of work and explain the
+purpose of each contribution. Read them as a record of ownership and handoff;
+the integration summary above is the current implementation status.
+
 ## Shared starting point
 
 The EDA notebook downloads missing public files, checks them and writes shared results to outputs/eda/. It uses:
@@ -100,7 +104,11 @@ submit message
   -> keep uncertain items in a review queue
 ~~~
 
-Historical HumAID examples are read-only records with source_type=humaid_history. New messages use source_type=user. Present predictions as sorting suggestions, not verified facts or emergency priorities.
+Historical HumAID examples stay in the read-only retrieval index with
+`source_type=humaid_history`. New messages are saved in SQLite with
+`source_type=user`, and the public report-creation endpoint accepts user
+messages only. Present predictions as sorting suggestions, not verified facts
+or emergency priorities.
 
 ## Roles and boundaries
 
@@ -419,7 +427,12 @@ user_correction
 status
 ~~~
 
-`predicted_label` keeps the original model result. `board_label` is the board shown by the application and defaults to `predicted_label`. A user correction changes `board_label` but does not overwrite `predicted_label`. New user records use `source_type=user` and `status=unverified`. Historical records use `source_type=humaid_history` and are read-only.
+`predicted_label` keeps the original model result. `board_label` is the board
+shown by the application and defaults to `predicted_label`. A user correction
+changes `board_label` but does not overwrite `predicted_label`. New user
+records use `source_type=user` and `status=unverified`. Historical HumAID
+results use `source_type=humaid_history`, come from the read-only retrieval
+index and are not created through the user-report endpoint.
 
 The MVP status values are `unverified`, `needs_review` and `resolved`. They describe the application's handling of a report, not the truth of its content.
 

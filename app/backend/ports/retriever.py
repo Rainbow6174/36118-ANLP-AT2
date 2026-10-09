@@ -1,7 +1,7 @@
-"""Retrieval port. Member 5 will supply the real TF-IDF/embeddings backend.
+"""Retrieval port shared by the real and mock application runtimes.
 
-Matches the retrieve(text, k, filters=None) and search(query, filters, k)
-contract from README.md.
+Member 5's implementation is connected in ``app.backend.services``. This
+module keeps the documented interface and a lightweight mock for tests.
 """
 
 from __future__ import annotations

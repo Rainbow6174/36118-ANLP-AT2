@@ -118,6 +118,21 @@ def test_post_defaults_board_to_predicted(client):
     assert r.json()["board_label"] == "not_humanitarian"
 
 
+def test_post_rejects_historical_source_type(client):
+    """HumAID history is read-only and is loaded through the retrieval index."""
+
+    body = {
+        "text": "historical text supplied through the public endpoint",
+        "predicted_label": "not_humanitarian",
+        "source_type": "humaid_history",
+        "confidence": 0.9,
+        "model_version": "external",
+        "needs_review": False,
+    }
+    response = client.post("/api/reports", json=body)
+    assert response.status_code == 422
+
+
 def test_patch_correction_preserves_predicted_label(client):
     body = {
         "text": "x",

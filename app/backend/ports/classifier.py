@@ -1,6 +1,7 @@
-"""Classifier port. Members 2/3 will supply real implementations later.
+"""Classifier port shared by the real and mock application runtimes.
 
-The Protocol matches the shared classify(text) contract in README.md.
+The selected Member 3 model is connected in ``app.backend.services``. The
+mock remains useful for automated tests and isolated interface work.
 """
 
 from __future__ import annotations
