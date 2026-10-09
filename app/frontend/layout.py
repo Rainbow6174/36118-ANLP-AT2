@@ -92,6 +92,12 @@ def _render_notices(current_path: str) -> None:
                 )
 
 
+def _render_footer() -> None:
+    with ui.element("footer").classes("crisis-footer"):
+        ui.label("Student prototype. Reports are not verified.")
+        ui.link("About", "/about")
+
+
 @contextmanager
 def frame() -> Generator[Element, None, None]:
     """Header, notices and the main content container of a page."""
@@ -112,3 +118,5 @@ def frame() -> Generator[Element, None, None]:
 
     with ui.column().classes("crisis-main").props("id=crisis-main") as main:
         yield main
+
+    _render_footer()

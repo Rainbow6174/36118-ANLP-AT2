@@ -1,5 +1,29 @@
 /* Page frame: top navigation, content width, and layout helpers shared by pages. */
 
+/* Footer: one quiet line with a link to the About page. */
+.crisis-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0 16px;
+    width: 100%;
+    padding: 8px 0 24px;
+    border-top: 1px solid var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: 13px;
+    text-align: center;
+}
+
+.crisis-footer a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    padding: 0 8px;
+    color: var(--color-primary);
+    font-weight: 500;
+}
+
 /* Skip link: off screen until a keyboard user tabs to it. */
 .crisis-skip-link {
     position: fixed;

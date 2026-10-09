@@ -1,9 +1,12 @@
 """The only place the pages talk to the backend: the real REST API, or the demo backend when CRISISLENS_API_URL is not set."""
 
 import asyncio
+import logging
 import os
+from dataclasses import replace
 
 import httpx
+from constants.labels import LABELS
 from schemas.api import (
     AnalyseResponse,
     ClassificationResponse,
@@ -16,6 +19,8 @@ from schemas.api import (
 )
 
 from services.mock_backend import backend
+
+logger = logging.getLogger(__name__)
 
 API_URL = os.environ.get("CRISISLENS_API_URL", "").strip().rstrip("/")
 USING_MOCK_BACKEND = not API_URL
@@ -79,6 +84,19 @@ def _parse(build, what: str):
         raise BackendError(f"The {what} was not in the expected format.") from exc
 
 
+def _known_label(label: str) -> str:
+    """A label the pages cannot name or draw is shown as "other relevant information"."""
+    if label in LABELS:
+        return label
+    logger.warning("Unknown category from the backend: %r", label)
+    return "other_relevant_information"
+
+
+def _prediction_from_json(data: dict) -> ClassificationResponse:
+    data = {**data, "predicted_label": _known_label(data["predicted_label"])}
+    return ClassificationResponse(**data)
+
+
 def _location_payload(location: LocationInput | None) -> dict | None:
     if location is None:
         return None
@@ -108,8 +126,8 @@ def _report_from_record(data: dict) -> CrisisReport:
     return CrisisReport(
         message_id=data["message_id"],
         text=data["text"],
-        predicted_label=data["predicted_label"],
-        board_label=data["board_label"],
+        predicted_label=_known_label(data["predicted_label"]),
+        board_label=_known_label(data["board_label"]),
         source_type=data["source_type"],
         confidence=data["confidence"],
         model_version=data["model_version"],
@@ -125,9 +143,14 @@ def _report_from_record(data: dict) -> CrisisReport:
 def _related_from_json(item: dict) -> RelatedReport:
     return RelatedReport(
         id=item["id"],
-        board_label=item["board_label"],
+        board_label=_known_label(item["board_label"]),
         text_preview=item["text_preview"],
         source_type=item["source_type"],
+        created_at=item.get("created_at"),
+        status=item.get("status"),
+        # The place may be nested under "location" or flat, like in a report.
+        location=_location_from_record(item.get("location") or item),
+        duplicate_count=item.get("duplicate_count") or 0,
     )
 
 
@@ -148,7 +171,7 @@ async def analyse(text: str, location: LocationInput | None = None) -> AnalyseRe
     )
     return _parse(
         lambda: AnalyseResponse(
-            prediction=ClassificationResponse(**data["prediction"]),
+            prediction=_prediction_from_json(data["prediction"]),
             related_reports=[
                 _related_from_json(item) for item in data.get("related_reports", [])
             ],
@@ -262,6 +285,28 @@ async def search_reports(
     return [
         item for item in found if source_type is None or item.source_type == source_type
     ]
+
+
+async def fill_details(items: list[RelatedReport]) -> list[RelatedReport]:
+    """Add time, place and status to saved reports that a search result left without them."""
+
+    async def fill(item: RelatedReport) -> RelatedReport:
+        if item.source_type != "user" or item.created_at is not None:
+            return item
+        try:
+            report = await get_report(item.id)
+        except BackendError:
+            return item  # The short card still works.
+        if report is None:
+            return item
+        return replace(
+            item,
+            created_at=report.created_at,
+            status=report.status,
+            location=report.location,
+        )
+
+    return list(await asyncio.gather(*(fill(item) for item in items)))
 
 
 async def get_report_detail(

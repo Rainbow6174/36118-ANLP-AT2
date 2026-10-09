@@ -40,6 +40,17 @@
     min-height: 56px;
 }
 
+/* About page: a readable column of short cards. */
+.crisis-about {
+    max-width: 760px;
+    margin: 0 auto;
+}
+
+.crisis-about-lines {
+    gap: 8px;
+    width: 100%;
+}
+
 /* Report detail */
 /* One card: the report on the left, the map on the right. */
 .crisis-detail-grid {

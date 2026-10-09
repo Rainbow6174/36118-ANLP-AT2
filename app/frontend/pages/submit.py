@@ -26,7 +26,9 @@ from services import api
 def _ordered_categories(analysis: AnalyseResponse) -> dict[str, str]:
     """All categories, with the model's three most likely ones listed first."""
     probabilities = analysis.prediction.probabilities
-    likely = sorted(LABELS, key=lambda label: probabilities[label], reverse=True)
+    likely = sorted(
+        LABELS, key=lambda label: probabilities.get(label, 0.0), reverse=True
+    )
     return {label: LABEL_DISPLAY_NAMES[label] for label in likely}
 
 

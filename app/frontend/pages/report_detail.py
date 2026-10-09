@@ -1,6 +1,7 @@
 """Report detail page: the report, its category and approximate location, then related reports."""
 
 from components.report_cards import (
+    display_text,
     has_coordinates,
     location_text,
     related_row,
@@ -105,7 +106,7 @@ def _location_panel(report: CrisisReport) -> None:
     place = report.location
     with ui.column().style("gap: 12px; width: 100%;"):
         crisis_heading("Approximate location", 3)
-        ui.label(location_text(report) or "Map pin").classes("text-body-sm")
+        ui.label(location_text(report.location) or "Map pin").classes("text-body-sm")
         ui.label("Shown as an area of about 1 km, not an exact position.").classes(
             "text-caption"
         )
@@ -178,7 +179,7 @@ async def report_detail_page(report_id: str) -> None:
             # The visible title is the report text, so this h1 is for screen readers only.
             crisis_heading("Report details", 1).classes("sr-only", remove="text-h1")
 
-            has_map = has_coordinates(report)
+            has_map = has_coordinates(report.location)
             grid_class = "crisis-detail-grid"
             if not has_map:
                 grid_class += " crisis-detail-grid--single"
@@ -186,7 +187,9 @@ async def report_detail_page(report_id: str) -> None:
                 with ui.element("div").classes(grid_class):
                     with ui.column().classes("crisis-detail-main"):
                         report_badges(report, show_category=True)
-                        ui.label(report.text).classes("crisis-report-full-text")
+                        ui.label(display_text(report.text, report.source_type)).classes(
+                            "crisis-report-full-text"
+                        )
                         report_meta(report)
                         _category_editor(report)
 

@@ -43,6 +43,11 @@ class RelatedReport:
     board_label: str
     text_preview: str
     source_type: str  # "user" | "humaid_history"
+    # Optional: a search result may carry them, or fill_details() adds them.
+    created_at: str | None = None
+    status: str | None = None
+    location: LocationInput | None = None
+    duplicate_count: int = 0  # Near-identical messages grouped under this result.
 
 
 @dataclass

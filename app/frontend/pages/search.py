@@ -70,7 +70,7 @@ async def search_page(
                 )
                 total = len(found)
                 start = (state["page"] - 1) * PAGE_SIZE
-                shown = found[start : start + PAGE_SIZE]
+                shown = await api.fill_details(found[start : start + PAGE_SIZE])
 
                 def draw(item):
                     related_card(item, "Search match")

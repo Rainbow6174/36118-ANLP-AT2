@@ -1,11 +1,12 @@
 """Report cards, rows and pagination shared by the list pages."""
 
+import re
 from collections.abc import Callable
 from datetime import UTC, datetime
 
 from constants.labels import LABEL_DISPLAY_NAMES, LABEL_ICONS
 from nicegui import ui
-from schemas.api import CrisisReport, RelatedReport
+from schemas.api import CrisisReport, LocationInput, RelatedReport
 
 from components.badges import (
     badge,
@@ -41,15 +42,25 @@ def format_time_ago(iso_time: str) -> str:
     return then.strftime("%d %b %Y")
 
 
-def location_text(report: CrisisReport) -> str | None:
-    return report.location.location_name if report.location else None
+def location_text(place: LocationInput | None) -> str | None:
+    return place.location_name if place else None
 
 
-def has_coordinates(report: CrisisReport) -> bool:
-    place = report.location
+def has_coordinates(place: LocationInput | None) -> bool:
     return (
         place is not None and place.latitude is not None and place.longitude is not None
     )
+
+
+_HANDLE = re.compile(r"@\w+")
+_LINK = re.compile(r"https?://\S+|www\.\S+")
+
+
+def display_text(text: str, source_type: str) -> str:
+    """Historical tweets are shown without @usernames and links."""
+    if source_type != "humaid_history":
+        return text
+    return " ".join(_LINK.sub("", _HANDLE.sub("@user", text)).split())
 
 
 def report_badges(
@@ -74,26 +85,32 @@ def report_badges(
             demo_badge()
 
 
-def report_meta(report: CrisisReport) -> None:
+def _meta_row(
+    created_at: str, location: LocationInput | None, source_type: str
+) -> None:
     """Time posted and place."""
     with ui.row().classes("crisis-report-meta"):
         with ui.row().classes("crisis-report-meta-item"):
             ui.icon("schedule").classes("text-body-sm")
-            ui.label(format_time_ago(report.created_at))
+            ui.label(format_time_ago(created_at))
 
         # A pin without a place name is still a location.
-        place = location_text(report) or (
-            "Approximate location included" if has_coordinates(report) else None
+        place = location_text(location) or (
+            "Approximate location included" if has_coordinates(location) else None
         )
 
         if place:
             with ui.row().classes("crisis-report-meta-item"):
                 ui.icon("place").classes("text-body-sm")
                 ui.label(place)
-        elif report.source_type == "user":
+        elif source_type == "user":
             with ui.row().classes("crisis-report-meta-item crisis-report-meta--muted"):
                 ui.icon("location_off").classes("text-body-sm")
                 ui.label("Location not provided")
+
+
+def report_meta(report: CrisisReport) -> None:
+    _meta_row(report.created_at, report.location, report.source_type)
 
 
 HISTORY_NOTE = "From the HumAID dataset (past disasters)"
@@ -129,7 +146,9 @@ def report_card(
             compact=compact,
             show_demo=show_demo,
         )
-        ui.label(report.text).classes("text-body crisis-report-text")
+        ui.label(display_text(report.text, report.source_type)).classes(
+            "text-body crisis-report-text"
+        )
         report_meta(report)
 
         if is_history:
@@ -143,9 +162,19 @@ def related_card(related: RelatedReport, context: str = "Related report"):
         with ui.row().classes("crisis-report-badges"):
             category_badge(related.board_label)
             source_badge(related.source_type)
-        ui.label(related.text_preview).classes("text-body crisis-report-text")
-        note = f"{context} · {HISTORY_NOTE}" if is_history else context
-        ui.label(note).classes("text-caption crisis-report-note")
+            if related.status and not is_history:
+                status_badges(related.status)
+        ui.label(display_text(related.text_preview, related.source_type)).classes(
+            "text-body crisis-report-text"
+        )
+        if related.created_at:
+            _meta_row(related.created_at, related.location, related.source_type)
+        notes = [context]
+        if related.duplicate_count:
+            notes.append(f"+{related.duplicate_count} similar")
+        if is_history:
+            notes.append(HISTORY_NOTE)
+        ui.label(" · ".join(notes)).classes("text-caption crisis-report-note")
 
 
 def related_row(related: RelatedReport):
@@ -162,7 +191,9 @@ def related_row(related: RelatedReport):
     )
     with row:
         ui.icon(LABEL_ICONS[related.board_label])
-        ui.label(related.text_preview).classes("crisis-related-text")
+        ui.label(display_text(related.text_preview, related.source_type)).classes(
+            "crisis-related-text"
+        )
         if is_history:
             ui.label("Historical").classes("crisis-related-tag")
 
