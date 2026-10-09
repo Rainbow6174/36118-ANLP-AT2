@@ -7,12 +7,12 @@ temperature T and frozen review threshold tau. The RoBERTa (A4) analysis
 model lives in metadata only; it is the report's analysis model, not shipped
 in this package.
 
-## Contents
+Download `models_transformer.zip` from the
+[m3-transformer-v1 release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v1)
+and unzip it at the repository root. The weights and tokenizer remain outside
+Git.
 
-> **Integration note (added at merge).** The weights and tokenizer are not in Git.
-> Download `models_transformer.zip` from the
-> [m3-transformer-v1 release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v1)
-> and unzip it at the repository root.
+## Contents after the release is unpacked
 
 ```
 models/transformer/
@@ -26,15 +26,9 @@ models/transformer/
 
 ## Dependencies
 
-```
-torch
-transformers
-```
-
-Pin to whatever the API side already uses to avoid version drift.
-
-> **Integration note (added at merge).** The shared environment pins `torch>=2.2,<3` and
-> `transformers>=4.40,<5`; `uv sync` installs them.
+The shared environment pins `torch>=2.2,<3` and `transformers>=4.40,<5` in
+`pyproject.toml`, `requirements.txt` and `uv.lock`. Run `uv sync` from the
+repository root.
 
 ## Public contract (matches repo README)
 

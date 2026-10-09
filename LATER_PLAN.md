@@ -18,10 +18,6 @@ data/raw/humaid_events/      local event data
 
 The remaining team work is to review the integrated flow, finish the user study, select final figures and combine the six report sections. Expensive model training does not need to be repeated when the selected artefacts and saved results are available.
 
-The role sections below preserve the agreed division of work and explain the
-purpose of each contribution. Read them as a record of ownership and handoff;
-the integration summary above is the current implementation status.
-
 ## Shared starting point
 
 The EDA notebook downloads missing public files, checks them and writes shared results to outputs/eda/. It uses:

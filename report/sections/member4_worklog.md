@@ -2,12 +2,12 @@
 
 **Owner:** Kunal Mistry
 **Role:** Member 4 — backend, database, API, shared evaluation harness
-**Status:** 20/20 tests green · 3 of 5 planned steps complete · steps 4–5 blocked on teammates (status at handoff; see the integration note in §7)
+**Status at handoff:** 20/20 tests green · 3 of 5 planned steps complete · steps 4–5 blocked on teammates
 
-> **Read this first (added at merge).** Sections 1–6 record the original Member 4 handoff and
-> are kept as written. The note in Section 7 and the root `README.md` describe the current
-> integrated runtime. Do not reintroduce the module-level mock singletons described in 1.3;
-> the API now gets its classifier and retriever from `app/backend/services.py`.
+The implementation record below describes Member 4's original handoff. The
+integrated application now loads the selected classifier and retrieval index
+through `app/backend/services.py`; the root `README.md` has the current setup
+and run commands.
 
 This document is the running record of Member 4's work. It will be
 compiled into `member4_backend_and_evaluation.md` for the final report.
@@ -204,7 +204,7 @@ httpx              (dev, already present via other deps)
 
 ---
 
-## 7. Pending — blocked on other members
+## 7. Handoff status
 
 | # | Item | Blocked on | Trigger to resume |
 | --- | --- | --- | --- |
@@ -218,25 +218,20 @@ httpx              (dev, already present via other deps)
 | B8 | End-to-end user-flow test — submit → classify → save → redirect → view → correct | Member 6 (frontend) + B4 + B5 | Frontend wired to real backend |
 | B9 | User-study feedback integration (confidence display, review queue) | Member 6 (study) | After B8 |
 
-> **Integration note (added at merge, 10 Oct 2026).** Status of the items above
-> on `integration/crisislens-final`:
->
-> - B1 done: `app/app_models.json` points to `models/transformer/` and `models/retrieval/index/`.
-> - B4 and B5 done: `app/backend/services.py` loads the real classifier and retriever
->   (or the mocks via `CRISISLENS_RUNTIME=mock`); the routes in `api/*.py` now ask it
->   for the active implementation.
-> - B6 settled: `GET /api/search` goes to the retrieval index. Saved user reports are
->   added to that index on startup and whenever they are saved or corrected.
-> - B7 not needed: historical rows stay in the retrieval index and are not copied into SQLite.
-> - B2 and B3: the registry is unchanged. Members 2 and 3 ran the held-out-event test with
->   their own scripts because the held-out event has to be removed before training. Results
->   are in `outputs/results/cross_event/baseline/` and `.../transformer/`.
-> - B8 and B9 are still open. Four backend and evaluator tests were added during
->   integration, bringing the Member 4 suite to 24 tests. Three separate frontend
->   contract tests cover strict label handling.
-> - S5: the review threshold now comes from Member 3's `metadata.json`; the mock keeps 0.60.
+### Current integration status
 
-## 8. Pending — Member 4's own backlog
+`app/app_models.json` selects Member 3's classifier and Member 5's retrieval
+index. `app/backend/services.py` loads them and keeps saved user reports in the
+search index. Historical HumAID messages remain in the read-only retrieval
+index rather than SQLite.
+
+The held-out-event results are saved under
+`outputs/results/cross_event/`. The remaining shared work is the real-stack
+walkthrough, system timing and failure evidence, and the user study. The
+Member 4 backend and evaluator suite contains 24 tests; three frontend tests
+check strict label handling.
+
+## 8. Backlog at handoff
 
 | # | Item | Notes |
 | --- | --- | --- |
