@@ -226,3 +226,6 @@ models/transformer/vocab.txt
 
 # Member 4: local SQLite DB (schema is in app/schema.sql)
 app/backend/*.db
+
+# Member 5 retrieval: generated index files
+models/retrieval/index/

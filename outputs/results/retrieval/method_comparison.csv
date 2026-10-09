@@ -1,0 +1,205 @@
+experiment,group,subgroup,method,measure,value
+tfidf_settings,all,all,L1,messages,53531.0
+tfidf_settings,all,all,L2,messages,53531.0
+tfidf_settings,all,all,L1,vocabulary,20242.0
+tfidf_settings,all,all,L2,vocabulary,113949.0
+tfidf_settings,all,all,L1,build_seconds,0.47
+tfidf_settings,all,all,L2,build_seconds,1.38
+tfidf_settings,all,all,L1,size_mb,12.6
+tfidf_settings,all,all,L2,size_mb,24.1
+tfidf_settings,all,all,L1,precision@5,0.64
+tfidf_settings,all,all,L2,precision@5,0.72
+tfidf_settings,all,all,L1,precision@10,0.63
+tfidf_settings,all,all,L2,precision@10,0.65
+tfidf_settings,all,all,L1,selected,1.0
+tfidf_settings,all,all,L2,selected,0.0
+query_time_and_cost,all,all,tfidf,mean_query_ms,28.05490747231465
+query_time_and_cost,all,all,semantic,mean_query_ms,33.97009101090356
+query_time_and_cost,all,all,tfidf,timed_queries,195.0
+query_time_and_cost,all,all,semantic,timed_queries,195.0
+query_time_and_cost,all,all,tfidf,build_seconds,0.58
+query_time_and_cost,all,all,semantic,build_seconds,123.48
+query_time_and_cost,all,all,tfidf,size_mb,14.4
+query_time_and_cost,all,all,semantic,size_mb,94.2
+query_time_and_cost,all,all,tfidf,model_load_seconds,0.0
+query_time_and_cost,all,all,semantic,model_load_seconds,8.05
+final_comparison,retrieval,all,semantic,precision@5,0.8
+final_comparison,retrieval,all,tfidf,precision@5,0.6066666666666667
+final_comparison,retrieval by origin,original,semantic,precision@5,0.79
+final_comparison,retrieval by origin,paraphrased,semantic,precision@5,0.82
+final_comparison,retrieval by origin,original,tfidf,precision@5,0.65
+final_comparison,retrieval by origin,paraphrased,tfidf,precision@5,0.52
+final_comparison,retrieval by type,rare_category,semantic,precision@5,0.9333333333333332
+final_comparison,retrieval by type,short,semantic,precision@5,0.8
+final_comparison,retrieval by type,standard,semantic,precision@5,0.7428571428571429
+final_comparison,retrieval by type,rare_category,tfidf,precision@5,0.6333333333333333
+final_comparison,retrieval by type,short,tfidf,precision@5,0.6799999999999999
+final_comparison,retrieval by type,standard,tfidf,precision@5,0.5428571428571429
+final_comparison,retrieval by category,caution_and_advice,semantic,precision@5,0.7999999999999999
+final_comparison,retrieval by category,displaced_people_and_evacuations,semantic,precision@5,1.0
+final_comparison,retrieval by category,infrastructure_and_utility_damage,semantic,precision@5,0.6
+final_comparison,retrieval by category,injured_or_dead_people,semantic,precision@5,1.0
+final_comparison,retrieval by category,missing_or_found_people,semantic,precision@5,0.9333333333333332
+final_comparison,retrieval by category,not_humanitarian,semantic,precision@5,0.3333333333333333
+final_comparison,retrieval by category,other_relevant_information,semantic,precision@5,0.4666666666666667
+final_comparison,retrieval by category,requests_or_urgent_needs,semantic,precision@5,0.9333333333333332
+final_comparison,retrieval by category,rescue_volunteering_or_donation_effort,semantic,precision@5,1.0
+final_comparison,retrieval by category,sympathy_and_support,semantic,precision@5,0.9333333333333332
+final_comparison,retrieval by category,caution_and_advice,tfidf,precision@5,0.2666666666666666
+final_comparison,retrieval by category,displaced_people_and_evacuations,tfidf,precision@5,0.8666666666666667
+final_comparison,retrieval by category,infrastructure_and_utility_damage,tfidf,precision@5,0.4666666666666666
+final_comparison,retrieval by category,injured_or_dead_people,tfidf,precision@5,0.9333333333333332
+final_comparison,retrieval by category,missing_or_found_people,tfidf,precision@5,0.8666666666666667
+final_comparison,retrieval by category,not_humanitarian,tfidf,precision@5,0.3999999999999999
+final_comparison,retrieval by category,other_relevant_information,tfidf,precision@5,0.4000000000000001
+final_comparison,retrieval by category,requests_or_urgent_needs,tfidf,precision@5,0.3999999999999999
+final_comparison,retrieval by category,rescue_volunteering_or_donation_effort,tfidf,precision@5,0.7333333333333334
+final_comparison,retrieval by category,sympathy_and_support,tfidf,precision@5,0.7333333333333334
+final_comparison,search,all,tfidf,precision@5,0.7555555555555555
+final_comparison,retrieval,all,semantic,precision@10,0.7733333333333333
+final_comparison,retrieval,all,tfidf,precision@10,0.5766666666666667
+final_comparison,retrieval by origin,original,semantic,precision@10,0.76
+final_comparison,retrieval by origin,paraphrased,semantic,precision@10,0.8
+final_comparison,retrieval by origin,original,tfidf,precision@10,0.6
+final_comparison,retrieval by origin,paraphrased,tfidf,precision@10,0.53
+final_comparison,retrieval by type,rare_category,semantic,precision@10,0.8833333333333333
+final_comparison,retrieval by type,short,semantic,precision@10,0.79
+final_comparison,retrieval by type,standard,semantic,precision@10,0.7142857142857143
+final_comparison,retrieval by type,rare_category,tfidf,precision@10,0.6166666666666667
+final_comparison,retrieval by type,short,tfidf,precision@10,0.6
+final_comparison,retrieval by type,standard,tfidf,precision@10,0.5428571428571428
+final_comparison,retrieval by category,caution_and_advice,semantic,precision@10,0.6333333333333333
+final_comparison,retrieval by category,displaced_people_and_evacuations,semantic,precision@10,0.9666666666666668
+final_comparison,retrieval by category,infrastructure_and_utility_damage,semantic,precision@10,0.6666666666666666
+final_comparison,retrieval by category,injured_or_dead_people,semantic,precision@10,0.9666666666666668
+final_comparison,retrieval by category,missing_or_found_people,semantic,precision@10,0.9666666666666668
+final_comparison,retrieval by category,not_humanitarian,semantic,precision@10,0.3333333333333333
+final_comparison,retrieval by category,other_relevant_information,semantic,precision@10,0.4666666666666666
+final_comparison,retrieval by category,requests_or_urgent_needs,semantic,precision@10,0.7999999999999999
+final_comparison,retrieval by category,rescue_volunteering_or_donation_effort,semantic,precision@10,0.9666666666666668
+final_comparison,retrieval by category,sympathy_and_support,semantic,precision@10,0.9666666666666668
+final_comparison,retrieval by category,caution_and_advice,tfidf,precision@10,0.4000000000000001
+final_comparison,retrieval by category,displaced_people_and_evacuations,tfidf,precision@10,0.8666666666666667
+final_comparison,retrieval by category,infrastructure_and_utility_damage,tfidf,precision@10,0.4666666666666666
+final_comparison,retrieval by category,injured_or_dead_people,tfidf,precision@10,0.8333333333333334
+final_comparison,retrieval by category,missing_or_found_people,tfidf,precision@10,0.8333333333333334
+final_comparison,retrieval by category,not_humanitarian,tfidf,precision@10,0.3
+final_comparison,retrieval by category,other_relevant_information,tfidf,precision@10,0.2666666666666666
+final_comparison,retrieval by category,requests_or_urgent_needs,tfidf,precision@10,0.3999999999999999
+final_comparison,retrieval by category,rescue_volunteering_or_donation_effort,tfidf,precision@10,0.7000000000000001
+final_comparison,retrieval by category,sympathy_and_support,tfidf,precision@10,0.7000000000000001
+final_comparison,search,all,tfidf,precision@10,0.7333333333333333
+final_comparison,retrieval,all,semantic,pooled_recall@5,0.191393772095379
+final_comparison,retrieval,all,tfidf,pooled_recall@5,0.1609755661844171
+final_comparison,retrieval by origin,original,semantic,pooled_recall@5,0.19366628354015
+final_comparison,retrieval by origin,paraphrased,semantic,pooled_recall@5,0.1863437466625544
+final_comparison,retrieval by origin,original,tfidf,pooled_recall@5,0.1878024357907535
+final_comparison,retrieval by origin,paraphrased,tfidf,pooled_recall@5,0.1013603003925584
+final_comparison,retrieval by type,rare_category,semantic,pooled_recall@5,0.251884565056608
+final_comparison,retrieval by type,short,semantic,pooled_recall@5,0.1811838734594152
+final_comparison,retrieval by type,standard,semantic,pooled_recall@5,0.1713287127563223
+final_comparison,retrieval by type,rare_category,tfidf,pooled_recall@5,0.1319522671673209
+final_comparison,retrieval by type,short,tfidf,pooled_recall@5,0.1464973267759645
+final_comparison,retrieval by type,standard,tfidf,pooled_recall@5,0.1855080421988097
+final_comparison,retrieval by category,caution_and_advice,semantic,pooled_recall@5,0.2281344386607544
+final_comparison,retrieval by category,displaced_people_and_evacuations,semantic,pooled_recall@5,0.1935823754789272
+final_comparison,retrieval by category,infrastructure_and_utility_damage,semantic,pooled_recall@5,0.1666666666666666
+final_comparison,retrieval by category,injured_or_dead_people,semantic,pooled_recall@5,0.1585297418630752
+final_comparison,retrieval by category,missing_or_found_people,semantic,pooled_recall@5,0.1642629572737099
+final_comparison,retrieval by category,not_humanitarian,semantic,pooled_recall@5,0.1
+final_comparison,retrieval by category,other_relevant_information,semantic,pooled_recall@5,0.1746031746031745
+final_comparison,retrieval by category,requests_or_urgent_needs,semantic,pooled_recall@5,0.3395061728395061
+final_comparison,retrieval by category,rescue_volunteering_or_donation_effort,semantic,pooled_recall@5,0.1836335707303449
+final_comparison,retrieval by category,sympathy_and_support,semantic,pooled_recall@5,0.1745540321391714
+final_comparison,retrieval by category,caution_and_advice,tfidf,pooled_recall@5,0.0732600732600732
+final_comparison,retrieval by category,displaced_people_and_evacuations,tfidf,pooled_recall@5,0.1669157088122605
+final_comparison,retrieval by category,infrastructure_and_utility_damage,tfidf,pooled_recall@5,0.1166666666666666
+final_comparison,retrieval by category,injured_or_dead_people,tfidf,pooled_recall@5,0.148428731762065
+final_comparison,retrieval by category,missing_or_found_people,tfidf,pooled_recall@5,0.1503242874210616
+final_comparison,retrieval by category,not_humanitarian,tfidf,pooled_recall@5,0.6
+final_comparison,retrieval by category,other_relevant_information,tfidf,pooled_recall@5,0.1468253968253968
+final_comparison,retrieval by category,requests_or_urgent_needs,tfidf,pooled_recall@5,0.1135802469135802
+final_comparison,retrieval by category,rescue_volunteering_or_donation_effort,tfidf,pooled_recall@5,0.1259135130102872
+final_comparison,retrieval by category,sympathy_and_support,tfidf,pooled_recall@5,0.1141825151113076
+final_comparison,retrieval,all,semantic,pooled_recall@10,0.3543548424923363
+final_comparison,retrieval,all,tfidf,pooled_recall@10,0.2690085465897635
+final_comparison,retrieval by origin,original,semantic,pooled_recall@10,0.3501942433195855
+final_comparison,retrieval by origin,paraphrased,semantic,pooled_recall@10,0.3636006184317824
+final_comparison,retrieval by origin,original,tfidf,pooled_recall@10,0.2979261199740628
+final_comparison,retrieval by origin,paraphrased,tfidf,pooled_recall@10,0.2047472724024318
+final_comparison,retrieval by type,rare_category,semantic,pooled_recall@10,0.3980343630881265
+final_comparison,retrieval by type,short,semantic,pooled_recall@10,0.3539129119934073
+final_comparison,retrieval by type,standard,semantic,pooled_recall@10,0.3345350102934553
+final_comparison,retrieval by type,rare_category,tfidf,pooled_recall@10,0.2371437105308073
+final_comparison,retrieval by type,short,tfidf,pooled_recall@10,0.2562068721325687
+final_comparison,retrieval by type,standard,tfidf,pooled_recall@10,0.2935628358917393
+final_comparison,retrieval by category,caution_and_advice,semantic,pooled_recall@10,0.3671357881884198
+final_comparison,retrieval by category,displaced_people_and_evacuations,semantic,pooled_recall@10,0.373831417624521
+final_comparison,retrieval by category,infrastructure_and_utility_damage,semantic,pooled_recall@10,0.3777777777777777
+final_comparison,retrieval by category,injured_or_dead_people,semantic,pooled_recall@10,0.3047138047138047
+final_comparison,retrieval by category,missing_or_found_people,semantic,pooled_recall@10,0.339278602719463
+final_comparison,retrieval by category,not_humanitarian,semantic,pooled_recall@10,0.2
+final_comparison,retrieval by category,other_relevant_information,semantic,pooled_recall@10,0.3571428571428571
+final_comparison,retrieval by category,requests_or_urgent_needs,semantic,pooled_recall@10,0.4567901234567901
+final_comparison,retrieval by category,rescue_volunteering_or_donation_effort,semantic,pooled_recall@10,0.3565144532886468
+final_comparison,retrieval by category,sympathy_and_support,semantic,pooled_recall@10,0.3589119858469703
+final_comparison,retrieval by category,caution_and_advice,tfidf,pooled_recall@10,0.2214510635563267
+final_comparison,retrieval by category,displaced_people_and_evacuations,tfidf,pooled_recall@10,0.3338314176245211
+final_comparison,retrieval by category,infrastructure_and_utility_damage,tfidf,pooled_recall@10,0.2333333333333333
+final_comparison,retrieval by category,injured_or_dead_people,tfidf,pooled_recall@10,0.2620650953984287
+final_comparison,retrieval by category,missing_or_found_people,tfidf,pooled_recall@10,0.2903368037776639
+final_comparison,retrieval by category,not_humanitarian,tfidf,pooled_recall@10,0.66
+final_comparison,retrieval by category,other_relevant_information,tfidf,pooled_recall@10,0.1944444444444444
+final_comparison,retrieval by category,requests_or_urgent_needs,tfidf,pooled_recall@10,0.1839506172839506
+final_comparison,retrieval by category,rescue_volunteering_or_donation_effort,tfidf,pooled_recall@10,0.2301820043755527
+final_comparison,retrieval by category,sympathy_and_support,tfidf,pooled_recall@10,0.2108211705734925
+final_comparison,retrieval,all,semantic,queries better on precision@5,16.0
+final_comparison,retrieval,all,tfidf,queries better on precision@5,4.0
+final_comparison,retrieval,all,tie,queries better on precision@5,10.0
+final_comparison,judging,all,both,judgements reused from original queries,36.0
+method_selection,retrieve(),all,semantic vs tfidf,Precision@5 gain,0.193
+method_selection,retrieve(),all,semantic vs tfidf,required gain,0.05
+method_selection,retrieve(),all,semantic vs tfidf,at least as good (count),9.0
+method_selection,retrieve(),all,semantic vs tfidf,compared,10.0
+method_selection,retrieve(),all,semantic vs tfidf,semantic mean ms,34.0
+method_selection,retrieve(),all,semantic vs tfidf,semantic selected,1.0
+name_search,1 message,all,tfidf,names in collection,6607.0
+name_search,1 message,all,tfidf,names searched,20.0
+name_search,1 message,all,tfidf,name found@10,1.0
+name_search,1 message,all,tfidf,searches with no result,0.0
+name_search,1 message,all,semantic,names in collection,6607.0
+name_search,1 message,all,semantic,names searched,20.0
+name_search,1 message,all,semantic,name found@10,0.35
+name_search,1 message,all,semantic,searches with no result,0.0
+name_search,2 to 5 messages,all,tfidf,names in collection,2610.0
+name_search,2 to 5 messages,all,tfidf,names searched,20.0
+name_search,2 to 5 messages,all,tfidf,name found@10,1.0
+name_search,2 to 5 messages,all,tfidf,searches with no result,0.0
+name_search,2 to 5 messages,all,semantic,names in collection,2610.0
+name_search,2 to 5 messages,all,semantic,names searched,20.0
+name_search,2 to 5 messages,all,semantic,name found@10,0.44749999999999995
+name_search,2 to 5 messages,all,semantic,searches with no result,0.0
+name_search,6 to 20 messages,all,tfidf,names in collection,727.0
+name_search,6 to 20 messages,all,tfidf,names searched,20.0
+name_search,6 to 20 messages,all,tfidf,name found@10,1.0
+name_search,6 to 20 messages,all,tfidf,searches with no result,0.0
+name_search,6 to 20 messages,all,semantic,names in collection,727.0
+name_search,6 to 20 messages,all,semantic,names searched,20.0
+name_search,6 to 20 messages,all,semantic,name found@10,0.3134126984126984
+name_search,6 to 20 messages,all,semantic,searches with no result,0.0
+name_search,21 to 100 messages,all,tfidf,names in collection,326.0
+name_search,21 to 100 messages,all,tfidf,names searched,20.0
+name_search,21 to 100 messages,all,tfidf,name found@10,1.0
+name_search,21 to 100 messages,all,tfidf,searches with no result,0.0
+name_search,21 to 100 messages,all,semantic,names in collection,326.0
+name_search,21 to 100 messages,all,semantic,names searched,20.0
+name_search,21 to 100 messages,all,semantic,name found@10,0.49499999999999994
+name_search,21 to 100 messages,all,semantic,searches with no result,0.0
+name_search,over 100 messages,all,tfidf,names in collection,112.0
+name_search,over 100 messages,all,tfidf,names searched,20.0
+name_search,over 100 messages,all,tfidf,name found@10,1.0
+name_search,over 100 messages,all,tfidf,searches with no result,0.0
+name_search,over 100 messages,all,semantic,names in collection,112.0
+name_search,over 100 messages,all,semantic,names searched,20.0
+name_search,over 100 messages,all,semantic,name found@10,0.6000000000000001
+name_search,over 100 messages,all,semantic,searches with no result,0.0
