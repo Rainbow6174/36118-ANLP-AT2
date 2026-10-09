@@ -1,4 +1,4 @@
-"""Small CLI example for the reusable cross-event evaluator.
+"""CLI entry: python -m evaluation.cross_event ...
 
 Usage:
     python -m evaluation.cross_event \\
@@ -6,9 +6,10 @@ Usage:
         --events-dir data/raw/humaid_events \\
         --out-dir outputs/results/cross_event/mock
 
-The registry intentionally contains only the lightweight mock model. The
-final baseline and Transformer experiments retrain or load models in their
-own scripts and notebooks, then reuse the evaluator's formats and metrics.
+The --model argument picks a classifier wrapper from this module's
+_MODEL_REGISTRY. Members 2 and 3 register their models here when the
+packaged artefacts are ready; the registry entry only needs to return
+anything satisfying `Classifier` (i.e. with a `classify(text)` method).
 """
 
 from __future__ import annotations
@@ -29,6 +30,8 @@ def _mock_classifier() -> Classifier:
 
 _MODEL_REGISTRY: dict[str, callable] = {
     "mock": _mock_classifier,
+    # Member 2 adds: "baseline": _load_text_baseline,
+    # Member 3 adds: "transformer": _load_transformer,
 }
 
 

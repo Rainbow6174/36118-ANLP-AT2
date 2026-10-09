@@ -1,6 +1,7 @@
 """The only place the pages talk to the backend: the real REST API, or the demo backend when CRISISLENS_API_URL is not set."""
 
 import asyncio
+import logging
 import os
 from dataclasses import replace
 
@@ -18,6 +19,8 @@ from schemas.api import (
 )
 
 from services.mock_backend import backend
+
+logger = logging.getLogger(__name__)
 
 API_URL = os.environ.get("CRISISLENS_API_URL", "").strip().rstrip("/")
 USING_MOCK_BACKEND = not API_URL
@@ -85,6 +88,7 @@ def _known_label(label: str) -> str:
     """Reject an API contract error instead of silently changing model output."""
     if label in LABELS:
         return label
+    logger.error("Unknown category from the backend: %r", label)
     raise BackendError(f"The backend returned an unsupported category: {label!r}.")
 
 

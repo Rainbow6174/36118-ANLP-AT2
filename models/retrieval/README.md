@@ -30,14 +30,21 @@ and accept the filters listed in the notes for Member 4.
 
 ## Dependency Change for the Group
 
-The retrieval functions use `sentence-transformers` 5.x. This series works with the
-Transformers 4.x runtime used by the deployed classifier, so both components can run in one
-environment.
+**Original member-local environment** (Member 5's development setup, kept as a record;
+do not install it alongside the shared environment):
+
+One dependency, namely `sentence-transformers` (version 6.1 or later, below 7), is added for
+the retrieval functions.
 
 - **Recorded files:** the dependency was tested locally and recorded in `pyproject.toml`,
   `requirements.txt` and `uv.lock` together.
-- **Related packages:** `torch` and `transformers` are installed from the shared lock file.
+- **Related packages:** `torch` (2.14.1) and `transformers` (5.17.0) are installed with it.
 - **Action required:** `uv sync` should be run after pulling these changes.
+
+> **Shared integrated environment (current; use this).** The merged environment pins
+> `sentence-transformers>=5,<6` and `transformers>=4.40,<5`, because the deployed
+> DistilBERT package needs Transformers 4.x. The retrieval functions were checked with
+> this combination. Run `uv sync` and do not install the versions listed above by hand.
 
 ## Setup
 
@@ -55,31 +62,32 @@ The indexes are not committed to the repository and should be built once on each
      embeds the messages with the sentence model.
    - **Output:** approximately 150 MB is written to `models/retrieval/index/`, which is
      excluded from Git.
-   - **Run time:** the build time depends on the CPU and can take several minutes. The first
-     run also downloads the sentence model (approximately 90 MB), which is cached for later
-     runs.
+   - **Run time:** the build takes 2 to 3 minutes on a CPU. The first run also downloads the
+     sentence model (approximately 90 MB), which is cached for later runs.
 
-## Backend integration
+## Notes for Member 4
 
-`app/backend/services.py` already connects this module to the FastAPI service
-without moving its files.
+> **Integration note (added at merge).** These steps are now done in
+> `app/backend/services.py` and `app/backend/api/reports.py`. `retrieval.py` also returns
+> `created_at`, `status`, `country`, `region` and `city` so the API can show them, and the
+> API schema includes `duplicate_count` and `duplicate_ids`.
 
 **When the server starts**
 
-- The service calls `reset_index()`, replays each saved user report from SQLite
-  with `add_to_index()`, and then calls `warm_up()` once. User additions are
-  held in memory and are rebuilt from SQLite after a restart.
+- Add each user report stored in the database with `add_to_index()`. User reports are held in
+  memory only, so they are cleared whenever the server stops.
+- Then call `warm_up()` once, which loads the sentence model in advance (approximately 8
+  seconds).
 
 **When a report is saved or its board is corrected**
 
-- The service calls `add_to_index()` with the saved or corrected report, so
-  both functions can return it straight away, including its new words in
-  `search()`.
+- Call `add_to_index()` with the report, so both functions can return it straight away,
+  including its new words in `search()`.
 
 **When showing results**
 
-- The report-detail endpoint passes `exclude_ids=[message_id]` to
-  `retrieve()`, so a saved report is not returned as its own first result.
+- For a saved report, pass `exclude_ids=[message_id]` to `retrieve()`. Otherwise, the report is
+  returned as its own first result.
 - A message or query with no words left after cleaning (for example, only a link or an
   @username) returns no reports, while an empty query lists reports from newest to oldest.
 
@@ -98,9 +106,9 @@ kept.
   user reports in the index and to load the model before the first request.
 - **Extra parameter:** `exclude_ids` leaves out the given IDs, such as the report being
   viewed.
-- **Extra result fields:** `duplicate_count` and `duplicate_ids` show the
-  near-identical messages grouped under each result. The API schema includes
-  both fields and the frontend shows the duplicate count.
+- **Extra result fields:** `duplicate_count` and `duplicate_ids` show the near-identical
+  messages grouped under each result. These fields are not part of the planned response and
+  should be added to the API response if they are to be shown.
 - **Extra filters:** `created_after` and `created_before` filter reports by posting time.
 
 **Result fields**
@@ -114,10 +122,6 @@ Each result is returned as a dictionary with the fields below.
 | `board_label` | Board of the report |
 | `text_preview` | Original message, cut at 200 characters |
 | `source_type` | `humaid_history` or `user` |
-| `created_at` | Posting time when available |
-| `status` | Application status for user reports |
-| `country`, `region`, `city` | Saved location fields for user reports |
-| `latitude`, `longitude` | Saved coordinates for user reports |
 | `duplicate_count`, `duplicate_ids` | Near-identical messages grouped under this result |
 
 **Filters**

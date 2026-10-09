@@ -2,12 +2,15 @@
 
 **Owner:** Kunal Mistry
 **Role:** Member 4 — backend, database, API, shared evaluation harness
-**Status:** backend and evaluation handoff complete; final model and retrieval wiring added on the integration branch
+**Status:** 20/20 tests green · 3 of 5 planned steps complete · steps 4–5 blocked on teammates (status at handoff; see the integration note in §7)
 
-> Integration update: `app/backend/services.py` now loads the selected Member 3 classifier and Member 5 retrieval index through the existing ports. The API entry point, schema, database path and endpoint paths remain unchanged. Mock mode is retained for tests and isolated frontend work.
+> **Read this first (added at merge).** Sections 1–6 record the original Member 4 handoff and
+> are kept as written. The note in Section 7 and the root `README.md` describe the current
+> integrated runtime. Do not reintroduce the module-level mock singletons described in 1.3;
+> the API now gets its classifier and retriever from `app/backend/services.py`.
 
-This document records Member 4's backend and evaluation contribution and is
-source material for the final group report.
+This document is the running record of Member 4's work. It will be
+compiled into `member4_backend_and_evaluation.md` for the final report.
 
 ---
 
@@ -22,7 +25,7 @@ documented in `README.md`:
 | --- | --- | --- |
 | `POST` | `/api/analyse` | classify text, return 10-label prediction + related reports |
 | `POST` | `/api/reports` | persist a report, assign `message_id`, derive `status` |
-| `GET`  | `/api/reports` | paginated, filterable list of saved user reports |
+| `GET`  | `/api/reports` | paginated, filterable list |
 | `GET`  | `/api/reports/{id}` | one report + related reports |
 | `GET`  | `/api/search` | ranked search over the retrieval index |
 | `PATCH`| `/api/reports/{id}` | user correction and/or status update |
@@ -33,8 +36,7 @@ Shared-contract invariants enforced in code:
 - `probabilities` must contain all 10 labels; each in `[0, 1]`; sum ≈ 1.0 (±1e-3).
 - `board_label` defaults to `predicted_label` on insert.
 - `PATCH user_correction` updates `board_label` only; `predicted_label` is immutable.
-- The public POST endpoint accepts `source_type=user` only. If an internal
-  database contains a historical row, PATCH rejects it with 403.
+- Historical rows (`source_type=humaid_history`) are read-only; PATCH → 403.
 - New user rows start at `status=unverified`; low-confidence predictions enter `status=needs_review`.
 - Filter query names honored: `q, k, page, board_label, source_type, status, country, region, city, needs_review`.
 
@@ -46,21 +48,19 @@ Shared-contract invariants enforced in code:
 `db.py`, resolved relative to the module). The schema is auto-applied
 on FastAPI startup via a lifespan handler.
 
-### 1.3 Classifier and retriever ports
+### 1.3 Mock classifier + retriever
 
 `app/backend/ports/classifier.py` and `ports/retriever.py` define
 `Protocol`s and `MockClassifier` / `MockRetriever` implementations.
-`app/backend/services.py` now provides the application assembly layer.
-It loads the selected real classifier and retrieval index in `real`
-mode, or the mock implementations in `mock` mode. API modules ask this
-service for the active implementation, so their routes do not need to
-know how either model is stored.
+Members 2, 3 and 5 drop in real implementations by registering their
+loaders in `evaluation/cross_event/__main__._MODEL_REGISTRY` and (for the
+API) replacing the module-level singleton in `api/analyse.py`,
+`api/reports.py`, `api/search.py`.
 
 ### 1.4 Cross-event evaluation harness
 
-`evaluation/cross_event/` provides reusable loaders, metrics and writers for
-any `classify(text)`-compatible classifier. Its generic runner evaluates event
-`__test.json` files and writes:
+`evaluation/cross_event/` runs any `classify(text)`-compatible classifier
+against each HumAID event's `__test.json` split and writes:
 
 - `per_event_metrics.csv` — one row per event
 - `per_label_metrics.csv` — long format (event × label)
@@ -68,27 +68,19 @@ any `classify(text)`-compatible classifier. Its generic runner evaluates event
 - `summary.json` — mean/min/max macro-F1 + low-support flags
 - `run_log.json` — model name, events evaluated, total runtime
 
-The final shared stress test is stricter than the generic runner: Members 2
-and 3 remove `cyclone_idai_2019` before training on the other 12 events in the
-13-event subset, then evaluate on its 779 test messages. Their model-specific
-training code and saved outputs are linked from
-`evaluation/cross_event/README.md`.
-
 ---
 
 ## 2. File map
 
 ```
 app/
-├── app_models.json                           selected model and index paths
 ├── schema.sql                                SQLite schema (source of truth)
 └── backend/
     ├── main.py                               FastAPI entrypoint + lifespan bootstrap
     ├── db.py                                 connection factory + bootstrap
     ├── store.py                              SQLite-backed CRUD
-    ├── services.py                           real/mock component assembly
     ├── schemas.py                            Pydantic request/response models
-    ├── labels.py                             shared 10-label order
+    ├── labels.py                             10 labels + confidence threshold
     ├── ports/
     │   ├── classifier.py                     Classifier Protocol + MockClassifier
     │   └── retriever.py                      Retriever Protocol + MockRetriever
@@ -106,8 +98,8 @@ evaluation/
 
 tests/
 ├── conftest.py                               tmp_path DB fixture + TestClient
-├── test_api_integration.py                   16 API + schema-validator tests
-└── test_cross_event.py                        8 evaluator tests
+├── test_api_integration.py                   13 API + schema-validator tests
+└── test_cross_event.py                        7 evaluator tests
 
 report/sections/
 └── member4_worklog.md                        this file
@@ -118,8 +110,8 @@ report/sections/
 ## 3. Verification
 
 ```
-uv run pytest tests/ -q
-24 passed, 7 warnings
+.venv/Scripts/python.exe -m pytest tests/ -v
+======================= 20 passed, 7 warnings in 2.51s ========================
 ```
 
 ### API & schema tests (`tests/test_api_integration.py`)
@@ -129,19 +121,16 @@ uv run pytest tests/ -q
 | 1 | `test_health` | `/api/health` returns 200 |
 | 2 | `test_analyse_shape` | 10 labels, probs sum to 1.0, bounds, keys present |
 | 3 | `test_golden_path_analyse_save_browse_search` | end-to-end flow works |
-| 4 | `test_empty_search_supports_filtered_history_browsing` | an empty query can browse a filtered board |
-| 5 | `test_analyse_filters_related_items_to_predicted_board` | related items stay in the predicted board |
-| 6 | `test_post_defaults_board_to_predicted` | `board_label` defaults correctly |
-| 7 | `test_post_rejects_historical_source_type` | public POST accepts user reports only |
-| 8 | `test_patch_correction_preserves_predicted_label` | `predicted_label` is immutable |
-| 9 | `test_patch_rejects_unknown_label` | Pydantic rejects → 422 |
-| 10 | `test_patch_not_found` | missing id → 404 |
-| 11 | `test_historical_row_is_readonly` | `humaid_history` row → 403 |
-| 12 | `test_needs_review_transition` | low-conf POST → `needs_review` → resolved |
-| 13 | `test_list_filter_and_pagination` | filters + `page`/`k` work |
-| 14 | `test_prediction_rejects_out_of_range_probability` | probs outside `[0,1]` rejected |
-| 15 | `test_prediction_rejects_probs_not_summing_to_one` | probs not summing to 1.0 rejected |
-| 16 | `test_schema_has_required_fields` | all 11 README fields present |
+| 4 | `test_post_defaults_board_to_predicted` | `board_label` defaults correctly |
+| 5 | `test_patch_correction_preserves_predicted_label` | `predicted_label` is immutable |
+| 6 | `test_patch_rejects_unknown_label` | Pydantic rejects → 422 |
+| 7 | `test_patch_not_found` | missing id → 404 |
+| 8 | `test_historical_row_is_readonly` | `humaid_history` row → 403 |
+| 9 | `test_needs_review_transition` | low-conf POST → `needs_review` → resolved |
+| 10 | `test_list_filter_and_pagination` | filters + `page`/`k` work |
+| 11 | `test_prediction_rejects_out_of_range_probability` | probs outside `[0,1]` rejected |
+| 12 | `test_prediction_rejects_probs_not_summing_to_one` | probs not summing to 1.0 rejected |
+| 13 | `test_schema_has_required_fields` | all 11 README fields present |
 
 ### Cross-event tests (`tests/test_cross_event.py`)
 
@@ -152,13 +141,11 @@ uv run pytest tests/ -q
 | 3 | `test_discover_raises_when_empty` | clean error on empty dir |
 | 4 | `test_load_event_test_rejects_unknown_label` | label-vocab guard at load |
 | 5 | `test_compute_perfect_classifier` | perfect predictions → f1=1.0 on supported labels, macro-F1 reflects support |
-| 6 | `test_evaluator_accepts_dictionary_predictions` | evaluator accepts the packaged models' dictionary response |
-| 7 | `test_full_run_writes_expected_outputs` | all output artefacts land correctly |
-| 8 | `test_summary_flags_low_support_events` | low-support flag populated |
+| 6 | `test_full_run_writes_expected_outputs` | all 5 output artefacts land correctly |
+| 7 | `test_summary_flags_low_support_events` | low-support flag populated |
 
-The 7 warnings are one Starlette test-client deprecation and six expected
-sklearn warnings from the small synthetic event fixtures. They do not change
-the test results.
+The 7 warnings are two cosmetic sklearn/starlette deprecations with no
+behavioural impact; neither triggers on real HumAID event splits.
 
 ---
 
@@ -169,44 +156,31 @@ the test results.
 | DB path | Env var `CRISISLENS_DB_PATH`, default `app/backend/crisislens.db` resolved relative to `db.py` | Tests isolate via `tmp_path`; CWD-independent in prod |
 | DB connections | Open per call inside `store.*` functions | SQLite is a file; shared connections add complexity for no gain at our scale |
 | Schema bootstrap | Auto-applied on FastAPI lifespan startup, idempotent | Member 6 can start the backend with one command |
-| Model/retrieval wiring | `Protocol` ports + `app/backend/services.py` | Keeps API routes stable while real and mock components use the same contract |
+| Model/retrieval wiring | `Protocol` ports + module-level mock singletons | Real swap is a one-line change in `api/*.py` |
 | Classifier contract | Member 4 does **not** train; Members 2 and 3 provide trained classifiers via the shared `classify(text)` interface | Keeps evaluation independent of training |
-| Cross-event mode | Generic harness evaluates a supplied classifier; the final Member 2/3 stress test retrains after removing Cyclone Idai | Separates reusable metrics from the model-specific no-leakage training protocol |
+| Cross-event mode | Single classifier evaluated on each event (no per-event retraining in the harness) | Keeps the handoff cheap; factory mode can be added later behind the same registry seam |
 | Metrics vocab | sklearn calls always pass `labels=LABELS` | Output shape is `(10,)` / `(10,10)` regardless of what appears in `y_true` or `y_pred`; apples-to-apples across events |
 | Location storage | Nullable `country/region/city/latitude/longitude` columns on `reports` | API filter params require storage; one table avoids a join for MVP |
 | CORS | `allow_origins=["*"]` | Local-dev convenience; tighten before any shared deployment |
-| Confidence threshold | Owned by the selected Member 3 model metadata | The deployed DistilBERT uses its calibrated temperature and review threshold |
+| Confidence threshold | `0.60` placeholder in `labels.py` | Final value depends on Member 3's calibration |
 
 ---
 
 ## 5. Local run
 
-Install the shared environment from the repository root:
-
-```bash
-uv sync
 ```
+# first-time install (local only, not committed to pyproject.toml yet)
+uv pip install --python .venv/Scripts/python.exe fastapi pytest
 
-For lightweight API work on PowerShell, start the mock runtime:
+# backend
+.venv/Scripts/python.exe -m uvicorn app.backend.main:app --reload
+# interactive docs at http://127.0.0.1:8000/docs
 
-```powershell
-$env:CRISISLENS_RUNTIME="mock"
-uv run uvicorn app.backend.main:app --reload
-```
+# tests
+.venv/Scripts/python.exe -m pytest tests/ -v
 
-The interactive API documentation is at `http://127.0.0.1:8000/docs`.
-Run the tracked backend and evaluator tests with:
-
-```bash
-uv run pytest tests/ -q
-```
-
-The real runtime needs Member 3's release files and Member 5's locally built
-index. `README.md` gives the exact preparation and launch commands. The mock
-CLI below remains a quick check of the generic event evaluator:
-
-```bash
-uv run python -m evaluation.cross_event \
+# cross-event evaluator (once Member 1's EDA has populated data/raw/humaid_events/)
+.venv/Scripts/python.exe -m evaluation.cross_event \
     --model mock \
     --events-dir data/raw/humaid_events \
     --out-dir outputs/results/cross_event/mock
@@ -214,50 +188,64 @@ uv run python -m evaluation.cross_event \
 
 ---
 
-## 6. Shared dependencies
+## 6. Local-only dependencies
 
-The backend, frontend, model and retrieval dependencies are recorded together
-in `pyproject.toml`, `requirements.txt` and `uv.lock`. `uv sync` installs the
-agreed environment. Important compatibility ranges include
-`transformers >=4.40,<5`, `sentence-transformers >=5,<6` and `torch >=2.2,<3`.
-Any later dependency change should be tested locally before all three shared
-dependency files are updated.
+Installed into `.venv` for development; **not yet** written to
+`pyproject.toml` / `requirements.txt` / `uv.lock`. Batch update once
+step 4 settles.
+
+```
+fastapi    0.142.0
+pydantic   2.13.5
+starlette  1.7.0   (fastapi transitive)
+pytest     9.1.1   (dev)
+httpx              (dev, already present via other deps)
+```
 
 ---
 
-## 7. Integration outcome
+## 7. Pending — blocked on other members
 
-| Area | Current state |
-| --- | --- |
-| Selected components | `app/app_models.json` points to Member 3's Transformer and Member 5's retrieval index |
-| Runtime wiring | `app/backend/services.py` loads real components or the explicit mock fallback |
-| Model results | Baseline and Transformer results are saved under `outputs/results/` and `outputs/results/cross_event/` |
-| Search behaviour | The read-only HumAID index and saved user reports share Member 5's search interface |
-| Persistence | Only user submissions are created through `POST /api/reports`; historical examples remain in the retrieval index |
-| Frontend connection | Member 6's frontend calls the documented REST API without loading models or SQLite directly |
-| Automated checks | 16 API/schema tests and 8 evaluator tests pass in the tracked suite |
+| # | Item | Blocked on | Trigger to resume |
+| --- | --- | --- | --- |
+| B1 | `app/app_models.json` — model loader config (path, label order, threshold) | Members 2 + 3 | Packaged model with loader signature exists |
+| B2 | Register real models in `evaluation/cross_event/__main__._MODEL_REGISTRY` | Members 2 + 3 | Same as B1 |
+| B3 | Real cross-event run → `outputs/results/cross_event/{baseline,transformer}/` | Member 1 (data) + Members 2 + 3 (models) | Member 1 publishes event files; models ready |
+| B4 | Replace `MockClassifier` in `api/*.py` with the production model | Members 2 + 3 | Final model chosen |
+| B5 | Replace `MockRetriever` in `api/*.py` with Member 5's retrieval backend | Member 5 | Member 5 publishes `models/retrieval/` + loader |
+| B6 | `GET /api/search` semantics — DB rows, retrieval index, or union? Filter fields like `status`/`needs_review` live only on DB | Members 5 + 6 | Short alignment meeting |
+| B7 | Historical-row seeding script (populates `source_type=humaid_history` rows) | Member 1's EDA output + B6 design | After B6 |
+| B8 | End-to-end user-flow test — submit → classify → save → redirect → view → correct | Member 6 (frontend) + B4 + B5 | Frontend wired to real backend |
+| B9 | User-study feedback integration (confidence display, review queue) | Member 6 (study) | After B8 |
 
-The historical HumAID rows are not copied into SQLite. They remain in the
-read-only retrieval index, while saved and corrected user reports are replayed
-from SQLite when the real service starts.
+> **Integration note (added at merge, 10 Oct 2026).** Status of the items above
+> on `integration/crisislens-final`:
+>
+> - B1 done: `app/app_models.json` points to `models/transformer/` and `models/retrieval/index/`.
+> - B4 and B5 done: `app/backend/services.py` loads the real classifier and retriever
+>   (or the mocks via `CRISISLENS_RUNTIME=mock`); the routes in `api/*.py` now ask it
+>   for the active implementation.
+> - B6 settled: `GET /api/search` goes to the retrieval index. Saved user reports are
+>   added to that index on startup and whenever they are saved or corrected.
+> - B7 not needed: historical rows stay in the retrieval index and are not copied into SQLite.
+> - B2 and B3: the registry is unchanged. Members 2 and 3 ran the held-out-event test with
+>   their own scripts because the held-out event has to be removed before training. Results
+>   are in `outputs/results/cross_event/baseline/` and `.../transformer/`.
+> - B8 and B9 are still open. Four backend and evaluator tests were added during
+>   integration, bringing the Member 4 suite to 24 tests. Three separate frontend
+>   contract tests cover strict label handling.
+> - S5: the review threshold now comes from Member 3's `metadata.json`; the mock keeps 0.60.
 
-## 8. Remaining final-submission evidence
+## 8. Pending — Member 4's own backlog
 
-These items are not implemented results yet and should be added only after the
-team has measured or verified them:
-
-1. Run the full frontend and backend with the downloaded Member 3 model and
-   locally built Member 5 index. Record the complete submit, save, redirect,
-   browse, search and correction flow.
-2. Save API latency, failure behaviour and runtime details under
-   `outputs/results/system/`.
-3. Complete the user study and one evidence-based interface revision.
-4. Add verified cloud URLs and hosting instructions if the team deploys the
-   application.
-5. Tighten CORS and add access control if the application becomes a public
-   service rather than a class demonstration.
-6. Select final screenshots and combine this worklog with the other report
-   sections.
+| # | Item | Notes |
+| --- | --- | --- |
+| S1 | API response-time instrumentation (p50/p95 per endpoint) → `outputs/results/system/` | Deferred until step 4 so numbers reflect the real stack (task 8 of LATER_PLAN) |
+| S2 | Sample-request docs — `curl` examples per endpoint + `app/backend/README.md` | Light; should land before Member 6 wires the frontend |
+| S3 | Compile this worklog into `report/sections/member4_backend_and_evaluation.md` | End-of-project |
+| S4 | CORS tightening (replace `allow_origins=["*"]`) | No deployment target yet |
+| S5 | Tune `CONFIDENCE_REVIEW_THRESHOLD` | Depends on Member 3's calibration |
+| S6 | Decide whether `location` columns move to a child table | Fine as-is for MVP |
 
 ---
 
@@ -301,7 +289,6 @@ Re-read every file I had created and shipped a batch of fixes:
 - **M2** Anchored `DEFAULT_DB_PATH` and `SCHEMA_PATH` to `db.py`'s own location so launching from any CWD still works.
 - **M3** Dropped a redundant `.gitignore` line.
 
-The later integration resolved the search design: Member 5's index holds the
-read-only HumAID history and replays saved user reports from SQLite. Member 6
-uses that interface through the API. Open CORS remains suitable for the class
-demo but must be narrowed if a public deployment adds access control.
+Deferred by explicit decision: H1 (`/api/search` design) — needs
+Members 5 and 6; M4 (unreachable 400 branch in PATCH) — kept as a code-path
+safety net.
