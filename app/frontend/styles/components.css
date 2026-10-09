@@ -1,0 +1,223 @@
+﻿/* Reusable pieces: buttons, cards, category colours, badges, alerts, report cards. */
+
+/* Buttons. */
+.crisis-btn {
+    min-height: 44px;
+    padding: 0 16px;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+/* More specific than Quasar's own .q-btn, whose 3px corners and 36px height would win. */
+.q-btn.crisis-btn {
+    min-height: 44px;
+    border-radius: var(--radius-control);
+}
+
+/* Inputs, dropdowns and text areas share the button radius. */
+.q-field--outlined .q-field__control {
+    border-radius: var(--radius-control);
+}
+
+/* Cards */
+.crisis-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 1px 2px rgba(16, 42, 46, 0.04);
+    transition: transform 190ms, box-shadow 190ms;
+}
+
+.crisis-card--clickable {
+    cursor: pointer;
+}
+
+.crisis-card--clickable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(16, 42, 46, 0.08);
+}
+
+.crisis-card-icon {
+    color: var(--color-primary);
+    font-size: 28px;
+}
+
+/* Category colors */
+.crisis-category-card {
+    background: var(--category-bg);
+}
+
+.crisis-category-card .crisis-card-icon {
+    color: var(--category-accent);
+}
+
+.crisis-category-card .text-body-sm {
+    color: var(--color-text-main);
+}
+
+/* Urgent Needs highlight */
+.crisis-category-badge--urgent {
+    font-weight: 600;
+}
+
+.crisis-report-card:has(.crisis-category-badge--urgent) {
+    border-left: 3px solid var(--color-urgent);
+}
+
+/* Badges */
+.crisis-category-badge {
+    background: var(--category-bg);
+    color: var(--category-accent);
+}
+.crisis-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.crisis-badge--neutral { background-color: var(--color-background); color: var(--color-text-secondary); }
+.crisis-badge--primary { background-color: var(--color-primary-soft); color: var(--color-primary); }
+.crisis-badge--review { background-color: var(--color-review-soft); color: var(--color-review); }
+.crisis-badge--success { background-color: var(--color-success-soft); color: var(--color-success); }
+
+/* Alerts */
+.crisis-alert {
+    display: flex;
+    gap: 8px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    padding: 16px;
+}
+
+.crisis-alert--review { background-color: var(--color-review-soft); border-color: var(--color-review-border); }
+.crisis-alert--error { background-color: var(--color-error-soft); border-color: var(--color-error-border); }
+.crisis-alert--success { background-color: var(--color-success-soft); border-color: var(--color-success-border); }
+
+/* Report cards */
+.crisis-report-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.crisis-report-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    padding: 20px;
+    color: var(--color-text-main);
+}
+
+.crisis-report-card--new {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 1px var(--color-primary), 0 4px 12px rgba(15, 107, 102, 0.10);
+}
+
+.crisis-report-badges {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Clamp card preview to three lines. */
+.crisis-report-text {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+}
+
+/* Full report text */
+.crisis-report-full-text {
+    overflow-wrap: anywhere;
+    font-size: 18px;
+    line-height: 28px;
+}
+
+/* Report metadata */
+.crisis-report-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 16px;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+}
+
+/* A quieter colour that still passes 4.5:1 contrast. */
+.crisis-report-meta--muted {
+    color: #5F7276;
+}
+
+/* An icon and its text; long text wraps beside the icon. */
+.crisis-report-meta-item {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.crisis-report-meta-item .q-icon {
+    flex-shrink: 0;
+    margin-top: 4px;
+}
+
+/* Historical references */
+.crisis-report-card--reference {
+    background: var(--color-background);
+    box-shadow: none;
+}
+
+.crisis-report-note {
+    color: var(--color-text-secondary);
+}
+
+.crisis-pagination {
+    align-self: center;
+}
+
+/* Empty state */
+.crisis-empty {
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 40px 24px;
+    text-align: center;
+    border: 1px dashed var(--color-border);
+    border-radius: 12px;
+    background: var(--color-surface);
+}
+
+.crisis-empty-icon {
+    font-size: 40px;
+    color: var(--color-text-secondary);
+}
+
+/* Loading skeleton */
+@keyframes crisis-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.crisis-skeleton-block {
+    background-color: var(--color-border);
+    border-radius: 8px;
+    animation: crisis-pulse 1.5s ease-in-out infinite;
+}
+
+/* Map controls */
+.leaflet-touch .leaflet-bar.leaflet-control-zoom a {
+    width: 44px;
+    height: 44px;
+    line-height: 44px;
+}

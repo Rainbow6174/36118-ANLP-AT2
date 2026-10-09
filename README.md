@@ -41,6 +41,62 @@ python -m jupyter lab
 
 Use Python 3.11 or later. The EDA notebook downloads and prepares its own data. No prepared local dataset is needed before it runs.
 
+### Run the frontend
+
+The web app is in `app/frontend/` (NiceGUI). From the repository root:
+
+```bash
+uv sync
+uv run python app/frontend/main.py
+```
+
+Open http://localhost:8080. Without a backend address it runs in demo mode (built-in sample reports and a keyword classifier, with a "Demo mode" notice). To use the real REST API:
+
+```bash
+CRISISLENS_API_URL=http://localhost:8000 uv run python app/frontend/main.py
+```
+
+On PowerShell: `$env:CRISISLENS_API_URL="http://localhost:8000"; uv run python app/frontend/main.py`
+
+Restart the app after editing Python or CSS files.
+
+#### Fill the backend with demo reports
+
+A real backend starts with an empty database, so the boards show nothing. To add the 9 demo community reports (marked "Demo data" in the app), run this while the backend is running:
+
+```bash
+uv run python app/frontend/scripts/seed_demo_reports.py http://localhost:8000
+```
+
+Use the backend's own address, so it also works for a deployed backend. If demo reports are already there, the script stops without adding more; add `--force` to add them again. Run it from this repository after `uv sync`; the frontend does not have to be running. It only adds reports and never changes or deletes existing ones.
+
+### Deploy the frontend
+
+The frontend is one Python process with no database of its own. It needs the backend to be reachable from the machine it runs on.
+
+| Variable | Meaning |
+| --- | --- |
+| `CRISISLENS_API_URL` | Address of the REST API. If it is not set, the frontend shows built-in demo data. |
+| `PORT` | Port to listen on (default 8080). Hosting services set it, and then no browser is opened. |
+
+After starting, check the top of the page: a "Demo mode" notice means `CRISISLENS_API_URL` is not set and the data is built in, not from the backend. The notice is gone when the real backend is connected.
+
+The host must support WebSockets (NiceGUI needs them), so static hosting such as GitHub Pages will not work. The app has no login: anyone with the link can submit reports and change categories, so treat a public site as a demo.
+
+#### Local
+
+Follow "Run the frontend" above. To serve other devices on the same network, run it on the machine that hosts the backend and open `http://<that machine's address>:8080`.
+
+#### Cloud
+
+| Item | Value |
+| --- | --- |
+| Frontend URL | _to be added_ |
+| Backend API URL | _to be added_ |
+| Hosting service | _to be added_ |
+
+Deployment steps: to be added by the team.
+
 ### Dependency changes
 
 The checked-in environment covers the EDA and shared project code. If your work needs another package, install and test it locally first. After the local test works, update `pyproject.toml`, `requirements.txt` and `uv.lock` together, record the version and tell the team before changing the shared files. A planned package is not added to the repository until it has passed a local test.

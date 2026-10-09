@@ -1,0 +1,46 @@
+/* Design tokens: the other files use these through var(--...). */
+:root {
+    /* Brand */
+    --color-primary: #0F6B66;
+    --color-primary-soft: #E7F3F1;
+
+    /* Page, surfaces and text */
+    --color-background: #F7FAF9;
+    --color-surface: #FFFFFF;
+    --color-text-main: #102A2E;
+    --color-text-secondary: #52676B;
+    --color-border: #D8E2E0;
+
+    /* Status colours: plain is text, soft is background, border is outline. */
+    --color-review: #B54708;
+    --color-review-soft: #FCEEE4;
+    --color-review-border: #F3D9C3;
+    --color-error: #B42318;
+    --color-error-soft: #FBEAE8;
+    --color-error-border: #F3CBC6;
+    --color-success: #027A48;
+    --color-success-soft: #E7F6EF;
+    --color-success-border: #CFEBDD;
+
+    /* The safety line under the header. */
+    --color-notice-soft: #EDF3F2;
+
+    /* Top navigation bar */
+    --color-header-background: #FFFEFC;
+    --color-header-border: #DFE6E4;
+
+    /* Corner radius of buttons, inputs and dropdowns. */
+    --radius-control: 12px;
+
+    /* Height of the fixed top bar; sticky blocks sit below it. */
+    --header-height: 65px;
+
+    /* Accent for Urgent Needs (it marks a request, not a severity). */
+    --color-urgent: #BA2B20;
+}
+
+@media (max-width: 920px) {
+    :root {
+        --header-height: 57px;
+    }
+}
