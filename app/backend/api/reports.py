@@ -6,8 +6,8 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-from .. import store
-from ..ports.retriever import MockRetriever, Retriever
+from .. import services, store
+from ..ports.retriever import Retriever
 from ..schemas import (
     ReportCreate,
     ReportDetailResponse,
@@ -18,16 +18,15 @@ from ..schemas import (
 
 router = APIRouter()
 
-_retriever = MockRetriever()
-
-
 def get_retriever() -> Retriever:
-    return _retriever
+    return services.get_retriever()
 
 
 @router.post("/reports", response_model=ReportRecord, status_code=201)
 def create_report(payload: ReportCreate) -> ReportRecord:
-    return store.insert(payload)
+    record = store.insert(payload)
+    services.index_report(record)
+    return record
 
 
 @router.get("/reports", response_model=ReportListResponse)
@@ -64,7 +63,12 @@ def get_report(
     record = store.get(message_id)
     if record is None:
         raise HTTPException(status_code=404, detail="report not found")
-    related = retriever.retrieve(record.text, k=5)
+    related = retriever.retrieve(
+        record.text,
+        k=5,
+        filters={"board_label": record.board_label},
+        exclude_ids=[record.message_id],
+    )
     return ReportDetailResponse(report=record, related_reports=related)
 
 
@@ -82,4 +86,5 @@ def patch_report(message_id: str, patch: ReportPatch) -> ReportRecord:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     if updated is None:
         raise HTTPException(status_code=404, detail="report not found")
+    services.index_report(updated)
     return updated

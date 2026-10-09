@@ -15,6 +15,7 @@ def client(tmp_path, monkeypatch):
     """
     db_path = tmp_path / "test.db"
     monkeypatch.setenv("CRISISLENS_DB_PATH", str(db_path))
+    monkeypatch.setenv("CRISISLENS_RUNTIME", "mock")
 
     from app.backend.main import app
 

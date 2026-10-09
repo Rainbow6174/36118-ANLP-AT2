@@ -15,17 +15,18 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import db
+from . import db, services
 from .api import analyse, reports, search
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db.bootstrap()
+    services.configure()
     yield
 
 
-app = FastAPI(title="CrisisLens API", version="0.2.0-sqlite", lifespan=lifespan)
+app = FastAPI(title="CrisisLens API", version="1.0.0-integrated", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -41,4 +42,8 @@ app.include_router(search.router, prefix="/api", tags=["search"])
 
 @app.get("/api/health")
 def health() -> dict:
-    return {"status": "ok", "version": app.version}
+    return {
+        "status": "ok",
+        "version": app.version,
+        "runtime": services.runtime_status(),
+    }

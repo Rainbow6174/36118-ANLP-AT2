@@ -14,5 +14,3 @@ LABELS: tuple[str, ...] = (
 )
 
 LABEL_SET = frozenset(LABELS)
-
-CONFIDENCE_REVIEW_THRESHOLD = 0.60

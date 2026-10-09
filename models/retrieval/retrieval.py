@@ -44,13 +44,31 @@ from scipy import sparse
 
 try:
     from models.retrieval.build_index import (
-        HISTORY_PATH, SEARCH_SETTINGS, clean_text, embed_texts, fit_tfidf, load_embeddings,
-        load_model, load_tfidf, repair_text, semantic_scores, tfidf_scores,
+        HISTORY_PATH,
+        SEARCH_SETTINGS,
+        clean_text,
+        embed_texts,
+        fit_tfidf,
+        load_embeddings,
+        load_model,
+        load_tfidf,
+        repair_text,
+        semantic_scores,
+        tfidf_scores,
     )
 except ModuleNotFoundError:  # run as a script from models/retrieval/
     from build_index import (
-        HISTORY_PATH, SEARCH_SETTINGS, clean_text, embed_texts, fit_tfidf, load_embeddings,
-        load_model, load_tfidf, repair_text, semantic_scores, tfidf_scores,
+        HISTORY_PATH,
+        SEARCH_SETTINGS,
+        clean_text,
+        embed_texts,
+        fit_tfidf,
+        load_embeddings,
+        load_model,
+        load_tfidf,
+        repair_text,
+        semantic_scores,
+        tfidf_scores,
     )
 
 # Two results are grouped when their TF-IDF similarity to each other reaches
@@ -194,7 +212,8 @@ def _filter_mask(records: pd.DataFrame, filters: dict | None) -> np.ndarray:
         elif key in LOCATION_FILTERS:
             wanted = {str(v).strip().casefold() for v in _as_list(value)}
             mask &= records[key].map(
-                lambda v: isinstance(v, str) and v.strip().casefold() in wanted
+                lambda v, accepted=wanted: isinstance(v, str)
+                and v.strip().casefold() in accepted
             ).to_numpy()
         else:
             limit = pd.Timestamp(value)
@@ -206,6 +225,16 @@ def _filter_mask(records: pd.DataFrame, filters: dict | None) -> np.ndarray:
 
 def _preview(text: str) -> str:
     return text if len(text) <= PREVIEW_CHARS else text[: PREVIEW_CHARS - 3].rstrip() + "..."
+
+
+def _optional(value):
+    """Convert pandas missing values to JSON-friendly None."""
+    return None if value is None or pd.isna(value) else value
+
+
+def _created_at(value) -> str | None:
+    value = _optional(value)
+    return None if value is None else pd.Timestamp(value).isoformat()
 
 
 def _rank(
@@ -266,6 +295,11 @@ def rank_scores(
             "board_label": records.at[i, "board_label"],
             "text_preview": _preview(records.at[i, "text_display"]),
             "source_type": records.at[i, "source_type"],
+            "created_at": _created_at(records.at[i, "created_at"]),
+            "status": _optional(records.at[i, "status"]),
+            "country": _optional(records.at[i, "country"]),
+            "region": _optional(records.at[i, "region"]),
+            "city": _optional(records.at[i, "city"]),
             "duplicate_count": len(groups[i]),
             "duplicate_ids": [records.at[j, "id"] for j in groups[i]],
         }
@@ -335,6 +369,11 @@ def search(
             "board_label": row.board_label,
             "text_preview": _preview(row.text_display),
             "source_type": row.source_type,
+            "created_at": _created_at(row.created_at),
+            "status": _optional(row.status),
+            "country": _optional(row.country),
+            "region": _optional(row.region),
+            "city": _optional(row.city),
             "duplicate_count": 0,
             "duplicate_ids": [],
         }

@@ -14,6 +14,7 @@ def test_health(client):
     data = r.json()
     assert data["status"] == "ok"
     assert "version" in data
+    assert data["runtime"]["active_runtime"] == "mock"
 
 
 def test_analyse_shape(client):
@@ -73,6 +74,35 @@ def test_golden_path_analyse_save_browse_search(client):
     assert r.status_code == 200
     search = r.json()
     assert len(search["items"]) == 3
+
+
+def test_empty_search_supports_filtered_history_browsing(client):
+    r = client.get(
+        "/api/search",
+        params={
+            "q": "",
+            "source_type": "humaid_history",
+            "board_label": "caution_and_advice",
+            "k": 3,
+        },
+    )
+    assert r.status_code == 200
+    items = r.json()["items"]
+    assert len(items) == 3
+    assert all(item["source_type"] == "humaid_history" for item in items)
+    assert all(item["board_label"] == "caution_and_advice" for item in items)
+
+
+def test_analyse_filters_related_items_to_predicted_board(client):
+    response = client.post(
+        "/api/analyse", json={"text": "families need drinking water"}
+    )
+    assert response.status_code == 200
+    body = response.json()
+    predicted = body["prediction"]["predicted_label"]
+    assert all(
+        item["board_label"] == predicted for item in body["related_reports"]
+    )
 
 
 def test_post_defaults_board_to_predicted(client):

@@ -6,21 +6,19 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 
-from ..ports.retriever import MockRetriever, Retriever
+from .. import services
+from ..ports.retriever import Retriever
 from ..schemas import SearchResponse
 
 router = APIRouter()
 
-_retriever = MockRetriever()
-
-
 def get_retriever() -> Retriever:
-    return _retriever
+    return services.get_retriever()
 
 
 @router.get("/search", response_model=SearchResponse)
 def search(
-    q: str = Query(..., min_length=1),
+    q: str = Query("", min_length=0),
     k: int = Query(20, ge=1, le=200),
     board_label: Optional[str] = None,
     source_type: Optional[str] = None,

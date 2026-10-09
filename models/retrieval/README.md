@@ -30,12 +30,13 @@ and accept the filters listed in the notes for Member 4.
 
 ## Dependency Change for the Group
 
-One dependency, namely `sentence-transformers` (version 6.1 or later, below 7), is added for
-the retrieval functions.
+The retrieval functions use `sentence-transformers` 5.x. This series works with the
+Transformers 4.x runtime used by the deployed classifier, so both components can run in one
+environment.
 
 - **Recorded files:** the dependency was tested locally and recorded in `pyproject.toml`,
   `requirements.txt` and `uv.lock` together.
-- **Related packages:** `torch` (2.14.1) and `transformers` (5.17.0) are installed with it.
+- **Related packages:** `torch` and `transformers` are installed from the shared lock file.
 - **Action required:** `uv sync` should be run after pulling these changes.
 
 ## Setup
@@ -54,8 +55,9 @@ The indexes are not committed to the repository and should be built once on each
      embeds the messages with the sentence model.
    - **Output:** approximately 150 MB is written to `models/retrieval/index/`, which is
      excluded from Git.
-   - **Run time:** the build takes 2 to 3 minutes on a CPU. The first run also downloads the
-     sentence model (approximately 90 MB), which is cached for later runs.
+   - **Run time:** the build time depends on the CPU and can take several minutes. The first
+     run also downloads the sentence model (approximately 90 MB), which is cached for later
+     runs.
 
 ## Notes for Member 4
 

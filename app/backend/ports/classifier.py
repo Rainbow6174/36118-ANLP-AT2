@@ -8,8 +8,10 @@ from __future__ import annotations
 import hashlib
 from typing import Protocol
 
-from ..labels import CONFIDENCE_REVIEW_THRESHOLD, LABELS
+from ..labels import LABELS
 from ..schemas import Prediction
+
+MOCK_REVIEW_THRESHOLD = 0.60
 
 
 class Classifier(Protocol):
@@ -45,5 +47,5 @@ class MockClassifier:
             probabilities=probabilities,
             confidence=peak,
             model_version=self.model_version,
-            needs_review=peak < CONFIDENCE_REVIEW_THRESHOLD,
+            needs_review=peak < MOCK_REVIEW_THRESHOLD,
         )

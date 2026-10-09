@@ -7,7 +7,9 @@ temperature T and frozen review threshold tau. The RoBERTa (A4) analysis
 model lives in metadata only; it is the report's analysis model, not shipped
 in this package.
 
-## Contents
+Download `models_transformer.zip` from the [m3-transformer-v1 GitHub Release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v1) and unzip it at the repository root. The large files listed below appear after that download and remain outside Git.
+
+## Contents after the release is unpacked
 
 ```
 models/transformer/

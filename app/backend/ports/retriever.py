@@ -17,6 +17,7 @@ class Retriever(Protocol):
         text: str,
         k: int = 5,
         filters: Optional[dict] = None,
+        exclude_ids=None,
     ) -> list[RelatedReport]: ...
 
     def search(
@@ -24,6 +25,7 @@ class Retriever(Protocol):
         query: str,
         filters: Optional[dict] = None,
         k: int = 20,
+        exclude_ids=None,
     ) -> list[RelatedReport]: ...
 
 
@@ -32,32 +34,46 @@ class MockRetriever:
     the input length so the shape is exercised without an index.
     """
 
-    def _fake_items(self, text: str, k: int) -> list[RelatedReport]:
+    def _fake_items(
+        self,
+        text: str,
+        k: int,
+        filters: Optional[dict] = None,
+        exclude_ids=None,
+    ) -> list[RelatedReport]:
         n = max(0, min(k, 5))
         preview = (text or "")[:80]
-        return [
+        filters = filters or {}
+        board_label = filters.get("board_label") or "requests_or_urgent_needs"
+        source_type = filters.get("source_type") or "humaid_history"
+        prefix = "user" if source_type == "user" else "history"
+        excluded = {str(value) for value in (exclude_ids or [])}
+        items = [
             RelatedReport(
-                id=f"history-{i:03d}",
+                id=f"{prefix}-{i:03d}",
                 similarity=round(0.9 - 0.1 * i, 3),
-                board_label="requests_or_urgent_needs",
+                board_label=board_label,
                 text_preview=f"[mock #{i}] {preview}",
-                source_type="humaid_history",
+                source_type=source_type,
             )
             for i in range(n)
         ]
+        return [item for item in items if item.id not in excluded]
 
     def retrieve(
         self,
         text: str,
         k: int = 5,
         filters: Optional[dict] = None,
+        exclude_ids=None,
     ) -> list[RelatedReport]:
-        return self._fake_items(text, k)
+        return self._fake_items(text, k, filters, exclude_ids)
 
     def search(
         self,
         query: str,
         filters: Optional[dict] = None,
         k: int = 20,
+        exclude_ids=None,
     ) -> list[RelatedReport]:
-        return self._fake_items(query, k)
+        return self._fake_items(query, k, filters, exclude_ids)

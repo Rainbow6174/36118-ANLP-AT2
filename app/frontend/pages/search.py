@@ -60,7 +60,9 @@ async def search_page(
     @ui.refreshable
     async def results() -> None:
         try:
-            if state["q"]:
+            # Historical and mixed-source browsing comes from Member 5's
+            # read-only index. Community-only browsing comes from SQLite.
+            if state["q"] or state["source"] != "user":
                 found = await api.search_reports(
                     state["q"],
                     board_label=filter_value("category"),

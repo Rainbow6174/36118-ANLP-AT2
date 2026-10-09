@@ -41,6 +41,37 @@ python -m jupyter lab
 
 Use Python 3.11 or later. The EDA notebook downloads and prepares its own data. No prepared local dataset is needed before it runs.
 
+### Prepare the real application
+
+The code is in Git, while the large generated artefacts stay outside Git.
+
+1. Download `models_transformer.zip` from the [Member 3 model release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v1) and unzip it at the repository root. The weights and tokenizer will be placed in `models/transformer/`.
+2. Run the EDA notebook once so `data/raw/humaid_events/` exists.
+3. Build the local historical-message index:
+
+```bash
+uv run python models/retrieval/build_index.py
+```
+
+The index is written to `models/retrieval/index/`. It is generated locally and is not committed.
+
+### Run the backend
+
+The FastAPI entry point remains `app/backend/main.py`:
+
+```bash
+CRISISLENS_RUNTIME=real uv run uvicorn app.backend.main:app --host 0.0.0.0 --port 8000
+```
+
+On PowerShell:
+
+```powershell
+$env:CRISISLENS_RUNTIME="real"
+uv run uvicorn app.backend.main:app --host 0.0.0.0 --port 8000
+```
+
+`real` requires both the Member 3 model and Member 5 index and stops with a clear message when either is missing. `mock` is available for tests and interface work. The default `auto` mode uses the real components when both artefacts exist and otherwise reports its mock fallback at `GET /api/health`.
+
 ### Run the frontend
 
 The web app is in `app/frontend/` (NiceGUI). From the repository root:
@@ -259,7 +290,7 @@ The MVP status values are `unverified`, `needs_review` and `resolved`. They desc
 
 ### REST API
 
-Member 4 owns these endpoints. Member 6 calls the API and does not call models or the database directly. The current skeleton contains placeholder folders only; Member 4 will add the backend implementation, `app/schema.sql` and `app/app_models.json`.
+Member 4 owns these endpoints. Member 6 calls the API and does not call models or the database directly. The implementation is in `app/backend/`, the SQLite schema is `app/schema.sql`, and `app/app_models.json` keeps the selected model and index paths.
 
 | Method and path | Request | Minimum response |
 | --- | --- | --- |
@@ -380,7 +411,7 @@ Read `LATER_PLAN.md` for each member's tasks, goal, expected files and shared ru
 | 1 | `notebooks/01_crisis_eda.ipynb`, `outputs/eda/` | EDA notebook, `outputs/eda/`, `report/sections/member1_data_and_eda.md` |
 | 2 | `outputs/eda/eda_summary.json`, `data/raw/humaid/` | `models/text_baseline/`, `outputs/predictions/baseline/`, `outputs/results/baseline/`, `outputs/results/cross_event/baseline/`, `report/sections/member2_text_baseline.md` |
 | 3 | `outputs/eda/humaid_label_distribution.csv`, `outputs/eda/humaid_text_statistics.csv`, `data/raw/humaid/` | `models/transformer/`, `outputs/predictions/transformer/`, `outputs/results/transformer/`, `outputs/results/cross_event/transformer/`, `report/sections/member3_contextual_model.md` |
-| 4 | `README.md`, `LATER_PLAN.md`, `outputs/eda/eda_summary.json` | `app/backend/` (implementation to be added), `app/schema.sql` (to be added), `app/app_models.json` (to be added), `evaluation/cross_event/`, `outputs/results/cross_event/`, `outputs/results/system/`, `report/sections/member4_backend_and_evaluation.md` |
+| 4 | `README.md`, `LATER_PLAN.md`, `outputs/eda/eda_summary.json` | `app/backend/`, `app/schema.sql`, `app/app_models.json`, `evaluation/cross_event/`, `outputs/results/cross_event/`, `outputs/results/system/`, `report/sections/member4_worklog.md` |
 | 5 | `data/raw/humaid_events/`, `outputs/eda/humaid_duplicate_summary.csv` | `models/retrieval/`, `outputs/results/retrieval/`, `report/sections/member5_retrieval.md` |
 | 6 | `app/frontend/`, `outputs/eda/eda_summary.json` and the REST API above | `app/frontend/`, `report/user_study/`, `outputs/figures/application/`, `report/sections/member6_frontend_and_user_study.md` |
 
@@ -390,7 +421,7 @@ Members may read other folders for context, but they should keep their implement
 
 The main classification metric is macro-F1. Each serious run reports precision, recall, F1 and support for every label, plus balanced accuracy, a confusion matrix and run time. The final app model also reports how well its confidence scores match its results.
 
-The main test uses the official HumAID train, validation and test split. The new-event test trains on 18 events and tests on one unseen event at a time. Use the official test set only after settings and thresholds are fixed.
+The standard test uses the official HumAID train, validation and test split. The shared unseen-disaster stress test uses the 13-event `events_set1_47K` subset, removes `cyclone_idai_2019` completely from training and validation, and evaluates on its 779 test messages. Member 2 and Member 3 use this same protocol. The full 19-event download remains the source for EDA and the retrieval index.
 
 Retrieval reports precision@k or recall@k on a small checked set and records search time. The user study reports task completion, time, board choice, confidence understanding and corrections.
 

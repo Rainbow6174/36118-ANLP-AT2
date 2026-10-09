@@ -43,6 +43,7 @@ class RelatedReport:
     board_label: str
     text_preview: str
     source_type: str  # "user" | "humaid_history"
+    similarity: float | None = None
     # Optional: a search result may carry them, or fill_details() adds them.
     created_at: str | None = None
     status: str | None = None

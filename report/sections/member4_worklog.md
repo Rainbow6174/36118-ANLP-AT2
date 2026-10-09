@@ -2,7 +2,9 @@
 
 **Owner:** Kunal Mistry
 **Role:** Member 4 — backend, database, API, shared evaluation harness
-**Status:** 20/20 tests green · 3 of 5 planned steps complete · steps 4–5 blocked on teammates
+**Status:** backend and evaluation handoff complete; final model and retrieval wiring added on the integration branch
+
+> Integration update: `app/backend/services.py` now loads the selected Member 3 classifier and Member 5 retrieval index through the existing ports. The API entry point, schema, database path and endpoint paths remain unchanged. Mock mode is retained for tests and isolated frontend work.
 
 This document is the running record of Member 4's work. It will be
 compiled into `member4_backend_and_evaluation.md` for the final report.
@@ -43,14 +45,15 @@ Shared-contract invariants enforced in code:
 `db.py`, resolved relative to the module). The schema is auto-applied
 on FastAPI startup via a lifespan handler.
 
-### 1.3 Mock classifier + retriever
+### 1.3 Classifier and retriever ports
 
 `app/backend/ports/classifier.py` and `ports/retriever.py` define
 `Protocol`s and `MockClassifier` / `MockRetriever` implementations.
-Members 2, 3 and 5 drop in real implementations by registering their
-loaders in `evaluation/cross_event/__main__._MODEL_REGISTRY` and (for the
-API) replacing the module-level singleton in `api/analyse.py`,
-`api/reports.py`, `api/search.py`.
+`app/backend/services.py` now provides the application assembly layer.
+It loads the selected real classifier and retrieval index in `real`
+mode, or the mock implementations in `mock` mode. API modules ask this
+service for the active implementation, so their routes do not need to
+know how either model is stored.
 
 ### 1.4 Cross-event evaluation harness
 
@@ -151,13 +154,13 @@ behavioural impact; neither triggers on real HumAID event splits.
 | DB path | Env var `CRISISLENS_DB_PATH`, default `app/backend/crisislens.db` resolved relative to `db.py` | Tests isolate via `tmp_path`; CWD-independent in prod |
 | DB connections | Open per call inside `store.*` functions | SQLite is a file; shared connections add complexity for no gain at our scale |
 | Schema bootstrap | Auto-applied on FastAPI lifespan startup, idempotent | Member 6 can start the backend with one command |
-| Model/retrieval wiring | `Protocol` ports + module-level mock singletons | Real swap is a one-line change in `api/*.py` |
+| Model/retrieval wiring | `Protocol` ports + `app/backend/services.py` | Keeps API routes stable while real and mock components use the same contract |
 | Classifier contract | Member 4 does **not** train; Members 2 and 3 provide trained classifiers via the shared `classify(text)` interface | Keeps evaluation independent of training |
 | Cross-event mode | Single classifier evaluated on each event (no per-event retraining in the harness) | Keeps the handoff cheap; factory mode can be added later behind the same registry seam |
 | Metrics vocab | sklearn calls always pass `labels=LABELS` | Output shape is `(10,)` / `(10,10)` regardless of what appears in `y_true` or `y_pred`; apples-to-apples across events |
 | Location storage | Nullable `country/region/city/latitude/longitude` columns on `reports` | API filter params require storage; one table avoids a join for MVP |
 | CORS | `allow_origins=["*"]` | Local-dev convenience; tighten before any shared deployment |
-| Confidence threshold | `0.60` placeholder in `labels.py` | Final value depends on Member 3's calibration |
+| Confidence threshold | Owned by the selected Member 3 model metadata | The deployed DistilBERT uses its calibrated temperature and review threshold |
 
 ---
 

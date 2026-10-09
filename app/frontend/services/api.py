@@ -1,7 +1,6 @@
 """The only place the pages talk to the backend: the real REST API, or the demo backend when CRISISLENS_API_URL is not set."""
 
 import asyncio
-import logging
 import os
 from dataclasses import replace
 
@@ -19,8 +18,6 @@ from schemas.api import (
 )
 
 from services.mock_backend import backend
-
-logger = logging.getLogger(__name__)
 
 API_URL = os.environ.get("CRISISLENS_API_URL", "").strip().rstrip("/")
 USING_MOCK_BACKEND = not API_URL
@@ -85,11 +82,10 @@ def _parse(build, what: str):
 
 
 def _known_label(label: str) -> str:
-    """A label the pages cannot name or draw is shown as "other relevant information"."""
+    """Reject an API contract error instead of silently changing model output."""
     if label in LABELS:
         return label
-    logger.warning("Unknown category from the backend: %r", label)
-    return "other_relevant_information"
+    raise BackendError(f"The backend returned an unsupported category: {label!r}.")
 
 
 def _prediction_from_json(data: dict) -> ClassificationResponse:
@@ -143,6 +139,7 @@ def _report_from_record(data: dict) -> CrisisReport:
 def _related_from_json(item: dict) -> RelatedReport:
     return RelatedReport(
         id=item["id"],
+        similarity=item.get("similarity"),
         board_label=_known_label(item["board_label"]),
         text_preview=item["text_preview"],
         source_type=item["source_type"],

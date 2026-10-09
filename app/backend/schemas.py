@@ -62,10 +62,26 @@ class Prediction(BaseModel):
 
 class RelatedReport(BaseModel):
     id: str
-    similarity: float
+    similarity: Optional[float] = None
     board_label: str
     text_preview: str
     source_type: SourceType
+    created_at: Optional[str] = None
+    status: Optional[Status] = None
+    country: Optional[str] = None
+    region: Optional[str] = None
+    city: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    duplicate_count: int = 0
+    duplicate_ids: list[str] = Field(default_factory=list)
+
+    @field_validator("board_label")
+    @classmethod
+    def _board_known(cls, v: str) -> str:
+        if v not in LABEL_SET:
+            raise ValueError(f"unknown board_label: {v}")
+        return v
 
 
 class AnalyseRequest(BaseModel):

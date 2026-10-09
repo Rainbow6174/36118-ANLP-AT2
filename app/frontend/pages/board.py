@@ -3,7 +3,12 @@
 import asyncio
 
 from components.category_card import category_icon
-from components.report_cards import crisis_pagination, report_card, report_count
+from components.report_cards import (
+    crisis_pagination,
+    related_card,
+    report_card,
+    report_count,
+)
 from components.ui_kit import (
     crisis_alert,
     crisis_button,
@@ -52,8 +57,11 @@ async def board_page(label: str, new: str = "") -> None:
 
     async def load_history():
         try:
-            return await api.list_reports(
-                board_label=label, source_type="humaid_history", page=1, page_size=3
+            return await api.search_reports(
+                "",
+                board_label=label,
+                source_type="humaid_history",
+                k=3,
             )
         except api.BackendError:
             return None
@@ -146,12 +154,12 @@ async def board_page(label: str, new: str = "") -> None:
 
                 await community_reports()
 
-            if history is not None and history.items:
+            if history:
                 with ui.column().classes("crisis-section"):
                     crisis_heading("Related historical references", 2)
                     ui.label(
                         "Past examples for context. These are not current reports."
                     ).classes("text-body-sm")
                     with ui.column().classes("crisis-report-list"):
-                        for report in history.items:
-                            report_card(report)
+                        for report in history:
+                            related_card(report, "Historical reference")
