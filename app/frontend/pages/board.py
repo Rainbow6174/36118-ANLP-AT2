@@ -58,7 +58,7 @@ async def board_page(label: str, new: str = "") -> None:
     async def load_history():
         try:
             return await api.search_reports(
-                "",
+                name,
                 board_label=label,
                 source_type="humaid_history",
                 k=3,

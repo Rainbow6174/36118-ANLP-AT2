@@ -9,7 +9,7 @@ from services import api
 from theme import apply_theme
 
 # NiceGUI's default 3 s is too short for pages that load data before showing.
-PAGE_RESPONSE_TIMEOUT_SECONDS = 15.0
+PAGE_RESPONSE_TIMEOUT_SECONDS = 25.0
 
 NAV_LINKS = (
     ("Home", "/", "home"),

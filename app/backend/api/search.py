@@ -18,7 +18,7 @@ def get_retriever() -> Retriever:
 
 @router.get("/search", response_model=SearchResponse)
 def search(
-    q: str = Query("", min_length=0),
+    q: str = Query(..., min_length=1),
     k: int = Query(20, ge=1, le=200),
     board_label: Optional[str] = None,
     source_type: Optional[str] = None,
@@ -30,13 +30,17 @@ def search(
     retriever: Retriever = Depends(get_retriever),
 ) -> SearchResponse:
     filters = {
-        "board_label": board_label,
-        "source_type": source_type,
-        "status": status,
-        "country": country,
-        "region": region,
-        "city": city,
-        "needs_review": needs_review,
+        key: val
+        for key, val in {
+            "board_label": board_label,
+            "source_type": source_type,
+            "status": status,
+            "country": country,
+            "region": region,
+            "city": city,
+            "needs_review": needs_review,
+        }.items()
+        if val is not None
     }
     items = retriever.search(q, filters=filters, k=k)
     return SearchResponse(items=items, q=q, k=k)

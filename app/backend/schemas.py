@@ -88,6 +88,13 @@ class AnalyseRequest(BaseModel):
     text: str = Field(min_length=1)
     location: Optional[Location] = None
 
+    @field_validator("text")
+    @classmethod
+    def _text_not_blank(cls, v: str) -> str:
+        if not v.strip():
+            raise ValueError("text must contain at least one non-whitespace character")
+        return v
+
 
 class AnalyseResponse(BaseModel):
     prediction: Prediction

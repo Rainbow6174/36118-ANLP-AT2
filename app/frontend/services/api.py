@@ -80,7 +80,7 @@ def _parse(build, what: str):
     """Run build(); a missing or mistyped field becomes a BackendError."""
     try:
         return build()
-    except (KeyError, TypeError) as exc:
+    except (KeyError, TypeError, AttributeError) as exc:
         raise BackendError(f"The {what} was not in the expected format.") from exc
 
 
@@ -93,8 +93,13 @@ def _known_label(label: str) -> str:
 
 
 def _prediction_from_json(data: dict) -> ClassificationResponse:
-    data = {**data, "predicted_label": _known_label(data["predicted_label"])}
-    return ClassificationResponse(**data)
+    return ClassificationResponse(
+        predicted_label=_known_label(data["predicted_label"]),
+        probabilities=data["probabilities"],
+        confidence=data["confidence"],
+        model_version=data["model_version"],
+        needs_review=data["needs_review"],
+    )
 
 
 def _location_payload(location: LocationInput | None) -> dict | None:
@@ -150,7 +155,7 @@ def _related_from_json(item: dict) -> RelatedReport:
         created_at=item.get("created_at"),
         status=item.get("status"),
         # The place may be nested under "location" or flat, like in a report.
-        location=_location_from_record(item.get("location") or item),
+        location=_location_from_record(item.get("location") if item.get("location") is not None else item),
         duplicate_count=item.get("duplicate_count") or 0,
     )
 

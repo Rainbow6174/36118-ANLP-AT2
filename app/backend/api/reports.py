@@ -7,6 +7,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from .. import services, store
+from ..labels import LABEL_SET
 from ..ports.retriever import Retriever
 from ..schemas import (
     ReportCreate,
@@ -14,6 +15,8 @@ from ..schemas import (
     ReportListResponse,
     ReportPatch,
     ReportRecord,
+    SourceType,
+    Status,
 )
 
 router = APIRouter()
@@ -31,9 +34,9 @@ def create_report(payload: ReportCreate) -> ReportRecord:
 
 @router.get("/reports", response_model=ReportListResponse)
 def list_reports(
-    board_label: Optional[str] = None,
-    source_type: Optional[str] = None,
-    status: Optional[str] = None,
+    board_label: Optional[str] = Query(None),
+    source_type: Optional[SourceType] = None,
+    status: Optional[Status] = None,
     country: Optional[str] = None,
     region: Optional[str] = None,
     city: Optional[str] = None,

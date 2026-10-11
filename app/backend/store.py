@@ -154,6 +154,7 @@ def list_reports(
 
     conn = db.connect()
     try:
+        conn.execute("BEGIN")
         cur = conn.execute(
             f"SELECT COUNT(*) AS c FROM reports WHERE {where_sql}", params
         )
@@ -164,6 +165,7 @@ def list_reports(
             [*params, k, offset],
         )
         rows = cur.fetchall()
+        conn.execute("COMMIT")
     finally:
         conn.close()
     return [_row_to_record(r) for r in rows], total
@@ -194,25 +196,32 @@ def patch(
         new_correction = row["user_correction"]
         new_board = row["board_label"]
         new_status = row["status"]
+        new_needs_review = row["needs_review"]
 
         if user_correction is not None:
             if user_correction not in LABEL_SET:
                 raise ValueError(f"unknown correction label: {user_correction}")
             new_correction = user_correction
             new_board = user_correction
+            new_needs_review = False
         if status is not None:
             new_status = status
+            if status == "resolved":
+                new_needs_review = False
 
         conn.execute(
             "UPDATE reports SET user_correction = ?, board_label = ?, "
-            "status = ? WHERE message_id = ?",
-            (new_correction, new_board, new_status, message_id),
+            "status = ?, needs_review = ? WHERE message_id = ?",
+            (new_correction, new_board, new_status, new_needs_review, message_id),
         )
         conn.commit()
         cur = conn.execute(
             "SELECT * FROM reports WHERE message_id = ?", (message_id,)
         )
-        return _row_to_record(cur.fetchone())
+        row = cur.fetchone()
+        if row is None:
+            return None
+        return _row_to_record(row)
     finally:
         conn.close()
 

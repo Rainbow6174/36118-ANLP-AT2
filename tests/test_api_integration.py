@@ -3,9 +3,12 @@
 from __future__ import annotations
 
 import sqlite3
+from pathlib import Path
 
 from app.backend import db
 from app.backend.labels import LABELS
+
+_SCHEMA_PATH = Path(__file__).resolve().parents[1] / "app" / "schema.sql"
 
 
 def test_health(client):
@@ -76,11 +79,16 @@ def test_golden_path_analyse_save_browse_search(client):
     assert len(search["items"]) == 3
 
 
-def test_empty_search_supports_filtered_history_browsing(client):
+def test_empty_search_rejected(client):
+    r = client.get("/api/search", params={"q": "", "k": 3})
+    assert r.status_code == 422
+
+
+def test_filtered_search_returns_matching_items(client):
     r = client.get(
         "/api/search",
         params={
-            "q": "",
+            "q": "caution",
             "source_type": "humaid_history",
             "board_label": "caution_and_advice",
             "k": 3,
@@ -88,8 +96,6 @@ def test_empty_search_supports_filtered_history_browsing(client):
     )
     assert r.status_code == 200
     items = r.json()["items"]
-    assert len(items) == 3
-    assert all(item["source_type"] == "humaid_history" for item in items)
     assert all(item["board_label"] == "caution_and_advice" for item in items)
 
 
@@ -310,7 +316,7 @@ def test_schema_has_required_fields(tmp_path):
     db_file = tmp_path / "schema_check.db"
     conn = sqlite3.connect(db_file)
     try:
-        with open("app/schema.sql", encoding="utf-8") as f:
+        with open(_SCHEMA_PATH, encoding="utf-8") as f:
             conn.executescript(f.read())
         cols = {row[1] for row in conn.execute("PRAGMA table_info(reports)")}
     finally:

@@ -10,7 +10,8 @@ from schemas.api import join_place_name
 _USER_AGENT = "CrisisLens-ANLP-Student-Prototype/0.1"
 _NOMINATIM_URL = "https://nominatim.openstreetmap.org"
 _PHOTON_URL = "https://photon.komoot.io/api"
-_PHOTON_CACHE_LIMIT = 256
+_CACHE_LIMIT = 256
+_PHOTON_CACHE_LIMIT = _CACHE_LIMIT
 
 _Place = dict[str, str | float]
 
@@ -113,6 +114,8 @@ async def reverse_geocode(lat: float, lon: float) -> dict[str, str]:
             "region": region,
             "country": country,
         }
+        if len(_reverse_cache) >= _CACHE_LIMIT:
+            _reverse_cache.clear()
         _reverse_cache[key] = result
         return result.copy()
 
@@ -148,6 +151,8 @@ async def search_places(query: str) -> list[_Place]:
             if isinstance(name, str) and name.strip() and is_valid_point(lat, lon):
                 places.append({"name": name, "lat": lat, "lon": lon})
 
+        if len(_search_cache) >= _CACHE_LIMIT:
+            _search_cache.clear()
         _search_cache[key] = places
         return [place.copy() for place in places]
 

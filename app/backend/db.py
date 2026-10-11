@@ -36,6 +36,7 @@ def bootstrap() -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(path)
     try:
+        conn.execute("PRAGMA foreign_keys = ON")
         with open(SCHEMA_PATH, encoding="utf-8") as f:
             conn.executescript(f.read())
         conn.commit()

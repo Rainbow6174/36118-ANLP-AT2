@@ -1,0 +1,86 @@
+[
+  {
+    "scenario": "Empty text submitted",
+    "passed": true,
+    "status": "pass",
+    "detail": "422 validation error returned: String should have at least 1 character"
+  },
+  {
+    "scenario": "Whitespace-only text",
+    "passed": true,
+    "status": "pass",
+    "detail": "422 for whitespace-only text"
+  },
+  {
+    "scenario": "Missing text field",
+    "passed": true,
+    "status": "pass",
+    "detail": "422 for missing text field"
+  },
+  {
+    "scenario": "Long text (14,000 chars)",
+    "passed": true,
+    "status": "pass",
+    "detail": "Handled 14000 chars in 285ms. Label: infrastructure_and_utility_damage, conf: 0.905"
+  },
+  {
+    "scenario": "Very long text (140,000 chars)",
+    "passed": true,
+    "status": "pass",
+    "detail": "Handled 140000 chars in 404ms (truncated by tokenizer). Label: requests_or_urgent_needs"
+  },
+  {
+    "scenario": "Unicode and emoji input",
+    "passed": true,
+    "status": "pass",
+    "detail": "Unicode+emoji handled. Label: other_relevant_information"
+  },
+  {
+    "scenario": "Invalid label in correction",
+    "passed": true,
+    "status": "pass",
+    "detail": "422 for invalid correction label"
+  },
+  {
+    "scenario": "PATCH nonexistent report",
+    "passed": true,
+    "status": "pass",
+    "detail": "404 for nonexistent report"
+  },
+  {
+    "scenario": "GET nonexistent report",
+    "passed": true,
+    "status": "pass",
+    "detail": "404 for nonexistent report ID"
+  },
+  {
+    "scenario": "Historical row protection",
+    "passed": true,
+    "status": "pass",
+    "detail": "POST only accepts source_type=user (historical rows live in retrieval index only)"
+  },
+  {
+    "scenario": "Empty search query",
+    "passed": true,
+    "status": "pass",
+    "detail": "422 for empty search query"
+  },
+  {
+    "scenario": "Special characters in search",
+    "passed": true,
+    "status": "pass",
+    "detail": "Special characters handled safely (no injection)"
+  },
+  {
+    "scenario": "Concurrent submissions (10x)",
+    "passed": true,
+    "status": "pass",
+    "detail": "10 concurrent submissions, all unique IDs, no corruption"
+  },
+  {
+    "scenario": "Pagination boundary (page 9999)",
+    "passed": true,
+    "status": "pass",
+    "detail": "Page 9999 returns empty list (total=57)"
+  }
+]

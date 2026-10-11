@@ -247,11 +247,18 @@ def submit_page() -> None:
                 "and try again. Nothing was saved."
             )
             ui.notify("The report could not be published.", type="negative")
+            return
+        except Exception:
+            message.set_text(
+                "Something went wrong. Please try again."
+            )
+            return
+        else:
+            ui.navigate.to(f"/boards/{report.board_label}?new={report.message_id}")
+        finally:
             publishing_busy = False
             button.props(remove="loading")
             button.enable()
-            return
-        ui.navigate.to(f"/boards/{report.board_label}?new={report.message_id}")
 
     with frame():
         with ui.column().classes("crisis-submit-page"):
