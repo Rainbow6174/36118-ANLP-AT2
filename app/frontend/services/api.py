@@ -191,11 +191,14 @@ async def create_report(
     prediction: ClassificationResponse,
     board_label: str,
     location: LocationInput | None = None,
+    created_by: str | None = None,
 ) -> CrisisReport:
     """Save a report; the backend sets its status from needs_review."""
     if USING_MOCK_BACKEND:
         try:
-            return backend.create_report(text, prediction, board_label, location)
+            return backend.create_report(
+                text, prediction, board_label, location, created_by=created_by,
+            )
         except ValueError as exc:
             raise BackendError(str(exc)) from exc
 
@@ -223,6 +226,7 @@ async def list_reports(
     needs_review: bool | None = None,
     page: int = 1,
     page_size: int = 6,
+    exclude_hidden: bool = False,
 ) -> ReportListResponse:
     """One page of full reports, newest first."""
     if USING_MOCK_BACKEND:
@@ -233,6 +237,7 @@ async def list_reports(
             needs_review=needs_review,
             page=page,
             page_size=page_size,
+            exclude_hidden=exclude_hidden,
         )
 
     data = await _call(
@@ -364,3 +369,15 @@ async def update_report(
         body["status"] = status
     data = await _call("PATCH", f"/api/reports/{message_id}", json=body)
     return _parse(lambda: _report_from_record(data), "updated report")
+
+
+async def delete_report(message_id: str) -> None:
+    """Permanently remove a report."""
+    if USING_MOCK_BACKEND:
+        try:
+            backend.delete_report(message_id)
+        except (KeyError, PermissionError) as exc:
+            raise BackendError(str(exc)) from exc
+        return
+
+    await _call("DELETE", f"/api/reports/{message_id}")

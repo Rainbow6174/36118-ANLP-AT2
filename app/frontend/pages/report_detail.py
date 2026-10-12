@@ -22,7 +22,7 @@ from constants.labels import LABEL_DISPLAY_NAMES
 from layout import PAGE_RESPONSE_TIMEOUT_SECONDS, frame
 from nicegui import ui
 from schemas.api import CrisisReport
-from services import api
+from services import api, auth
 
 # Coordinates are rounded to 2 decimals, so the real place is within this distance of the point.
 _AREA_RADIUS_METERS = 800
@@ -50,6 +50,11 @@ def _category_editor(report: CrisisReport) -> None:
         ui.notify("Category saved", type="positive")
         ui.navigate.to(f"/reports/{report.message_id}")
 
+    can_edit = auth.is_admin() or (
+        report.created_by is not None
+        and report.created_by == auth.current_user()
+    )
+
     with ui.column().classes("crisis-detail-footer"):
         with ui.row().classes("crisis-detail-footer-row"):
             ui.label("CrisisLens does not check whether a report is true.").classes(
@@ -57,6 +62,11 @@ def _category_editor(report: CrisisReport) -> None:
             )
             if report.source_type == "humaid_history":
                 ui.label("Historical records are read-only.").classes("text-caption")
+                return
+            if not can_edit:
+                ui.label("Only the author or an admin can edit this report.").classes(
+                    "text-caption"
+                )
                 return
             open_button = crisis_button(
                 "Suggest a different category", variant="secondary", icon="edit"

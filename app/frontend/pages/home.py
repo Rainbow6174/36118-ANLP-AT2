@@ -20,7 +20,7 @@ from constants.labels import (
 )
 from layout import frame
 from nicegui import ui
-from services import api
+from services import api, auth
 
 LATEST_REPORT_COUNT = 3
 SEARCH_EXAMPLES = ("water", "shelter", "medical help", "looking for family")
@@ -56,7 +56,8 @@ async def home_page() -> None:
         """Show the newest community reports, or why they are missing."""
         try:
             result = await api.list_reports(
-                source_type="user", page=1, page_size=LATEST_REPORT_COUNT
+                source_type="user", page=1, page_size=LATEST_REPORT_COUNT,
+                exclude_hidden=not auth.is_admin(),
             )
         except api.BackendError:
             updates.clear()

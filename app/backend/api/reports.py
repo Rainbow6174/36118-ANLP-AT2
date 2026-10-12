@@ -1,4 +1,4 @@
-"""POST/GET/GET-by-id/PATCH /api/reports."""
+"""POST/GET/GET-by-id/PATCH/DELETE /api/reports."""
 
 from __future__ import annotations
 
@@ -91,3 +91,13 @@ def patch_report(message_id: str, patch: ReportPatch) -> ReportRecord:
         raise HTTPException(status_code=404, detail="report not found")
     services.index_report(updated)
     return updated
+
+
+@router.delete("/reports/{message_id}", status_code=204)
+def delete_report(message_id: str) -> None:
+    try:
+        deleted = store.delete(message_id)
+    except PermissionError as exc:
+        raise HTTPException(status_code=403, detail=str(exc)) from exc
+    if not deleted:
+        raise HTTPException(status_code=404, detail="report not found")

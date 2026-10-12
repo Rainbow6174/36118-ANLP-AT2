@@ -1,0 +1,240 @@
+/* Login page: override NiceGUI's q-page wrapper so the card truly centers */
+.crisis-login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    background: var(--color-background);
+    padding: 24px 16px;
+    box-sizing: border-box;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    overflow-y: auto;
+}
+
+.crisis-login-card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 16px;
+    padding: 40px 32px;
+    box-shadow: 0 4px 24px rgba(16, 42, 46, 0.08);
+    gap: 16px;
+    align-items: center;
+    margin: auto;
+}
+
+.crisis-login-logo {
+    display: block;
+    width: 280px;
+    max-width: 80%;
+    height: auto;
+    margin-bottom: 12px;
+}
+
+.crisis-login-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--color-text-main);
+    text-align: center;
+    width: 100%;
+}
+
+.crisis-login-subtitle {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin-bottom: 8px;
+    width: 100%;
+}
+
+.crisis-login-error {
+    color: var(--color-error);
+    font-size: 14px;
+    min-height: 20px;
+    text-align: center;
+    width: 100%;
+}
+
+.crisis-login-btn {
+    width: 100%;
+    min-height: 48px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: var(--radius-control) !important;
+}
+
+.crisis-login-hint {
+    width: 100%;
+    margin-top: 16px;
+    padding: 16px;
+    background: var(--color-primary-soft);
+    border-radius: 12px;
+    gap: 8px;
+    align-items: center;
+    text-align: center;
+}
+
+.crisis-login-credential {
+    font-size: 13px;
+    font-family: 'Courier New', monospace;
+    color: var(--color-primary);
+    background: var(--color-surface);
+    padding: 2px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--color-border);
+}
+
+/* Small phones (< 400px) */
+@media (max-width: 400px) {
+    .crisis-login-page {
+        padding: 16px 12px;
+    }
+
+    .crisis-login-card {
+        padding: 28px 20px;
+        border-radius: 12px;
+    }
+
+    .crisis-login-title {
+        font-size: 19px;
+    }
+
+    .crisis-login-hint .row {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
+/* Tablets and small laptops */
+@media (min-width: 600px) {
+    .crisis-login-card {
+        padding: 48px 40px;
+    }
+
+    .crisis-login-logo {
+        width: 300px;
+    }
+}
+
+/* Tall screens: push the card slightly above center for a more natural feel */
+@media (min-height: 700px) {
+    .crisis-login-page {
+        padding-bottom: 10vh;
+    }
+}
+
+/* Header search bar: sits between logo and nav links */
+.crisis-header-search {
+    flex: 1 1 200px;
+    max-width: 400px;
+    display: flex;
+    align-items: center;
+}
+
+.crisis-header-search-input {
+    width: 100%;
+}
+
+.crisis-header-search-input .q-field__control {
+    border-radius: 999px !important;
+    background: var(--color-background) !important;
+    min-height: 38px !important;
+    height: 38px !important;
+}
+
+.crisis-header-search-input .q-field__marginal {
+    height: 38px !important;
+}
+
+/* User avatar and menu */
+.crisis-user-area {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.crisis-avatar-btn {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    background: var(--color-primary) !important;
+    color: #FFFFFF !important;
+}
+
+.crisis-user-menu {
+    min-width: 180px;
+}
+
+.crisis-user-menu-header {
+    padding: 12px 16px 8px;
+    gap: 2px;
+}
+
+/* Admin page */
+.crisis-admin-card {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+.crisis-admin-card-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.crisis-admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border);
+}
+
+.crisis-admin-actions .q-field {
+    min-width: 200px;
+    max-width: 280px;
+}
+
+.crisis-admin-filters {
+    gap: 12px;
+    align-items: center;
+}
+
+.crisis-admin-filters .q-field {
+    min-width: 200px;
+    max-width: 280px;
+}
+
+.crisis-admin-status-badge .crisis-badge {
+    text-transform: capitalize;
+}
+
+.crisis-pagination-active {
+    background: var(--color-primary-soft) !important;
+    color: var(--color-primary) !important;
+    font-weight: 600;
+}
+
+/* Responsive: hide header search on small screens */
+@media (max-width: 920px) {
+    .crisis-header-search {
+        display: none;
+    }
+
+    .crisis-user-area {
+        margin-left: auto;
+    }
+}

@@ -226,3 +226,22 @@ def patch(
         conn.close()
 
 
+def delete(message_id: str) -> bool:
+    """Delete a report by message_id. Returns True if deleted, False if not found."""
+    conn = db.connect()
+    try:
+        cur = conn.execute(
+            "SELECT source_type FROM reports WHERE message_id = ?", (message_id,)
+        )
+        row = cur.fetchone()
+        if row is None:
+            return False
+        if row["source_type"] == "humaid_history":
+            raise PermissionError("historical records are read-only")
+        conn.execute("DELETE FROM reports WHERE message_id = ?", (message_id,))
+        conn.commit()
+        return True
+    finally:
+        conn.close()
+
+
