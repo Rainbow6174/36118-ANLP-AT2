@@ -150,10 +150,11 @@ This prototype has not been tested with real users. Its interface is instead ass
 
 The next step is a small usability test with real users, planned as follows:
 
-- **Participants:** 3 to 5 people who are not on the project team.
+- **Participants:** 3 to 5 people who are not on the project team, with varied levels of familiarity with English-language interfaces.
 - **Tasks:** submit a report, say what the confidence display means, correct a wrong category, find related past messages with search, and find the review queue.
 - **Measures:** task completion, time on task, whether the board they chose matches the message, whether they understand "Unverified" and "Category reviewed", and the number and type of corrections made.
 - **Material:** short realistic disaster messages, for example "Several families near the school need clean drinking water after the flood" (Urgent Needs), "Volunteers are collecting blankets and water bottles at the community centre" (could be Rescue & Donations or Urgent Needs) and "Sending prayers and thoughts to everyone affected" (Sympathy & Support). A real-world scenario is also available: the 3 October 2026 earthquake near Leongatha, Victoria (preliminary magnitude 4.8; Geoscience Australia, 2026). The 10 test reports for it are in `scripts/submit_earthquake_reports.py`, for example "Minor cracks appearing in the walls of our apartment building in Dandenong after the earthquake. Power flickered but came back."
+- **Records:** results would be anonymised and saved in `report/user_study/`, without names or other personal details.
 - **Use of results:** the findings should lead to at least one visible interface change, such as clearer wording for the status badges or a more visible way to reach the correction form.
 
 Other further work is a screen-reader and keyboard-only check, a test on real phones, and a wording check by people with a crisis-communication background.
