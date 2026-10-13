@@ -1,6 +1,6 @@
 {
   "model_version": "1.1.0",
-  "note": "Deployment ships DistilBERT with its own fitted T/tau. RoBERTa is the report's analysis model. Numbers are seed-42 canonical.",
+  "note": "Deployment ships DistilBERT with its own fitted T/tau, trained on the official HumAID split. RoBERTa is the report's analysis model, also trained on the official HumAID split. The cross_event block describes a SEPARATE re-training experiment used only to measure distribution shift, and is not the deployment or analysis model. Numbers are seed-42 canonical.",
   "canonical_label_order": [
     "caution_and_advice",
     "displaced_people_and_evacuations",
@@ -21,13 +21,10 @@
     "weight_decay": 0.01,
     "max_seq_length": 128
   },
-  "dataset": "HumAID events_set1_47K (13 events, ~43k rows)",
-  "held_out_events": [
-    "cyclone_idai_2019"
-  ],
   "deployment_model": {
     "encoder_id": "distilbert-base-uncased",
     "tokenizer": "distilbert-base-uncased",
+    "training_data": "HumAID official split (train/val/test)",
     "run_id": "A1",
     "seed": 42,
     "imbalance_method": "plain",
@@ -39,6 +36,7 @@
   "analysis_model": {
     "encoder_id": "cardiffnlp/twitter-roberta-base",
     "tokenizer": "cardiffnlp/twitter-roberta-base",
+    "training_data": "HumAID official split (train/val/test)",
     "run_id": "A4",
     "seed": 42,
     "imbalance_method": "plain",
@@ -46,10 +44,14 @@
     "review_threshold_tau": 0.8945,
     "target_risk": 0.05,
     "seen_test_macro_f1": 0.7621,
-    "seeds_available": [
-      42,
-      123
-    ],
+    "seeds_available": [42, 123],
     "two_seed_mean_test_macro_f1": 0.7642
+  },
+  "cross_event": {
+    "note": "Separate re-training to measure distribution shift. NOT the deployment or analysis model.",
+    "dataset": "HumAID events_set1_47K (13 events, ~43k rows)",
+    "training_setup": "Each encoder re-trained with one event fully removed, then evaluated on that event as the unseen distribution.",
+    "held_out_events": ["cyclone_idai_2019"],
+    "distilbert_run_id": "B_distilbert-base-uncased_plain_s42"
   }
 }

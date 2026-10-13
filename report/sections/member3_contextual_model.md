@@ -1,4 +1,4 @@
-# Member 3: Contextual Model — Transformer Fine-tuning, Calibration and Cross-event Evaluation
+# Member 3: Contextual Model: Transformer Fine-tuning, Calibration and Cross-event Evaluation
 
 
 ## 5.2 Contextual Model: Transformer Fine-tuning
@@ -31,7 +31,7 @@ A model can be accurate yet overconfident, reporting high probabilities that do 
 ### 5.2.4 Selective prediction and human review
 
 
-Calibrated confidence drives a review threshold tau, chosen on validation for a five percent target error on auto-accepted messages. Messages above tau are auto-sorted; the rest are flagged needs_review and sent to a human queue. At the operating point the model auto-accepts about 45 percent of seen-test messages at a 4.5 percent error rate, sending the remaining 55 percent to review. Figure 2 shows the coverage-risk trade-off that sets this operating point.
+Calibrated confidence drives a review threshold tau, chosen on validation for a five percent target error on auto-accepted messages. Messages above tau are auto-sorted; the rest are flagged needs_review and sent to a human queue. At the operating point the analysis model (Twitter-RoBERTa) auto-accepts about 45 percent of seen-test messages at a 4.5 percent error rate, sending the remaining 55 percent to review. Figure 2 shows the coverage-risk trade-off that sets this operating point.
 
 
 *Figure 2: Coverage-risk curve. As the review threshold rises, auto-accept coverage falls and the error rate of the auto-accepted set falls.*
@@ -40,7 +40,7 @@ Calibrated confidence drives a review threshold tau, chosen on validation for a 
 ### 5.2.5 Cross-event generalisation under distribution shift
 
 
-The real test is a disaster the model has never seen. We retrained each encoder with one event, `cyclone_idai_2019`, fully removed and evaluated on it. Accuracy fell by a similar, modest amount for both models (Twitter-RoBERTa 0.762 to 0.718; DistilBERT 0.755 to 0.697). The more revealing finding is about confidence, and here the two models behave differently. Table 1 gives the per-class picture for the analysis model, and Table 2 contrasts calibration and selective prediction under shift.
+The real test is a disaster the model has never seen. We retrained each encoder with one event, `cyclone_idai_2019`, fully removed and evaluated on it. "Seen" here refers to the official HumAID test set restricted to the other 18 events, so the retrained-model number is directly comparable to the headline macro-F1. Accuracy fell by a similar, modest amount for both models (Twitter-RoBERTa 0.762 to 0.718; DistilBERT 0.755 to 0.697). The more revealing finding is about confidence, and here the two models behave differently. Table 1 gives the per-class picture for the analysis model, and Table 2 contrasts calibration and selective prediction under shift.
 
 
 Whether temperature scaling transfers under shift depends on how much rescaling it applies. Twitter-RoBERTa’s larger temperature (T = 1.35) over-corrects on the unseen event, where the model was not overconfident to begin with, so its ECE worsens from 0.041 to 0.061. DistilBERT’s gentler temperature (T = 1.10) still improves calibration on the unseen event (ECE 0.047 to 0.030). The lesson is that calibration cannot be assumed to transfer; it is model-dependent.
