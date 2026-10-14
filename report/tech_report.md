@@ -2,14 +2,14 @@
 
 **36118 Applied Natural Language Processing — Assignment 2**  
 **Group:** 02
-**Authors:** Jiayu Hao (25948860); Kamali Siddharthan ([student ID]); Xin Yiing Loo ([student ID]); Kunal Mistry ([student ID]); Sze Xuan Yap ([student ID]); Lujia Ouyang ([student ID])
+**Authors:** Jiayu Hao (25948860); Kamali Siddharthan (26043669); Xin Yiing Loo (26178069); Kunal Mistry (25734346); Sze Xuan Yap (25763158); Lujia Ouyang (25673411)
 **GitHub repository:** [Rainbow6174/36118-ANLP-AT2](https://github.com/Rainbow6174/36118-ANLP-AT2)
 
 ## Executive summary
 
 People use social media to share warnings, damage reports, requests and offers during disasters, but the resulting stream is difficult to organise quickly. CrisisLens is a web-based NLP prototype that turns a new English crisis message into a structured, searchable report. It predicts one of ten humanitarian categories, shows the prediction and its confidence, allows a person to correct the category, saves the report to the relevant board and retrieves related messages from earlier disasters. Low-confidence predictions enter a review queue. The system organises information; it does not verify whether a report is true or dispatch emergency help.
 
-The project compared a transparent word-and-character TF-IDF baseline with DistilBERT and a Twitter-domain RoBERTa model. On the official HumAID test set, macro-F1 increased from 0.7262 for the baseline to 0.7547 for DistilBERT and 0.7621 for Twitter-RoBERTa. DistilBERT was selected for the application because it gave up only 0.0074 macro-F1 while taking roughly half the training and inference time of Twitter-RoBERTa in the saved experiments. Temperature scaling and confidence-based selective prediction were added so that uncertain cases could be sent to human review.
+The project compared a transparent word-and-character TF-IDF baseline with DistilBERT and Twitter-RoBERTa. On the official HumAID test set, macro-F1 increased from 0.7262 for the baseline to 0.7547 for DistilBERT and 0.7621 for Twitter-RoBERTa. DistilBERT was selected for the application because it gave up only 0.0074 macro-F1 while taking roughly half the training and inference time of Twitter-RoBERTa in the saved experiments. Temperature scaling and confidence-based selective prediction were added so that uncertain cases could be sent to human review.
 
 Generalisation was tested by removing `cyclone_idai_2019` from training and evaluating on its 779 test messages. Under this shift, macro-F1 was 0.5760 for the TF-IDF baseline, 0.6969 for DistilBERT and 0.718 for Twitter-RoBERTa. Calibration learned on seen events did not transfer consistently: the frozen temperature improved DistilBERT's expected calibration error (ECE) on the held-out event but worsened it for Twitter-RoBERTa. For this reason, confidence is used to route messages for review and is not treated as a guarantee.
 
@@ -89,7 +89,7 @@ Class support is uneven. `rescue_volunteering_or_donation_effort` contains 21,27
 
 ![HumAID label and event counts](../outputs/eda/figures/humaid_label_and_event_counts.png)
 
-*Figure 1. HumAID label and event counts. The distribution is uneven across both labels and disaster events.*
+*Figure 1. HumAID label and event counts. Both label support and event coverage are uneven, with hurricane events contributing 41,320 of 76,484 messages. This concentration may reward event-specific language in the official split and motivated the unseen-event stress test.*
 
 ### 3.2 Supporting CrisisMMD analysis
 
@@ -149,9 +149,11 @@ The best Logistic Regression result was only slightly above the best combined Li
 Two encoders were fine-tuned for five epochs with batch size 32, learning rate `2e-5`, maximum length 128, warm-up ratio 0.1 and weight decay 0.01:
 
 - DistilBERT, a compact general-purpose encoder designed to reduce model size and inference cost (Sanh et al., 2019);
-- `cardiffnlp/twitter-roberta-base`, a RoBERTa model pretrained for Twitter language, chosen because HumAID consists of tweets (Barbieri et al., 2020).
+- Twitter-RoBERTa (`cardiffnlp/twitter-roberta-base`), a RoBERTa model pretrained for Twitter language, chosen because HumAID consists of tweets (Barbieri et al., 2020).
 
-Macro-F1 selected models because the class distribution is uneven. Plain fine-tuning, class weighting and focal loss were compared under a rule fixed before the final result: an imbalance method would be adopted only if it improved the three smallest classes without reducing overall macro-F1 by more than 0.01. Neither class weighting nor focal loss passed. Both increased minority recall in some cases but lost too much precision. Plain fine-tuning was retained and the negative result was recorded.
+The training settings were fixed before the final comparison and were not selected from test results. We used batch size 32 and learning rate `2e-5` for every run. Maximum length 128 matched the short tweet format. Keeping these settings unchanged made the encoder and loss comparisons consistent; an exhaustive hyperparameter search was outside the project scope.
+
+Macro-F1 selected models because the class distribution is uneven. Plain fine-tuning, class weighting and focal loss were compared under a rule fixed before the final result: an imbalance method would be adopted only if it improved the three smallest classes without reducing overall macro-F1 by more than 0.01. Neither class weighting nor focal loss passed. Giving rare labels more influence made the models predict them more often. This raised recall in some cases but also produced more false positives, reducing precision and minority-class F1. Plain fine-tuning was retained.
 
 Twitter-RoBERTa produced the highest score, but DistilBERT was selected as the deployment classifier. Twitter-RoBERTa improved test macro-F1 by only 0.0074, while DistilBERT reduced training time from 3,586.6 to 1,794 seconds and inference time from 4.10 to 2.23 ms per sample. After temperature scaling, DistilBERT also had lower test ECE (0.0257 compared with 0.0351). These results favoured DistilBERT for the interactive application. Twitter-RoBERTa was retained for comparison and cross-event analysis; it is not loaded by the application.
 
@@ -224,7 +226,7 @@ The contextual models improved macro-F1 over the lexical baseline. Twitter-RoBER
 
 Per-label scores show that the main difficulty is not rare vocabulary alone. Models perform strongly on injured or dead people, infrastructure damage and rescue/donation messages. The weaker boundaries include `not_humanitarian` versus `other_relevant_information`, and requests versus donation or volunteering. These categories can use similar words while differing in communicative intent. Contextual encoders reduce but do not remove that ambiguity.
 
-Class weighting and focal loss raised recall for some smaller classes but did not satisfy the pre-defined small-class F1 condition and lowered overall macro-F1. We kept plain fine-tuning instead of selecting a method from recall gains alone.
+Class weighting and focal loss made the models predict minority labels more often. For example, recall for `requests_or_urgent_needs` rose from 0.54 to about 0.72, but the added false positives reduced precision. Minority-class F1 did not improve and overall macro-F1 fell, so plain fine-tuning was retained.
 
 ### 6.2 Selective prediction on seen data
 
@@ -291,6 +293,10 @@ The application makes the model part of a short, reversible workflow:
 
 Users can check and correct the category before it determines where the report appears. The saved report also keeps the original prediction, so later corrections do not erase the model's output.
 
+![CrisisLens home page and report states](screenshots/7.jpg)
+
+*Figure 5. The NiceGUI home page links to submission, search and all ten category boards. Demo records show the “Unverified” and “Category needs review” states.*
+
 ### 7.2 Ease of use and communication
 
 The home page offers three direct starts: submit, search and browse categories. The report form separates description, category review and publication so that the model output is seen before it becomes a board entry. All ten categories have stable display names, colours, icons and short explanations. Loading, empty and error states give a next action instead of leaving a blank page.
@@ -301,7 +307,21 @@ The interface separates three ideas that could otherwise be confused:
 - **Category needs review** means model confidence was below the threshold.
 - **Category reviewed** means a person checked the sorting, not that the report is true.
 
+The review queue shows the model's suggested category and confidence before a person confirms or changes the category (Figure 6).
+
+![CrisisLens review queue](screenshots/4.jpg)
+
+*Figure 6. The review queue shows why a report is waiting, the model confidence and controls to confirm or change the category. The records are demo data.*
+
 Historical messages are marked as past references, with usernames anonymised and links removed. Demo records carry a visible demo label. These labels let readers distinguish a current community submission from a historical example or demonstration data.
+
+![CrisisLens category board](screenshots/8.jpg)
+
+*Figure 7. A category board keeps source, verification and category-review status separate. The second demo record shows that “Category reviewed” refers to sorting, while the report itself remains “Unverified”.*
+
+![CrisisLens search page](screenshots/11.jpg)
+
+*Figure 8. The search page provides category, status and source controls above the result list. This demo-data screenshot shows the unfiltered state.*
 
 ### 7.3 Safety, privacy and accessibility
 
@@ -331,15 +351,15 @@ The repository also contains a self-contained EDA notebook, packaged model inter
 
 ## 10. Ethics, limitations and responsible use
 
-The dataset represents public English tweets from selected disasters between 2016 and 2019. It does not represent every language, region, disaster type or communication practice. Hurricane data are especially prominent. Performance differences across locations and populations were not measured, and the system should not infer nationality or personal characteristics from language.
+**Dataset coverage and fairness.** The dataset represents public English tweets from selected disasters between 2016 and 2019. It does not represent every language, region, disaster type or communication practice. Hurricane data are especially prominent. Performance differences across locations and populations were not measured, and the system should not infer nationality or personal characteristics from language.
 
-The smallest labels have limited support. The official test contains only 72 `missing_or_found_people` messages, and the held-out event contains only four. Per-label results for these groups are unstable. The cross-event conclusion is also based on one event. More event holdouts are required before making broad robustness claims.
+**Rare classes and limited event coverage.** The smallest labels have limited support. The official test contains only 72 `missing_or_found_people` messages, and the held-out event contains only four. Per-label results for these groups are unstable. The cross-event conclusion is also based on one event. More event holdouts are required before making broad robustness claims.
 
-The application classifies and organises reports but does not verify facts. Its stable integrated version does not provide authenticated, backend-enforced moderator roles or a full audit history. A mistaken or malicious correction could move a report, and a “reviewed” category could be misunderstood. A production version needs authenticated roles, authorisation on the API, reversible audit logs, moderation, rate limits and abuse reporting.
+**Verification and moderation.** The application classifies and organises reports but does not verify facts. It does not yet provide authenticated moderator roles or a full audit history. A mistaken or malicious correction could move a report, and a “reviewed” category could be misunderstood. A production version needs API authorisation, reversible audit logs, moderation, rate limits and abuse reporting.
 
-User text may contain personal information even when the form asks people to avoid it. Data retention, withdrawal, deletion and incident-response policies are not implemented. Historical tweets also contain words written by real people; their dataset terms and privacy implications must be respected.
+**Privacy and data governance.** User text may contain personal information even when the form asks people to avoid it. Data retention, withdrawal, deletion and incident-response policies are not implemented. Historical tweets remain user-generated content and must be handled under the dataset terms and relevant privacy requirements.
 
-The current evidence does not include a formal external usability study, screen-reader test, sustained load test or verified public deployment. Model confidence is shown as a percentage, which some users may over-interpret. NIST's AI risk guidance emphasises that human oversight and system context are part of trustworthy AI, so the review workflow should be supported by clear roles and monitoring rather than treated as a final safeguard (National Institute of Standards and Technology, 2023).
+**Evidence still needed.** The current evidence does not include a formal external usability study, screen-reader test, sustained load test or verified public deployment. Model confidence is shown as a percentage, which some users may over-interpret. NIST's AI risk guidance emphasises that human oversight and system context are part of trustworthy AI, so the review workflow should be supported by clear roles and monitoring rather than treated as a final safeguard (National Institute of Standards and Technology, 2023).
 
 ## 11. Recommendations and next steps
 
