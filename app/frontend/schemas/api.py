@@ -68,10 +68,11 @@ class CrisisReport:
     model_version: str
     needs_review: bool
     created_at: str
-    status: str  # "unverified" | "needs_review" | "resolved"
+    status: str  # "unverified" | "needs_review" | "resolved" | "hidden"
     user_correction: str | None = None
     location: LocationInput | None = None
     is_demo: bool = False  # Set by the adapter for demo records, not sent by the API.
+    created_by: str | None = None
 
 
 @dataclass

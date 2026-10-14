@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS reports (
     needs_review     INTEGER NOT NULL CHECK (needs_review IN (0, 1)),
     created_at       TEXT NOT NULL,
     user_correction  TEXT,
-    status           TEXT NOT NULL CHECK (status IN ('unverified', 'needs_review', 'resolved')),
+    status           TEXT NOT NULL CHECK (status IN ('unverified', 'needs_review', 'resolved', 'hidden')),
     country          TEXT,
     region           TEXT,
     city             TEXT,

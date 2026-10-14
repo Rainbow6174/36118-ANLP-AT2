@@ -15,6 +15,7 @@ STYLE_FILES = (
     "home.css",
     "submit.css",
     "reports.css",
+    "auth.css",
 )
 
 # Palette for NiceGUI's own components; keep in step with styles/tokens.css.

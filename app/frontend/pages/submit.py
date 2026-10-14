@@ -20,7 +20,7 @@ from constants.labels import (
 from layout import frame
 from nicegui import ui
 from schemas.api import AnalyseResponse, LocationInput
-from services import api
+from services import api, auth
 
 
 def _ordered_categories(analysis: AnalyseResponse) -> dict[str, str]:
@@ -239,7 +239,8 @@ def submit_page() -> None:
         button.props("loading")
         try:
             report = await api.create_report(
-                draft_text, result.prediction, board_label, draft_location
+                draft_text, result.prediction, board_label, draft_location,
+                created_by=auth.current_user(),
             )
         except api.BackendError:
             message.set_text(

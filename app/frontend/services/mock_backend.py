@@ -19,7 +19,7 @@ MOCK_MODEL_VERSION = "mock-keyword-v0"
 # The deployed DistilBERT's review threshold (models/transformer/metadata.json).
 REVIEW_THRESHOLD = 0.8866
 
-VALID_STATUSES = ("unverified", "needs_review", "resolved")
+VALID_STATUSES = ("unverified", "needs_review", "resolved", "hidden")
 
 _LOGIT_PER_HIT = 1.15
 # With no keyword hits the text leans weakly to "other information".
@@ -397,6 +397,7 @@ class MockBackend:
         prediction: ClassificationResponse,
         board_label: str,
         location: LocationInput | None,
+        created_by: str | None = None,
     ) -> CrisisReport:
         text = text.strip()
         if not text:
@@ -414,13 +415,13 @@ class MockBackend:
             model_version=prediction.model_version,
             needs_review=prediction.needs_review,
             created_at=datetime.now(UTC).isoformat(),
-            # Same rule as the real backend: the model's flag decides the status.
             status="needs_review" if prediction.needs_review else "unverified",
             user_correction=(
                 board_label if board_label != prediction.predicted_label else None
             ),
             location=location,
             is_demo=True,
+            created_by=created_by,
         )
         self._reports.insert(0, report)
         return report
@@ -457,6 +458,14 @@ class MockBackend:
         self._reports[self._reports.index(report)] = updated
         return updated
 
+    def delete_report(self, message_id: str) -> None:
+        report = self.get_report(message_id)
+        if report is None:
+            raise KeyError(message_id)
+        if report.source_type == "humaid_history":
+            raise PermissionError("Historical records are read-only.")
+        self._reports.remove(report)
+
     def list_reports(
         self,
         *,
@@ -467,6 +476,7 @@ class MockBackend:
         q: str | None = None,
         page: int = 1,
         page_size: int = 6,
+        exclude_hidden: bool = False,
     ) -> ReportListResponse:
         items = [
             r
@@ -475,6 +485,7 @@ class MockBackend:
             and (source_type is None or r.source_type == source_type)
             and (status is None or r.status == status)
             and (needs_review is None or r.needs_review == needs_review)
+            and (not exclude_hidden or r.status != "hidden")
         ]
         items.sort(key=lambda r: r.created_at, reverse=True)
 

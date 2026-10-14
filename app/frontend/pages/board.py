@@ -25,7 +25,7 @@ from constants.labels import (
 )
 from layout import PAGE_RESPONSE_TIMEOUT_SECONDS, frame
 from nicegui import ui
-from services import api
+from services import api, auth
 
 PAGE_SIZE = 5
 
@@ -77,6 +77,7 @@ async def board_page(label: str, new: str = "") -> None:
                 status=None if state["status"] == "all" else state["status"],
                 page=state["page"],
                 page_size=PAGE_SIZE,
+                exclude_hidden=not auth.is_admin(),
             )
         except api.BackendError:
             crisis_error_state(

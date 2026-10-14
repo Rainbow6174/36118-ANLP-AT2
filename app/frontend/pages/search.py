@@ -18,7 +18,7 @@ from components.ui_kit import (
 from constants.labels import LABEL_DISPLAY_NAMES, STATUS_FILTER_OPTIONS
 from layout import frame
 from nicegui import ui
-from services import api
+from services import api, auth
 
 PAGE_SIZE = 6
 
@@ -84,6 +84,7 @@ async def search_page(
                     status=filter_value("status"),
                     page=state["page"],
                     page_size=PAGE_SIZE,
+                    exclude_hidden=not auth.is_admin(),
                 )
                 total = listing.total
                 shown = listing.items

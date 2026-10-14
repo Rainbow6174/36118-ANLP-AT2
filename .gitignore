@@ -8,6 +8,7 @@ __MACOSX/
 # Local archives and plotting cache
 *.zip
 .matplotlib/
+.nicegui/
 
 # vim
 *.swp

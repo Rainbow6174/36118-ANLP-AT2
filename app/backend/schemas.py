@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field, field_validator
 from .labels import LABEL_SET, LABELS
 
 SourceType = Literal["user", "humaid_history"]
-Status = Literal["unverified", "needs_review", "resolved"]
+Status = Literal["unverified", "needs_review", "resolved", "hidden"]
 
 
 class Location(BaseModel):
