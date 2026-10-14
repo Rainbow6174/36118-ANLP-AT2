@@ -308,4 +308,4 @@ Detailed contributions are kept under `report/sections/`. `LATER_PLAN.md` record
 | Sze Xuan Yap | Retrieval, search and duplicate grouping |
 | Lujia Ouyang | Frontend, interaction design and responsible-use analysis |
 
-“Category reviewed” means that a person checked the category, not that the report is true. A public version would need moderator accounts, rate limits, abuse reporting, audit logs and data-removal rules. The current SQLite version is for project demonstration.
+A public version would need moderator accounts, rate limits, abuse reporting, audit logs and data-removal rules. The current SQLite version is for project demonstration.
