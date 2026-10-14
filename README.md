@@ -1,362 +1,311 @@
 # CrisisLens
 
-CrisisLens is an NLP tool for sorting new disaster messages. A user submits a message. The system chooses a humanitarian board, saves the message, opens that board, shows related messages and sends uncertain cases to a review queue.
+CrisisLens sorts short English disaster messages into ten HumAID categories. It shows the suggested category, calibrated confidence and related historical messages before the user confirms or changes the category. Saved reports appear on category boards and can be searched later. Low-confidence results also appear in a review queue.
 
-It helps users organise and browse information. It is not an emergency-response system. It does not verify reports or make safety-critical decisions.
+CrisisLens organises information. It does not verify reports or make emergency decisions.
 
-## Project layout
+- [Technical report](report/tech_report.pdf)
+- [Report source](report/tech_report.md)
+- [Project poster](poster/ANLP_AT2_PartA_Group2_CrisisLens.pdf)
+
+## How it works
 
 ```text
-notebooks/    Data preparation, EDA, modelling and evaluation notebooks
-data/         Local raw files and generated data (not committed)
-models/       Selected models and their settings
-outputs/      Shared EDA, predictions, evaluation results and figures
-app/          Backend API, database schema and frontend
-report/       Group report and user-study material
-poster/       Group poster source files
-LATER_PLAN.md Detailed English work plan and shared file rules
+NiceGUI frontend -> FastAPI API
+                    ├── DistilBERT classifier
+                    ├── semantic retrieval and TF-IDF search
+                    └── SQLite user reports
 ```
 
-## Quick start
+`POST /api/analyse` returns a prediction and related messages from the predicted category. `POST /api/reports` saves the confirmed category and opens its board. Corrections keep the original prediction and update search and retrieval immediately. The interface marks community reports, HumAID history and demo records separately.
 
-Run these commands from the repository root.
+## Results
 
-### Recommended setup with uv
+The official HumAID split contains 53,531 training, 7,793 validation and 15,160 test messages. Macro-F1 is the main classification metric because the ten labels are uneven.
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if it is not available.
+| Component | Selected result |
+| --- | --- |
+| Word + character TF-IDF baseline | 0.7262 test macro-F1 |
+| DistilBERT deployment model | 0.7547 test macro-F1; calibrated ECE 0.0257 |
+| Twitter-RoBERTa analysis model | 0.7621 test macro-F1; not loaded by the application |
+| Semantic related-message retrieval | Precision@5 0.800 |
+| TF-IDF keyword search | Precision@5 0.756 |
+| System evaluation | 28 automated tests and 14 recorded failure scenarios passed |
+
+The application uses the DistilBERT model trained on the official HumAID split. The unseen-event experiment retrains separate models on 12 events and tests them on 779 `cyclone_idai_2019` messages; those checkpoints are only used for shift analysis.
+
+## Repository layout
+
+```text
+app/          FastAPI backend, SQLite schema and NiceGUI frontend
+evaluation/   Reusable cross-event evaluation code
+models/       Baseline, Transformer loader, retrieval and index-building code
+notebooks/    EDA, training, calibration, cross-event and retrieval experiments
+outputs/      Recorded EDA, predictions, metrics and figures
+poster/       Final poster
+report/       Final report, screenshots and six member sections
+scripts/      Endpoint benchmarks and failure-scenario checks
+tests/        API, cross-event and frontend contract tests
+```
+
+Git contains the code, notebooks, recorded results, TF-IDF baseline, report and poster. It does not contain:
+
+- raw HumAID and CrisisMMD downloads under `data/`;
+- DistilBERT weights and tokenizer files under `models/transformer/`;
+- the generated retrieval index under `models/retrieval/index/`;
+- the local SQLite database, environments or caches.
+
+## Requirements
+
+- Python 3.11 or later
+- Internet access during the first setup for datasets, model files and Python packages
+- [uv](https://docs.astral.sh/uv/) is recommended; `pip` is also supported
+
+Run every command from the repository root.
+
+## Install the environment
+
+Clone the repository and enter it:
+
+```bash
+git clone https://github.com/Rainbow6174/36118-ANLP-AT2.git
+cd 36118-ANLP-AT2
+```
+
+With uv:
 
 ```bash
 uv sync
-uv run jupyter lab
 ```
 
-Open `notebooks/01_crisis_eda.ipynb` and run all cells.
+With pip:
 
-### Pip alternative
+```bash
+python -m venv .venv
+```
+
+Activate it on macOS or Linux:
+
+```bash
+source .venv/bin/activate
+```
+
+Or on Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+```
+
+Then install the same project dependencies:
 
 ```bash
 python -m pip install -r requirements.txt
-python -m jupyter lab
 ```
 
-Use Python 3.11 or later. The EDA notebook downloads and prepares its own data. No prepared local dataset is needed before it runs.
+The uv commands do not require manual activation.
 
-### Dependency changes
+## Quick interface preview
 
-The checked-in environment covers the EDA and shared project code. If your work needs another package, install and test it locally first. After the local test works, update `pyproject.toml`, `requirements.txt` and `uv.lock` together, record the version and tell the team before changing the shared files. A planned package is not added to the repository until it has passed a local test.
+The frontend can run without the large model or retrieval index:
 
-## Data sources and notebook outputs
+```bash
+uv run python app/frontend/main.py
+```
 
-The notebook downloads missing public files into `data/raw/`:
+For a pip environment:
+
+```bash
+python app/frontend/main.py
+```
+
+Open <http://localhost:8080>. A visible **Demo mode** notice means the frontend is using its built-in sample data and keyword classifier. This mode is useful for viewing the interface, but it is not the evaluated NLP stack.
+
+## Run the complete application
+
+### 1. Download and prepare the datasets
+
+Start JupyterLab:
+
+```bash
+uv run jupyter lab
+```
+
+Open `notebooks/01_crisis_eda.ipynb` and run all cells. The notebook downloads the required public files when they are missing and writes them under `data/raw/`. It also recreates the EDA tables and figures under `outputs/eda/`.
+
+The application index uses the event-wise HumAID files expected at:
 
 ```text
-data/raw/
-├── humaid/
-│   ├── train-00000-of-00001.parquet
-│   ├── validation-00000-of-00001.parquet
-│   └── test-00000-of-00001.parquet
-├── humaid_events/       19 event-wise HumAID JSON groups
-└── crisismmd/           CrisisMMD label and split files
+data/raw/humaid_events/*.json
 ```
 
-The sources are:
+The data sources are [HumAID-all](https://huggingface.co/datasets/QCRI/HumAID-all), [HumAID-events](https://huggingface.co/datasets/QCRI/HumAID-events) and the text annotation files from [CrisisMMD](https://crisisnlp.qcri.org/crisismmd/).
 
-- [HumAID-all](https://huggingface.co/datasets/QCRI/HumAID-all), the main ten-label text-classification dataset;
-- [HumAID-events](https://huggingface.co/datasets/QCRI/HumAID-events), which supplies event names for unseen-event testing;
-- [CrisisMMD](https://crisisnlp.qcri.org/crisismmd), used as a separate supporting label benchmark.
+### 2. Add the deployment model
 
-The notebook downloads the small CrisisMMD label archive, not the large image archive. Keep the original licence and terms for each dataset. Check the source pages before sharing raw data, tweet text or trained models.
-
-The notebook writes shared results to:
+Download `models_transformer.zip` from the [m3-transformer-v1 release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v1) and extract it at the repository root. The deployment files must end up directly inside `models/transformer/`:
 
 ```text
-outputs/eda/
-├── eda_summary.json
-├── humaid_split_summary.csv
-├── humaid_label_distribution.csv
-├── humaid_event_distribution.csv
-├── humaid_event_label_counts.csv
-├── humaid_event_holdout_plan.csv
-├── humaid_text_statistics.csv
-├── humaid_duplicate_summary.csv
-├── humaid_label_top_word_features.csv
-├── humaid_label_top_char_ngrams.csv
-├── crisismmd_task_summary.csv
-├── crisismmd_label_distribution.csv
-├── crisismmd_annotation_agreement.csv
-└── figures/
+models/transformer/
+├── __init__.py
+├── metadata.json
+├── config.json
+├── model.safetensors              # or pytorch_model.bin
+├── tokenizer.json                 # or vocab.txt
+├── tokenizer_config.json
+└── special_tokens_map.json        # included when supplied by the tokenizer
 ```
 
-All data-processing steps are inside the notebook. The notebook is the single source of truth; open it directly when you need to run or inspect the EDA.
+The repository already contains the loader and metadata. The release supplies the large Hugging Face model and tokenizer files. If extraction creates another `models_transformer/` folder, move its model files into `models/transformer/` before starting the backend.
 
-The notebook does not create a second modelling dataset. Model work reads the downloaded HumAID files from `data/raw/` and uses the shared labels and split rules in this README and `outputs/eda/`.
+### 3. Build the retrieval index
 
-## What the EDA found
+After the EDA notebook has prepared `data/raw/humaid_events/`, run:
 
-HumAID contains 76,484 posts from 19 disaster events. The downloaded files contain ten labels:
-
-```text
-caution_and_advice
-displaced_people_and_evacuations
-infrastructure_and_utility_damage
-injured_or_dead_people
-missing_or_found_people
-not_humanitarian
-other_relevant_information
-requests_or_urgent_needs
-rescue_volunteering_or_donation_effort
-sympathy_and_support
+```bash
+uv run python models/retrieval/build_index.py
 ```
 
-The official split sizes are 53,531 train, 7,793 validation and 15,160 test rows. The largest class is `rescue_volunteering_or_donation_effort` with 21,278 rows; `missing_or_found_people` has 358 rows. Use macro-F1 and show support for each label. Do not use accuracy alone.
+For a pip environment:
 
-Hurricanes account for 41,320 posts. The event-held-out table shows that some small events have very little test support for particular labels, so those results must be reported with support and interpreted carefully.
-
-The duplicate check found 12 exact duplicate rows and four normalised duplicate groups crossing official splits. The baseline and Transformer work should use the same text cleaning and mention these groups when interpreting scores.
-
-CrisisMMD has informative, humanitarian and damage-severity tasks. Its label files contain image-text rows, so one tweet can occur with several images. Later experiments must split or remove duplicates by `tweet_id`, not by raw row.
-
-## Product flow
-
-The classifier is only one part. The app also saves messages, shows boards and finds related messages:
-
-```text
-user submits a message
-    -> model returns label, probabilities and confidence
-    -> application saves the message and prediction
-    -> application redirects to /boards/<predicted_label>
-    -> board page shows the new message and related historical messages
-    -> user browses boards, searches/filter messages, or corrects the board
-    -> low-confidence items remain visible in a review queue
+```bash
+python models/retrieval/build_index.py
 ```
 
-Historical HumAID examples are saved as read-only records with `source_type=humaid_history`. New messages use `source_type=user`. The app must not present a model guess as an official fact.
+This creates `models/retrieval/index/` with the historical messages, TF-IDF search files and MiniLM embeddings. The first run also downloads `all-MiniLM-L6-v2`. The generated index is about 150 MB and is ignored by Git.
 
-## Shared interfaces
+### 4. Start the backend in real mode
 
-These names and response fields are shared by every member. Do not change them in a private branch without telling the team.
+On macOS or Linux:
 
-### Classification model
-
-Every classification model must implement `classify(text)` and return:
-
-```json
-{
-  "predicted_label": "requests_or_urgent_needs",
-  "probabilities": {
-    "caution_and_advice": 0.03,
-    "displaced_people_and_evacuations": 0.02,
-    "infrastructure_and_utility_damage": 0.03,
-    "injured_or_dead_people": 0.01,
-    "missing_or_found_people": 0.01,
-    "not_humanitarian": 0.02,
-    "other_relevant_information": 0.06,
-    "requests_or_urgent_needs": 0.78,
-    "rescue_volunteering_or_donation_effort": 0.02,
-    "sympathy_and_support": 0.02
-  },
-  "confidence": 0.78,
-  "model_version": "baseline-v1",
-  "needs_review": false
-}
+```bash
+CRISISLENS_RUNTIME=real uv run uvicorn app.backend.main:app --host 0.0.0.0 --port 8000
 ```
 
-`probabilities` contains all ten labels in a fixed order. `predicted_label` is the original model result. `confidence` is the score used for the review rule. The model wrapper only predicts; it does not write to the database.
+On Windows PowerShell:
 
-### Retrieval and search
-
-The retrieval component implements `retrieve(text, k, filters=None)`. It returns related historical or user reports:
-
-```json
-{
-  "id": "history-123",
-  "similarity": 0.74,
-  "board_label": "requests_or_urgent_needs",
-  "text_preview": "...",
-  "source_type": "humaid_history"
-}
+```powershell
+$env:CRISISLENS_RUNTIME = "real"
+uv run uvicorn app.backend.main:app --host 0.0.0.0 --port 8000
 ```
 
-`search(query, filters=None, k=20)` handles keyword search and filters. Its result items use the same fields as `retrieve()`. Member 5 owns the ranking and index. Member 4 exposes the REST endpoint and database filters.
+Use `python -m uvicorn` instead of `uv run uvicorn` in a pip environment. Real mode stops with a clear error if the Transformer files or retrieval index are missing.
 
-### Stored message fields
+Check the runtime in another terminal:
 
-The database keeps:
-
-```text
-message_id
-text
-predicted_label
-board_label
-source_type
-confidence
-model_version
-needs_review
-created_at
-user_correction
-status
+```bash
+curl http://localhost:8000/api/health
 ```
 
-`predicted_label` keeps the original model result. `board_label` is the board shown by the application and defaults to `predicted_label`. A correction changes `board_label` but does not overwrite `predicted_label`. New user records use `source_type=user` and `status=unverified`. Historical records use `source_type=humaid_history` and are read-only.
+On PowerShell:
 
-The MVP status values are `unverified`, `needs_review` and `resolved`. They describe the application's handling of a report, not the truth of its content.
+```powershell
+Invoke-RestMethod http://localhost:8000/api/health
+```
 
-### REST API
+The response should contain `"active_runtime": "real"`. The backend creates `app/backend/crisislens.db` on first use.
 
-Member 4 owns these endpoints. Member 6 calls the API and does not call models or the database directly. The current skeleton contains placeholder folders only; Member 4 will add the backend implementation, `app/schema.sql` and `app/app_models.json`.
+### 5. Start the frontend against the API
 
-| Method and path | Request | Minimum response |
+On macOS or Linux:
+
+```bash
+CRISISLENS_API_URL=http://localhost:8000 uv run python app/frontend/main.py
+```
+
+On Windows PowerShell:
+
+```powershell
+$env:CRISISLENS_API_URL = "http://localhost:8000"
+uv run python app/frontend/main.py
+```
+
+Use `python app/frontend/main.py` after setting the same variable in a pip environment. Open <http://localhost:8080>. The **Demo mode** notice should no longer be present.
+
+### 6. Optional: add demonstration reports
+
+A new database has no community reports. While the backend is running, add the nine labelled demo records with:
+
+```bash
+uv run python app/frontend/scripts/seed_demo_reports.py http://localhost:8000
+```
+
+The script does not delete or change existing reports. It stops if the demo records already exist unless `--force` is supplied.
+
+## Runtime settings
+
+| Variable | Meaning | Default |
 | --- | --- | --- |
-| `POST /api/analyse` | `{"text": "...", "location": {...}}` | `prediction`, `related_reports`, optional `extraction` |
-| `POST /api/reports` | `text`, prediction, optional location | `message_id`, `board_label`, `status`, `created_at` |
-| `GET /api/reports` | board, source, status and location filters | paginated report list |
-| `GET /api/reports/{message_id}` | message ID | one report and related reports |
-| `GET /api/search` | `q`, filters and `k` | ranked report list |
-| `PATCH /api/reports/{message_id}` | category correction or permitted status update | updated report |
+| `CRISISLENS_RUNTIME` | Backend component mode: `real`, `mock` or `auto` | Value in `app/app_models.json` (`auto`) |
+| `CRISISLENS_API_URL` | REST API used by the frontend | Empty; frontend uses demo mode |
+| `CRISISLENS_DB_PATH` | SQLite database path | `app/backend/crisislens.db` |
+| `PORT` | NiceGUI frontend port | `8080` |
 
-Use these query names for list and search endpoints: `q`, `k`, `page`, `board_label`, `source_type`, `status`, `country`, `region`, `city` and `needs_review`. Members may add a filter only when its stored field and behaviour are documented.
+`auto` loads the real classifier and retrieval index when both are present and otherwise uses mock components. Use `real` for an assessed or deployed run so missing artefacts cannot be hidden by fallback behaviour.
 
-Example analyse request and response:
+## Verify the repository
 
-```json
-{
-  "text": "Several families need drinking water near the community hall.",
-  "location": {
-    "country": "Australia",
-    "region": null,
-    "city": null,
-    "latitude": null,
-    "longitude": null
-  }
-}
+The automated tests use mock model components and a temporary database, so they do not require the large Transformer files or retrieval index:
+
+```bash
+uv run pytest
 ```
 
-```json
-{
-  "prediction": {
-    "predicted_label": "requests_or_urgent_needs",
-    "probabilities": {
-      "caution_and_advice": 0.03,
-      "displaced_people_and_evacuations": 0.02,
-      "infrastructure_and_utility_damage": 0.03,
-      "injured_or_dead_people": 0.01,
-      "missing_or_found_people": 0.01,
-      "not_humanitarian": 0.02,
-      "other_relevant_information": 0.06,
-      "requests_or_urgent_needs": 0.78,
-      "rescue_volunteering_or_donation_effort": 0.02,
-      "sympathy_and_support": 0.02
-    },
-    "confidence": 0.78,
-    "model_version": "baseline-v1",
-    "needs_review": false
-  },
-  "related_reports": [],
-  "extraction": null
-}
+Static checks:
+
+```bash
+uv run ruff check .
 ```
 
-Example report request:
+With the real backend running, the recorded benchmark and failure scripts can be repeated:
 
-```json
-{
-  "text": "Several families need drinking water near the community hall.",
-  "predicted_label": "requests_or_urgent_needs",
-  "board_label": "requests_or_urgent_needs",
-  "source_type": "user",
-  "confidence": 0.78,
-  "model_version": "baseline-v1",
-  "needs_review": false,
-  "location": {"country": "Australia"}
-}
+```bash
+uv run python scripts/benchmark_endpoints.py
+uv run python scripts/test_failure_scenarios.py
 ```
 
-The normal user flow is:
+The saved results are in `outputs/results/system/`. These scripts add local test records, so use a disposable database if the existing reports matter.
 
-```text
-POST /api/analyse
-    -> user confirms or corrects the board
-    -> POST /api/reports
-    -> redirect to /boards/<board_label>
-```
+## API overview
 
-The API stores user reports as unverified by default. Similar reports provide context, not fact checking.
+| Method and path | Purpose |
+| --- | --- |
+| `GET /api/health` | Show API and model runtime status |
+| `POST /api/analyse` | Classify text and return related historical reports |
+| `POST /api/reports` | Save a user-confirmed report |
+| `GET /api/reports` | List and filter saved reports |
+| `GET /api/reports/{message_id}` | Show one report and its related messages |
+| `GET /api/search` | Search historical and user reports |
+| `PATCH /api/reports/{message_id}` | Confirm or correct a report category or status |
 
-### Optional extraction interface
+FastAPI also exposes interactive API documentation at <http://localhost:8000/docs> while the backend is running.
 
-Information extraction is an extension, not a required MVP module. If the team adds it, the function is:
+## Reproduce the experiments
 
-```text
-extract(text) -> structured fields
-```
+The repository keeps the experiment code and the recorded outputs used in the report:
 
-The first version should keep the fields small and auditable:
-
-```json
-{
-  "location_mention": null,
-  "need_type": [],
-  "urgency": null,
-  "quantity": null,
-  "field_confidences": {}
-}
-```
-
-The extension needs its own labelled sample and field-level evaluation. It may add an `extraction` object to `POST /api/analyse`, but it must not change the required classification or stored-message fields.
-
-## Work areas
-
-| Work | Main location | Responsibility |
+| Work | Code or notebook | Recorded evidence |
 | --- | --- | --- |
-| Data and EDA | `notebooks/01_crisis_eda.ipynb`, `outputs/eda/` | Download, prepare and explain the common data contract |
-| Text baseline | `models/text_baseline/`, `outputs/results/baseline/` | Majority, TF-IDF word/character and linear models |
-| Contextual model | `models/transformer/`, `outputs/results/transformer/` | Compact Transformer and imbalance treatment |
-| Backend and evaluation harness | `app/backend/`, `evaluation/cross_event/`, `outputs/results/cross_event/`, `outputs/results/system/` | REST API, database, integration tests and reusable event-held-out evaluator |
-| Retrieval | `models/retrieval/`, `outputs/results/retrieval/` | Related historical messages and duplicate grouping |
-| Frontend and user study | `app/frontend/`, `report/user_study/`, `outputs/figures/application/` | Boards, routing, review flow, user evidence and screenshots |
+| Data preparation and EDA | `notebooks/01_crisis_eda.ipynb` | `outputs/eda/` |
+| TF-IDF baseline | `models/text_baseline/` | `outputs/results/baseline/`, `outputs/predictions/baseline/` |
+| Transformer training | `notebooks/member3/nb1-transformer-training_with output.ipynb` | `outputs/results/transformer/` |
+| Calibration and selective prediction | `notebooks/member3/nb2_calibration_selective_with output.ipynb` | calibration tables and coverage-risk files |
+| Unseen-event evaluation | `notebooks/member3/nb3_cross_event_with output.ipynb`, `evaluation/cross_event/` | `outputs/results/cross_event/` |
+| Retrieval and search | `notebooks/member5/retrieval_experiments.ipynb` | `outputs/results/retrieval/` |
+| Integrated system | `tests/`, `scripts/` | `outputs/results/system/` |
 
-Read `LATER_PLAN.md` for each member's tasks, goal, expected files and shared rules.
+The official benchmark and the unseen-event experiment use different training sets. Their results should not be treated as measurements from one checkpoint. Full methods, limitations and references are in the [technical report](report/tech_report.pdf).
 
-### Member handoff map
+## Team and limits
 
-| Member | Read first | Commit work to |
-| --- | --- | --- |
-| 1 | `notebooks/01_crisis_eda.ipynb`, `outputs/eda/` | EDA notebook, `outputs/eda/`, `report/sections/member1_data_and_eda.md` |
-| 2 | `outputs/eda/eda_summary.json`, `data/raw/humaid/` | `models/text_baseline/`, `outputs/predictions/baseline/`, `outputs/results/baseline/`, `outputs/results/cross_event/baseline/`, `report/sections/member2_text_baseline.md` |
-| 3 | `outputs/eda/humaid_label_distribution.csv`, `outputs/eda/humaid_text_statistics.csv`, `data/raw/humaid/` | `models/transformer/`, `outputs/predictions/transformer/`, `outputs/results/transformer/`, `outputs/results/cross_event/transformer/`, `report/sections/member3_contextual_model.md` |
-| 4 | `README.md`, `LATER_PLAN.md`, `outputs/eda/eda_summary.json` | `app/backend/` (implementation to be added), `app/schema.sql` (to be added), `app/app_models.json` (to be added), `evaluation/cross_event/`, `outputs/results/cross_event/`, `outputs/results/system/`, `report/sections/member4_backend_and_evaluation.md` |
-| 5 | `data/raw/humaid_events/`, `outputs/eda/humaid_duplicate_summary.csv` | `models/retrieval/`, `outputs/results/retrieval/`, `report/sections/member5_retrieval.md` |
-| 6 | `app/frontend/`, `outputs/eda/eda_summary.json` and the REST API above | `app/frontend/`, `report/user_study/`, `outputs/figures/application/`, `report/sections/member6_frontend_and_user_study.md` |
+Detailed contributions are kept under `report/sections/`. `LATER_PLAN.md` records the work split used during development.
 
-Members may read other folders for context, but they should keep their implementation and result files in their own paths. The final report and poster use evidence from all six members.
+| Member | Main contribution |
+| --- | --- |
+| Jiayu Hao | Data preparation, EDA and the shared data contract |
+| Kamali Siddharthan | TF-IDF baseline and baseline cross-event evaluation |
+| Xin Yiing Loo | Transformer training, calibration and selective prediction |
+| Kunal Mistry | Backend, SQLite integration and system evaluation |
+| Sze Xuan Yap | Retrieval, search and duplicate grouping |
+| Lujia Ouyang | Frontend, interaction design and responsible-use analysis |
 
-## Evaluation agreement
-
-The main classification metric is macro-F1. Each serious run reports precision, recall, F1 and support for every label, plus balanced accuracy, a confusion matrix and run time. The final app model also reports how well its confidence scores match its results.
-
-The main test uses the official HumAID train, validation and test split. The new-event test trains on 18 events and tests on one unseen event at a time. Use the official test set only after settings and thresholds are fixed.
-
-Retrieval reports precision@k or recall@k on a small checked set and records search time. The user study reports task completion, time, board choice, confidence understanding and corrections.
-
-## Optional extensions
-
-These ideas come from the wider proposal. They are useful only after the core text-only workflow and evaluation are complete.
-
-- Information extraction for location, need type or urgency. This needs a small labelled set and a clear field-level evaluation.
-- CrisisMMD image or multimodal modelling. The current project uses its label files only; the image archive and an image model are not part of the MVP.
-- Live social-media feeds, notifications, advanced maps, route planning, payment, identity checks, full misinformation detection and production moderation.
-
-An extension must keep the shared interfaces above and have its own data, evaluation and privacy notes. It must not change the core label contract.
-
-## What belongs in Git
-
-Commit files that another member needs or would take a long time to recreate:
-
-- notebooks and reusable code;
-- approved EDA tables and figures;
-- model metadata, loading instructions and selected checkpoints when needed;
-- validation and final predictions;
-- evaluation tables, reviewed errors and final figures;
-- anonymous user-study results, report sections and poster sources.
-
-Keep raw downloads, generated local datasets, virtual environments, temporary checkpoints and caches out of Git. `data/` is ignored and is rebuilt by the notebook. Large model files may use Git LFS or shared storage, but the repository must contain the version, location and loading instructions.
+“Category reviewed” means that a person checked the category, not that the report is true. A public version would need moderator accounts, rate limits, abuse reporting, audit logs and data-removal rules. The current SQLite version is for project demonstration.

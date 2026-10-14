@@ -1,0 +1,11 @@
+{
+  "runtime": "auto",
+  "classifier": {
+    "name": "transformer",
+    "model_dir": "models/transformer"
+  },
+  "retrieval": {
+    "name": "semantic",
+    "index_dir": "models/retrieval/index"
+  }
+}

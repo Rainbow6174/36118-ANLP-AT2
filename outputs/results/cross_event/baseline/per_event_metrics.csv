@@ -1,0 +1,2 @@
+event,n_examples,macro_f1,balanced_accuracy,runtime_seconds
+cyclone_idai_2019,779,0.5759964954723269,0.5593271722540388,6.806639200076461

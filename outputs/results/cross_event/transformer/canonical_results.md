@@ -6,7 +6,7 @@ All numbers are seed 42. Analysis model = Twitter-RoBERTa (A4); deployment model
 
 | Model | macro-F1 | note |
 | --- | --- | --- |
-| TF-IDF + Linear SVM (M2 baseline) | _TBD — insert from M2_ | traditional reference for the HD trad-vs-Transformer axis |
+| Word + character TF-IDF + Logistic Regression (M2 baseline) | 0.7262 | transparent traditional reference |
 | DistilBERT plain (deploy) | 0.755 | ~2x cheaper than RoBERTa |
 | Twitter-RoBERTa plain (analysis) | 0.762 | seed 123 = 0.766; 2-seed mean 0.764, range 0.004 |
 

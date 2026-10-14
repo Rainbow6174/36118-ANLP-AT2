@@ -1,6 +1,24 @@
-# CrisisLens work plan after the EDA
+# CrisisLens development plan and handoff record
+
+This document records the work split and interface decisions used while CrisisLens was developed. All six work areas are now integrated. See `README.md` for the finished system, current repository layout and deployment instructions. The detailed contribution records are under `report/sections/`.
 
 Start with README.md. Run notebooks/01_crisis_eda.ipynb. Then read the section for your role. This file explains the EDA results, each member's work, the files they should provide and how the app parts fit together.
+
+## Current integration state
+
+The six work areas now have code or results in the repository. The final application keeps the original handoff paths:
+
+~~~
+models/transformer/          deployed classifier
+models/retrieval/index/      historical-message index
+app/backend/main.py          FastAPI entry point
+app/frontend/main.py         NiceGUI entry point
+data/raw/humaid_events/      local event data
+~~~
+
+`app/backend/services.py` connects these parts without moving their internal files. The backend can use `mock`, `auto` or `real` runtime mode. `real` is the final deployment mode and stops with a clear message when a required model or index file is missing. See `README.md` for the preparation and run commands.
+
+The remaining team work is to review the integrated flow, finish the user study, select final figures and combine the six report sections. Expensive model training does not need to be repeated when the selected artefacts and saved results are available.
 
 ## Shared starting point
 
@@ -84,7 +102,11 @@ submit message
   -> keep uncertain items in a review queue
 ~~~
 
-Historical HumAID examples are read-only records with source_type=humaid_history. New messages use source_type=user. Present predictions as sorting suggestions, not verified facts or emergency priorities.
+Historical HumAID examples stay in the read-only retrieval index with
+`source_type=humaid_history`. New messages are saved in SQLite with
+`source_type=user`, and the public report-creation endpoint accepts user
+messages only. Present predictions as sorting suggestions, not verified facts
+or emergency priorities.
 
 ## Roles and boundaries
 
@@ -103,7 +125,7 @@ Members 2 and 3 train and package the classification models. Member 4 owns the t
 
 Macro-F1 is the shared main classification metric. Each serious run reports precision, recall, F1 and support for every label, balanced accuracy, a confusion matrix, validation probabilities and run time.
 
-The final app model also reports whether its confidence scores match its results. New-event results report the mean and range across events and flag labels with very little support. Retrieval reports precision@k or recall@k and search time. The user study reports task completion, time, board choice, confidence understanding and corrections.
+The final app model also reports whether its confidence scores match its results. The current distribution-shift test holds out `cyclone_idai_2019` from the 13-event `events_set1_47K` subset. It reports macro-F1, calibration, review coverage and review risk, with support for every label. This is one held-out event, so the report treats it as a focused stress test rather than evidence of general robustness. Retrieval reports precision@k, pooled recall@k and search time. The user study reports task completion, time, board choice, confidence understanding and corrections.
 
 ### Dependency changes
 
@@ -261,9 +283,7 @@ outputs/results/system/
 report/sections/member4_backend_and_evaluation.md
 ~~~
 
-The current repository has placeholder folders only. Member 4 will create the backend implementation, `app/schema.sql`, `app/app_models.json` and the event-held-out evaluator.
-
-Member 4 can start with mock responses before the final model is chosen. Members 2 and 3 provide the model-specific event results through the shared evaluator.
+The backend, schema, model configuration and event-held-out evaluator are now present. The integration layer in `app/backend/services.py` loads Member 3's deployed Transformer and Member 5's retrieval index. Mock mode remains available for tests and frontend work; real mode is used for the final application.
 
 ## Member 5: related messages and duplicate grouping
 
@@ -302,7 +322,7 @@ report/sections/member5_retrieval.md
 
 ### Start here
 
-Member 6 can use mock model and retrieval responses. The app does not need to wait for model training. The current frontend folder contains a placeholder only; Member 6 will add the interface implementation.
+The frontend is now implemented and can still use mock responses for isolated interface work. For the final flow, set `CRISISLENS_API_URL` so it calls the real backend. The frontend continues to read only the documented API and does not load models or the database directly.
 
 ~~~
 app/frontend/
@@ -405,7 +425,12 @@ user_correction
 status
 ~~~
 
-`predicted_label` keeps the original model result. `board_label` is the board shown by the application and defaults to `predicted_label`. A user correction changes `board_label` but does not overwrite `predicted_label`. New user records use `source_type=user` and `status=unverified`. Historical records use `source_type=humaid_history` and are read-only.
+`predicted_label` keeps the original model result. `board_label` is the board
+shown by the application and defaults to `predicted_label`. A user correction
+changes `board_label` but does not overwrite `predicted_label`. New user
+records use `source_type=user` and `status=unverified`. Historical HumAID
+results use `source_type=humaid_history`, come from the read-only retrieval
+index and are not created through the user-report endpoint.
 
 The MVP status values are `unverified`, `needs_review` and `resolved`. They describe the application's handling of a report, not the truth of its content.
 
@@ -419,9 +444,9 @@ Keep raw downloads, generated local datasets, virtual environments, temporary ch
 
 ## Parallel work sequence
 
-1. Member 1 publishes the EDA outputs, ten-label list and shared interfaces.
-2. Members 2 and 3 start model work. Member 4 starts the API and evaluation harness with mocks. Member 5 starts TF-IDF retrieval. Member 6 starts the frontend with mock API responses.
-3. Members 2 and 3 run their official-split and event-held-out evaluations through Member 4's evaluator.
-4. Member 4 connects the selected model and retrieval implementation to the API.
-5. Member 6 connects the frontend to the real API and the team runs submit -> classify -> save -> redirect -> find the new message -> view historical/related messages.
+1. Member 1 published the EDA outputs, ten-label list and shared interfaces.
+2. Members 2 and 3 produced the baseline and contextual-model evidence. Member 3's DistilBERT package is the deployed classifier; Twitter-RoBERTa remains the analysis model.
+3. Member 4 produced the API, database and evaluation harness. Member 5 produced semantic retrieval, keyword search and its evaluation. Member 6 produced the frontend flow.
+4. The integration branch connects the selected classifier and retrieval implementation through `app/backend/services.py` while keeping the original frontend and backend entry points.
+5. The team runs submit -> classify -> save -> redirect -> find the new message -> view historical/related messages in real mode and records the final system evidence.
 6. The team runs the user study, locks final results, writes the report and prepares the poster together.

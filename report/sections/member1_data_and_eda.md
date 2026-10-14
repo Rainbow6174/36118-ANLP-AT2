@@ -28,7 +28,7 @@ The ten labels found in the downloaded files are:
 
 The dataset card mentions an older eleven-label list, but the downloaded files do not contain a separate `dont_know_cant_judge` class. The project therefore uses the ten labels above. They should be treated as the shared label contract for the app and all model comparisons.
 
-Each prepared record keeps the message text, its label, the official split and the event information when it is available. Historical records use `source_type=humaid_history` in the application. New user messages use `source_type=user`.
+Each prepared record keeps the message text, its label, the official split and the event information when it is available. Historical HumAID results use `source_type=humaid_history` in the read-only retrieval index. New messages saved by the application use `source_type=user`.
 
 ## Main EDA findings
 
@@ -45,9 +45,18 @@ The 19 events cover five event types: earthquake, flood, hurricane, wildfire and
 For this reason, the project has two evaluation views:
 
 1. the official HumAID train/validation/test split for the main model comparison;
-2. leave-one-disaster-event-out testing, where the model trains on 18 events and is tested on the remaining event.
+2. a focused unseen-event stress test on the 13-event `events_set1_47K`
+   subset, where `cyclone_idai_2019` is removed from training and validation,
+   the model trains on the other 12 events, and evaluation uses the held-out
+   event's 779 test messages.
 
-The planned event runs and their label support are listed in `outputs/eda/humaid_event_holdout_plan.csv`. Small held-out events can have labels with very low support or no test examples. These cases should be reported clearly rather than hidden in an overall score.
+The full 19-event download is still used for the EDA and retrieval index. The
+event sizes and label support are listed in
+`outputs/eda/humaid_event_holdout_plan.csv`. Small held-out events can have
+labels with very low support or no test examples. These cases should be
+reported clearly rather than hidden in an overall score. Because the final
+stress test uses one held-out event, it is evidence about that distribution
+shift rather than a claim of general cross-disaster robustness.
 
 ### Text shape and social-media markers
 

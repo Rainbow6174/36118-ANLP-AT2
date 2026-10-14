@@ -89,6 +89,7 @@ class ContextualClassifier:
             max_length=self.max_length,
             return_tensors="pt",
         ).to(self.device)
+        enc.pop("token_type_ids", None)
         logits = self.model(**enc).logits.squeeze(0)
         probs = F.softmax(logits / self.temperature, dim=-1).cpu().tolist()
 
@@ -118,6 +119,7 @@ class ContextualClassifier:
                 max_length=self.max_length,
                 return_tensors="pt",
             ).to(self.device)
+            enc.pop("token_type_ids", None)
             batch_probs = F.softmax(
                 self.model(**enc).logits / self.temperature, dim=-1
             ).cpu().tolist()

@@ -1,11 +1,11 @@
-# models/transformer/ — Contextual Model (Member 3)
-
-Owner: Xin Yiing (Member 3) · Handoff: 2026-10-09
+# Contextual classification model
 
 Deployment model is DistilBERT (run A1, seed 42, plain), with its own fitted
 temperature T and frozen review threshold tau. The RoBERTa (A4) analysis
 model lives in metadata only; it is the report's analysis model, not shipped
-in this package.
+in this package. Download `models_transformer.zip` from the
+[m3-transformer-v1 release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v1)
+and extract the model and tokenizer files directly into this folder.
 
 ## Contents
 
@@ -73,7 +73,7 @@ Notes:
 | `model_version` (top level)                 | no       | Prefix of the composed version     |
 | `deployment_model.encoder_id` / `run_id` / `seed` | no | Suffix of the composed version     |
 
-Other fields (`analysis_model`, `held_out_events`, `dataset`, `training_config.epochs`, ...) are informational — the wrapper does not read them.
+Other fields (`analysis_model`, `cross_event`, `training_config.epochs`, ...) are informational — the wrapper does not read them.
 
 ## Smoke test
 

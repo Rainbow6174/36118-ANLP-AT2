@@ -223,3 +223,9 @@ models/transformer/tokenizer.json
 models/transformer/tokenizer_config.json
 models/transformer/special_tokens_map.json
 models/transformer/vocab.txt
+
+# Member 4: local SQLite DB (schema is in app/schema.sql)
+app/backend/*.db
+
+# Member 5 retrieval: generated index files
+models/retrieval/index/
