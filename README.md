@@ -17,7 +17,7 @@ NiceGUI frontend -> FastAPI API
                     └── SQLite user reports
 ```
 
-`POST /api/analyse` returns a prediction and related messages from the predicted category. `POST /api/reports` saves the confirmed category and opens its board. Corrections keep the original prediction and update search and retrieval immediately. The interface marks community reports, HumAID history and demo records separately.
+`POST /api/analyse` returns a prediction and related messages from the predicted category. `POST /api/reports` saves the confirmed category and opens its board. Corrections keep the original prediction and update search and retrieval immediately. Deleting a community report removes it from both SQLite and the live retrieval index. The interface marks community reports, HumAID history and demo records separately.
 
 ## Results
 
@@ -219,7 +219,7 @@ $env:CRISISLENS_API_URL = "http://localhost:8000"
 uv run python app/frontend/main.py
 ```
 
-Use `python app/frontend/main.py` after setting the same variable in a pip environment. Open <http://localhost:8080>. The **Demo mode** notice should no longer be present.
+Use `python app/frontend/main.py` after setting the same variable in a pip environment. Open <http://localhost:8080>. The **Demo mode** notice should no longer be present. Use `user` / `user` for the standard demo account or `admin` / `admin` for the administrator page. The administrator can correct categories and hide, restore or delete community reports.
 
 ### 6. Optional: add demonstration reports
 
@@ -276,6 +276,7 @@ The saved results are in `outputs/results/system/`. These scripts add local test
 | `GET /api/reports/{message_id}` | Show one report and its related messages |
 | `GET /api/search` | Search historical and user reports |
 | `PATCH /api/reports/{message_id}` | Confirm or correct a report category or status |
+| `DELETE /api/reports/{message_id}` | Delete a community report and remove it from the live index |
 
 FastAPI also exposes interactive API documentation at <http://localhost:8000/docs> while the backend is running.
 

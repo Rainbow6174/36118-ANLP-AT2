@@ -7,7 +7,7 @@ check.
 
 ## Key Deliverables
 
-Five functions are delivered for the backend, with `retrieve()` and `search()` as the two
+Six functions are delivered for the backend, with `retrieve()` and `search()` as the two
 main functions.
 
 - **`retrieve(text, k, filters=None)`:** returns up to `k` earlier reports that describe the
@@ -21,6 +21,8 @@ main functions.
   - The model selection is presented in Section 5.5 (Name Search) of the same notebook.
 - **`add_to_index(message)`:** adds a saved user report to the index, or updates the report
   if its `message_id` already exists, allowing both functions to return it.
+- **`remove_from_index(message_id)`:** removes a deleted user report from the in-memory
+  retrieval and search indexes.
 - **`warm_up()`:** loads the indexes and the sentence model and builds the search index in
   advance, ensuring that the first request does not wait.
 - **`reset_index()`:** reloads the saved indexes and removes the reports added in memory.
@@ -73,6 +75,11 @@ The indexes are not committed to the repository and should be built once on each
 - The service calls `add_to_index()` so retrieval and search can return the
   updated report straight away.
 
+**When a report is deleted**
+
+- The service calls `remove_from_index()` after the SQLite deletion succeeds,
+  so the report no longer appears in retrieval or search results.
+
 **When showing results**
 
 - The report-detail endpoint passes `exclude_ids=[message_id]` so a report is
@@ -91,8 +98,9 @@ The indexes are not committed to the repository and should be built once on each
 The functions follow the plan, with the additions below. All filter names in the plan are
 kept.
 
-- **Extra functions:** `add_to_index()`, `warm_up()` and `reset_index()` are added to keep
-  user reports in the index and to load the model before the first request.
+- **Extra functions:** `add_to_index()`, `remove_from_index()`, `warm_up()` and
+  `reset_index()` keep user reports in step with SQLite and load the model before the
+  first request.
 - **Extra parameter:** `exclude_ids` leaves out the given IDs, such as the report being
   viewed.
 - **Extra result fields:** `duplicate_count` and `duplicate_ids` show the

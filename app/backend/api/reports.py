@@ -101,3 +101,4 @@ def delete_report(message_id: str) -> None:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
     if not deleted:
         raise HTTPException(status_code=404, detail="report not found")
+    services.remove_report_from_index(message_id)

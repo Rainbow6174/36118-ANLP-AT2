@@ -1,10 +1,13 @@
 """Retrieval and search functions used by the backend (Member 4).
 
-    from models.retrieval.retrieval import retrieve, search, add_to_index, warm_up
+    from models.retrieval.retrieval import (
+        retrieve, search, add_to_index, remove_from_index, warm_up
+    )
 
 retrieve(text, k, filters=None)   related reports for a new message
 search(query, filters=None, k=20) keyword search with filters
 add_to_index(message)             add or update a saved user report
+remove_from_index(message_id)     remove a saved user report
 warm_up()                         load the indexes and model when the server starts
 reset_index()                     reload the saved indexes, dropping in-memory reports
 
@@ -25,10 +28,11 @@ accept method="tfidf" or method="semantic". Call warm_up() once when the
 backend starts, so the first request does not wait for the model and indexes
 to load.
 
-User reports added with add_to_index() are held in memory. The backend should
-add its saved user reports again when the server starts. The public functions
-take turns through one lock, so they are safe to call from several requests at
-once. See models/retrieval/README.md for usage notes.
+User reports added with add_to_index() are held in memory and can be removed
+with remove_from_index(). The backend should add its saved user reports again
+when the server starts. The public functions take turns through one lock, so
+they are safe to call from several requests at once. See
+models/retrieval/README.md for usage notes.
 """
 
 from __future__ import annotations
@@ -174,8 +178,8 @@ def _get_search_index(state: dict) -> dict:
     """Build the TF-IDF index for search() from all records on first use.
 
     It keeps every word (SEARCH_SETTINGS), so a name that appears in only one
-    message can be found. add_to_index() clears it, so the next search rebuilds
-    it and every word in a new user report becomes searchable (under a second).
+    message can be found. Index updates clear it, so the next search rebuilds
+    it and reflects added, changed or removed user reports (under a second).
     """
     if state["search_matrix"] is None:
         state["search_vectorizer"], state["search_matrix"] = fit_tfidf(
@@ -422,6 +426,28 @@ def add_to_index(message: dict) -> None:
         embedding = embed_texts([clean_text(message.get("text"))], state["model"])
         state["embeddings"] = np.vstack([state["embeddings"][keep], embedding])
     state["search_vectorizer"] = state["search_matrix"] = None  # rebuilt on the next search
+
+
+@_locked
+def remove_from_index(message_id: str) -> bool:
+    """Remove one report from the in-memory indexes.
+
+    Returns True when the report was present. Historical records are protected
+    by the database layer, so the backend calls this only after deleting a
+    stored user report.
+    """
+    state = _get_state()
+    records = state["records"]
+    keep = (records["id"].astype(str) != str(message_id)).to_numpy()
+    if keep.all():
+        return False
+
+    state["records"] = records.loc[keep].reset_index(drop=True)
+    state["matrix"] = state["matrix"][keep].tocsr()
+    if state["embeddings"] is not None:
+        state["embeddings"] = state["embeddings"][keep]
+    state["search_vectorizer"] = state["search_matrix"] = None
+    return True
 
 
 def _show(title: str, results: list[dict]) -> None:

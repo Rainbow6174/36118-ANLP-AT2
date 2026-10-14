@@ -171,9 +171,9 @@ Semantic retrieval was selected for related reports. It uses `all-MiniLM-L6-v2`,
 
 ### 4.6 Web application
 
-FastAPI exposes endpoints for analysis, report creation, listing, report detail, search, correction and health checks. Pydantic schemas enforce the label and probability contract. SQLite stores user submissions, including the original prediction, current board, confidence, model version, review status, optional approximate location and timestamp. HumAID history stays in the retrieval index.
+FastAPI exposes endpoints for analysis, report creation, listing, report detail, search, correction, status changes, deletion and health checks. Pydantic schemas enforce the label and probability contract. SQLite stores user submissions, including the original prediction, current board, confidence, model version, review status, optional approximate location and timestamp. New and corrected user reports are added to the live retrieval index. When a report is deleted, it is removed from both SQLite and the in-memory index. HumAID history stays in the retrieval index.
 
-The frontend uses NiceGUI and calls the backend only through REST. It provides home, submit, boards, board detail, search, review, report detail and About pages. Demo mode supports interface work without the large model and index, while real mode fails visibly if required artefacts are missing.
+The frontend uses NiceGUI and calls the backend only through REST. It provides home, submit, boards, board detail, search, review, report detail, login, administrator and About pages. Demo mode supports interface work without the large model and index, while real mode fails visibly if required artefacts are missing.
 
 ## 5. Evaluation design
 
@@ -307,7 +307,7 @@ The interface separates three ideas that could otherwise be confused:
 - **Category needs review** means model confidence was below the threshold.
 - **Category reviewed** means a person checked the sorting, not that the report is true.
 
-The review queue shows the model's suggested category and confidence before a person confirms or changes the category (Figure 6).
+The review queue shows the model's suggested category and confidence before a person confirms or changes the category (Figure 6). The prototype also includes an administrator page with a demo login. From this page, an administrator can correct categories and hide or delete repeated or inappropriate user submissions.
 
 ![CrisisLens review queue](screenshots/4.jpg)
 
@@ -355,7 +355,7 @@ The repository also contains a self-contained EDA notebook, packaged model inter
 
 **Rare classes and limited event coverage.** The smallest labels have limited support. The official test contains only 72 `missing_or_found_people` messages, and the held-out event contains only four. Per-label results for these groups are unstable. The cross-event conclusion is also based on one event. More event holdouts are required before making broad robustness claims.
 
-**Verification and moderation.** The application classifies and organises reports but does not verify facts. It does not yet provide authenticated moderator roles or a full audit history. A mistaken or malicious correction could move a report, and a “reviewed” category could be misunderstood. A production version needs API authorisation, reversible audit logs, moderation, rate limits and abuse reporting.
+**Verification and moderation.** CrisisLens sorts reports but does not confirm that they are true. The prototype has an administrator page for managing user submissions, but access currently relies on fixed demo accounts and is not protected by secure backend authorisation. It also does not keep an audit history. A public version would need secure administrator accounts, backend role checks, rate limits and a record of moderation actions.
 
 **Privacy and data governance.** User text may contain personal information even when the form asks people to avoid it. Data retention, withdrawal, deletion and incident-response policies are not implemented. Historical tweets remain user-generated content and must be handled under the dataset terms and relevant privacy requirements.
 
@@ -367,13 +367,13 @@ A later usability study should test whether people outside the development team 
 
 The next technical priority is multi-event evaluation. Repeating the holdout protocol across floods, fires, hurricanes and earthquakes would show whether the current result generalises beyond Cyclone Idai. Live monitoring should track per-class errors, ECE, review coverage and correction rates. Temperatures and thresholds should be re-fitted when evidence shows drift.
 
-For retrieval, future work should add time and approximate-location ranking, compare a crisis-specific sentence encoder and test hybrid lexical–semantic scores. Product work should prioritise backend-enforced moderator access, an audit trail, report withdrawal, content moderation, low-bandwidth operation and multilingual models.
+For retrieval, future work should add time and approximate-location ranking, compare a crisis-specific sentence encoder and test hybrid lexical–semantic scores. Product work should also consider low-bandwidth operation and multilingual models.
 
 For future releases, the team should repeat the real workflow from a clean environment and preserve the tested code version, dependency lock and application evidence together. The current prototype treats local reproducibility as its main deployment evidence; a public service would require separate operational and security checks.
 
-### Future work: abuse prevention and administrator controls
+### Future work: abuse prevention
 
-A public crisis-reporting service must also handle intentional misuse. A malicious user could repeatedly submit the same or similar message, flood a board, or make useful reports harder to find. Future work should add administrator controls supported by rate limits, near-duplicate detection, abuse flags and an audit trail. Repeated or suspicious submissions could be held for review instead of being published immediately. An authorised administrator could hide, restore or remove reports, block abusive accounts or sources, and record a reason for each moderation action. These controls should support accountability without treating the NLP prediction as proof that a user is malicious.
+The current administrator page can hide, restore or delete repeated or inappropriate submissions. A public version should also detect repeated submissions, limit posting rates and keep a reason and history for each moderation action. These controls should not treat the NLP prediction as evidence that a report or its author is malicious.
 
 ## References
 
@@ -460,6 +460,7 @@ The recorded integrated run contains 28 passing tests. The selected Transformer 
 | GET | `/api/reports` | List and filter reports |
 | GET | `/api/reports/{id}` | Show one report and related messages |
 | PATCH | `/api/reports/{id}` | Correct the board and/or review status |
+| DELETE | `/api/reports/{id}` | Delete a community report |
 | GET | `/api/search` | Keyword and semantic search |
 | GET | `/api/health` | Show runtime and component status |
 
@@ -470,4 +471,4 @@ The recorded integrated run contains 28 passing tests. The selected Transformer 
 3. Confirm or correct the category, publish the report and follow the redirect to its board.
 4. Browse the board, open a report and use keyword search with a filter.
 5. Show how a low-confidence prediction appears in the review queue without being presented as fact-checked.
-6. Explain the current prototype boundary and the planned administrator controls for repeated or malicious submissions.
+6. Open the administrator page and show how a repeated or inappropriate submission can be hidden, restored or deleted. Explain that the demo login is not intended for public deployment.

@@ -100,6 +100,9 @@ class RetrievalAdapter:
         payload = report.model_dump() if isinstance(report, ReportRecord) else report
         self._module.add_to_index(payload)
 
+    def remove_from_index(self, message_id: str) -> bool:
+        return self._module.remove_from_index(message_id)
+
     def warm_up(self) -> None:
         self._module.warm_up()
 
@@ -250,6 +253,14 @@ def index_report(report: ReportRecord) -> None:
     add = getattr(_retriever, "add_to_index", None)
     if add is not None:
         add(report)
+
+
+def remove_report_from_index(message_id: str) -> None:
+    """Stop a deleted user report from appearing in retrieval results."""
+
+    remove = getattr(_retriever, "remove_from_index", None)
+    if remove is not None:
+        remove(message_id)
 
 
 def runtime_status() -> dict[str, Any]:

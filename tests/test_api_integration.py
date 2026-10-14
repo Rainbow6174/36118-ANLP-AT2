@@ -183,6 +183,44 @@ def test_patch_not_found(client):
     assert r.status_code == 404
 
 
+def test_delete_removes_report_from_store_and_live_index(client, monkeypatch):
+    from app.backend import services
+
+    class TrackingRetriever:
+        def __init__(self):
+            self.ids: set[str] = set()
+            self.removed: list[str] = []
+
+        def add_to_index(self, report):
+            self.ids.add(report.message_id)
+
+        def remove_from_index(self, message_id: str) -> bool:
+            self.removed.append(message_id)
+            was_present = message_id in self.ids
+            self.ids.discard(message_id)
+            return was_present
+
+    retriever = TrackingRetriever()
+    monkeypatch.setattr(services, "_retriever", retriever)
+
+    body = {
+        "text": "repeated community report",
+        "predicted_label": "requests_or_urgent_needs",
+        "confidence": 0.9,
+        "model_version": "mock-v0",
+        "needs_review": False,
+    }
+    message_id = client.post("/api/reports", json=body).json()["message_id"]
+    assert message_id in retriever.ids
+
+    response = client.delete(f"/api/reports/{message_id}")
+
+    assert response.status_code == 204
+    assert client.get(f"/api/reports/{message_id}").status_code == 404
+    assert message_id not in retriever.ids
+    assert retriever.removed == [message_id]
+
+
 def test_historical_row_is_readonly(client):
     conn = db.connect()
     try:
