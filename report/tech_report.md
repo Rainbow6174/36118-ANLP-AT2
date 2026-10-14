@@ -1,9 +1,9 @@
 # CrisisLens: Human-in-the-Loop Classification and Retrieval for Crisis Messages
 
-**36118 Applied Natural Language Processing — Assessment Task 2**  
-**Group:** [insert group number]  
-**Authors:** [insert six names and student IDs]  
-**Evaluated code snapshot:** `fb3d0789f0c26c53f3e393705716baeadeaf9101`
+**36118 Applied Natural Language Processing — Assignment 2**  
+**Group:** 02
+**Authors:** Jiayu Hao (25948860); Kamali Siddharthan ([student ID]); Xin Yiing Loo ([student ID]); Kunal Mistry ([student ID]); Sze Xuan Yap ([student ID]); Lujia Ouyang ([student ID])
+**GitHub repository:** [Rainbow6174/36118-ANLP-AT2](https://github.com/Rainbow6174/36118-ANLP-AT2)
 
 ## Executive summary
 
@@ -13,7 +13,7 @@ The project compared a transparent word-and-character TF-IDF baseline with Disti
 
 Generalisation was tested by removing `cyclone_idai_2019` from training and evaluating on its 779 test messages. Under this shift, macro-F1 was 0.5760 for the TF-IDF baseline, 0.6969 for DistilBERT and 0.718 for Twitter-RoBERTa. Calibration learned on seen events did not transfer consistently: the frozen temperature improved DistilBERT's expected calibration error (ECE) on the held-out event but worsened it for Twitter-RoBERTa. For this reason, confidence is used to route messages for review and is not treated as a guarantee.
 
-For related-message retrieval, semantic search with `all-MiniLM-L6-v2` achieved Precision@5 of 0.800, compared with 0.607 for TF-IDF, while answering a query in 34 ms on average after loading. TF-IDF remained the better method for exact keyword and name search. The integrated FastAPI and NiceGUI application completed classification, saving, board navigation, search and correction through stable interfaces. Twenty-eight automated tests and fourteen live failure scenarios passed. The accompanying demonstration follows the complete user journey from a new message to classification, review, publication, board navigation and retrieval.
+For related-message retrieval, semantic search with `all-MiniLM-L6-v2` achieved Precision@5 of 0.800, compared with 0.607 for TF-IDF, while answering a query in 34 ms on average after loading. TF-IDF remained the better method for exact keyword and name search. The integrated FastAPI and NiceGUI application completed classification, saving, board navigation, search and correction through stable interfaces. Twenty-eight automated tests and fourteen live failure scenarios passed.
 
 ## 1. Project objectives and scope
 
@@ -42,14 +42,17 @@ The prototype does not determine urgency, verify facts, coordinate emergency res
 
 ### 1.3 Positioning and project contribution
 
-CrisisLens combines four functions that are often evaluated separately: message classification, confidence-based review, category boards and historical-message retrieval. CrisisNLP provides research datasets, tools and benchmarks for crisis informatics, while ReliefWeb offers professionally curated humanitarian information from partner sources (CrisisNLP, n.d.; ReliefWeb, n.d.). CrisisLens tests a smaller community-reporting workflow in which a new message moves through classification, human confirmation, publication and historical retrieval in one interface.
+CrisisLens combines message classification, confidence-based review, category boards and historical-message retrieval. CrisisNLP provides datasets and benchmarks, while ReliefWeb distributes professionally curated humanitarian information (CrisisNLP, n.d.; ReliefWeb, n.d.). AIDR and Ushahidi are closer system comparisons. AIDR uses crowdsourcing and machine learning to classify crisis microblogs in real time (Imran et al., 2014). Ushahidi allows people to submit and map reports during crises (Okolloh, 2009).
+
+CrisisLens focuses on how these functions work together. Calibrated confidence routes uncertain messages to review. The predicted category sets the board used for the first historical search, and a person can change that category before publication. Once saved, the report becomes available to later searches. The project evaluates this combined workflow through classification, calibration, retrieval and system tests.
 
 | Existing approach | Strength | Gap explored by CrisisLens |
 | --- | --- | --- |
-| Crisis classification benchmarks | Compare models on labelled data | Often report a predicted label without testing the surrounding user workflow |
-| Curated humanitarian information services | High-value information reviewed by professional processes | Focus on reviewed information; immediate sorting of a new community report is outside their role |
-| Generic report boards | Collect and browse user reports | May not connect calibrated NLP, historical retrieval and a review queue |
-| CrisisLens | Integrates classification, review, boards and retrieval | Remains a student prototype and requires operational validation before real-world use |
+| CrisisNLP benchmarks | Supply crisis datasets, tasks and model comparisons | Do not by themselves provide the report-to-board workflow tested here |
+| ReliefWeb | Provides professionally curated humanitarian information | Serves a different publishing process from immediate community submission and sorting |
+| AIDR | Combines real-time crisis-message classification with human labelling | CrisisLens instead evaluates a fixed ten-label model, calibrated review routing and historical retrieval in one user journey |
+| Ushahidi | Collects and maps crowdsourced crisis reports | CrisisLens focuses on NLP-assisted category assignment and related-message retrieval before and after publication |
+| CrisisLens | Connects confidence, review, boards and retrieval and evaluates each link | Remains a student prototype; adoption would require moderation, staffing, security, monitoring and wider field validation |
 
 Each part was evaluated with a matching measure. Classification used macro-F1 and per-label results; confidence handling used calibration and risk–coverage; retrieval used Precision@K; and the integrated system used response-time, API and failure tests.
 
@@ -57,14 +60,14 @@ Each part was evaluated with a matching measure. Classification used macro-F1 an
 
 The work was divided so that members could proceed in parallel after the shared data contract was fixed. Each member produced code, evidence and report material.
 
-| Phase | Member and responsibility | Main evidence |
+| Phase | Individual contributor and responsibility | Main evidence |
 | --- | --- | --- |
-| Data foundation | Member 1 — data download, EDA, label and split contract, report coordination | `notebooks/01_crisis_eda.ipynb`, `outputs/eda/`, data section |
-| Transparent comparison | Member 2 — majority and TF-IDF baselines, probability and review analysis, packaging | `models/text_baseline/`, baseline predictions and results |
-| Contextual modelling | Member 3 — DistilBERT and Twitter-RoBERTa, imbalance ablation, calibration and held-out event analysis | `models/transformer/`, Transformer notebooks and results |
-| Service and evaluation | Member 4 — FastAPI, SQLite, shared interfaces, integration and failure tests | `app/backend/`, `evaluation/cross_event/`, system results |
-| Retrieval and search | Member 5 — historical index, semantic retrieval, TF-IDF search, duplicate grouping and relevance evaluation | `models/retrieval/`, retrieval notebook and results |
-| User interface | Member 6 — NiceGUI pages, interaction design, accessibility, privacy and demonstration flow | `app/frontend/` and the frontend report section |
+| Data foundation | Jiayu Hao (Member 1) — data download, EDA, label and split contract, report coordination | `notebooks/01_crisis_eda.ipynb`, `outputs/eda/`, data section |
+| Transparent comparison | Kamali Siddharthan (Member 2) — majority and TF-IDF baselines, probability and review analysis, packaging | `models/text_baseline/`, baseline predictions and results |
+| Contextual modelling | Xin Yiing Loo (Member 3) — DistilBERT and Twitter-RoBERTa, imbalance ablation, calibration and held-out event analysis | `models/transformer/`, Transformer notebooks and results |
+| Service and evaluation | Kunal Mistry (Member 4) — FastAPI, SQLite, shared interfaces, integration and failure tests | `app/backend/`, `evaluation/cross_event/`, system results |
+| Retrieval and search | Sze Xuan Yap (Member 5) — historical index, semantic retrieval, TF-IDF search, duplicate grouping and relevance evaluation | `models/retrieval/`, retrieval notebook and results |
+| User interface | Lujia Ouyang (Member 6) — NiceGUI pages, interaction design, accessibility, privacy and demonstration flow | `app/frontend/` and the frontend report section |
 
 The main phases were: (1) define the problem and data contract; (2) develop classification, retrieval, backend and interface components in parallel; (3) connect them through shared response formats; (4) evaluate models, retrieval and system behaviour; and (5) combine the evidence into the final application and report. Git branches, commits and deliverable paths provide the detailed contribution record.
 
@@ -100,6 +103,17 @@ The duplicate analysis found 12 exact duplicates and four normalised duplicate g
 
 ## 4. NLP methods and system design
 
+The main design decisions and their supporting evidence are summarised below:
+
+| Problem | Chosen method | Evidence used in this report |
+| --- | --- | --- |
+| Noisy, uneven ten-class crisis messages | Word-and-character TF-IDF baseline plus contextual Transformers | Macro-F1, per-label results and imbalance ablations |
+| Confidence may be misleading | Temperature scaling and a validation-selected review threshold | ECE, coverage, accepted risk and review rate |
+| A new disaster may differ from training events | Retrain on 12 events and hold out Cyclone Idai | Held-out macro-F1, calibration and risk–coverage |
+| Users need related situations, not only matching words | MiniLM semantic retrieval | Blinded relevance judgements and Precision@5/10 |
+| Names, numbers and exact terms still matter | TF-IDF keyword search | Name-search and filter checks |
+| Model outputs must support a usable workflow | FastAPI, SQLite, NiceGUI and stable component contracts | API tests, failure scenarios, latency and the end-to-end demonstration |
+
 ### 4.1 End-to-end architecture
 
 The architecture keeps modelling, retrieval, storage and presentation separate. The backend calls each component through a stable interface, which allowed the team to build and test parts independently.
@@ -121,6 +135,8 @@ flowchart LR
 *Figure 2. CrisisLens architecture and data flow. Classification suggests a board; people retain control over the published category.*
 
 Every classifier implements `classify(text)` and returns a label, probabilities for all ten labels, confidence, model version and `needs_review`. Retrieval implements `retrieve(text, k, filters)` for related messages and `search(query, filters, k)` for keyword search. The original `predicted_label` is preserved when a user changes `board_label`, which keeps model output and human action distinguishable.
+
+`POST /api/analyse` limits related reports to the classifier's predicted board instead of mixing results from all ten boards. When a user saves a report or corrects its board, the backend immediately adds or updates that record in the retrieval index. Later related-message requests and searches use the current human-confirmed category without waiting for an offline rebuild.
 
 ### 4.2 Transparent text baseline
 
@@ -188,7 +204,7 @@ Semantic retrieval would be adopted only if it improved overall Precision@5 by a
 
 ### 5.4 System and interaction evaluation
 
-The automated suite contains 28 tests covering API contracts, the end-to-end data path, correction behaviour, cross-event metric generation and strict frontend label handling. A live real-stack check measured seven endpoints over 20 runs after warm-up. Fourteen failure scenarios covered blank and very long text, Unicode, invalid labels, missing records, protected historical rows, special-character search, concurrent submissions and pagination limits.
+The automated suite contains 28 tests covering API contracts, the end-to-end data path, correction behaviour, cross-event metric generation and strict frontend label handling. Before the live latency benchmark, one request was sent to the health, analysis and search endpoints to load the main model and retrieval paths. Seven endpoints were then measured over 20 requests each. Fourteen failure scenarios covered blank and very long text, Unicode, invalid labels, missing records, protected historical rows, special-character search, concurrent submissions and pagination limits.
 
 Interaction quality was assessed through a structured design review covering uncertainty, correction, privacy, status language, historical provenance, errors, responsive layout and accessibility. In the live demonstration, one message passes through analysis, category confirmation or correction, publication, board redirection and retrieval. A low-confidence example also shows how the review workflow operates. The demonstration tests the implemented journey; it is not presented as a formal usability study.
 
@@ -228,7 +244,7 @@ DistilBERT auto-accepted 47.27% at 5.11% risk on seen test data. The risk is sli
 | DistilBERT | 0.6969 | −0.0578 | 58.41% | 5.27% |
 | Twitter-RoBERTa | **0.7180** | −0.0441 | 36.8% | 1.1% |
 
-*Table 2. Results on held-out `cyclone_idai_2019` (779 messages). The baseline's seen and held-out models use different training-set sizes, so its change is descriptive rather than a controlled causal estimate.*
+*Table 2. Results on held-out `cyclone_idai_2019` (779 messages). In all three rows, the seen score comes from the official-split model and the held-out score comes from a separate model retrained on the other 12 events. These differences combine event shift with a change in training data and should be read descriptively.*
 
 Both contextual models performed substantially better than the lexical baseline under the shared 12-event training and held-out-event setup. This supports the choice of a contextual classifier for the application.
 
@@ -240,9 +256,9 @@ Calibration behaved differently for the two models on the unseen event. Twitter-
 | --- | ---: | ---: | ---: |
 | TF-IDF related-message retrieval | 0.607 | 0.577 | 28.1 ms |
 | Semantic related-message retrieval | **0.800** | **0.773** | 34.0 ms |
-| TF-IDF keyword search | 0.756 | 0.733 | Included in interactive target |
+| TF-IDF keyword search | 0.756 | 0.733 | — |
 
-*Table 3. Retrieval and search results.*
+*Table 3. Retrieval and search results. No standalone mean query time was recorded for the keyword-search relevance experiment. End-to-end `/api/search` latency is reported in Section 6.5.*
 
 Semantic retrieval improved Precision@5 by 0.193 and was equal or better in nine of ten categories. The advantage was strongest for paraphrases, where Precision@5 was 0.82 compared with 0.52 for TF-IDF. It satisfied all three pre-defined selection conditions and became the default related-message method.
 
@@ -256,7 +272,7 @@ Duplicate grouping increased the mean number of distinct results in the top ten 
 
 ### 6.5 System performance and reliability
 
-On the measured real stack, `POST /api/analyse` had p50 latency of 127.6 ms and p95 of 213.6 ms. Creating a report had p50 latency of 164.6 ms, and listing reports took 4.0 ms at p50. Search had p50 latency of 40.0 ms and p95 of 1,078.7 ms; the high tail came from the first index query, indicating that production startup should warm the index.
+On the measured real stack, `POST /api/analyse` had p50 latency of 127.6 ms and p95 of 213.6 ms. Creating a report had p50 latency of 164.6 ms, and listing reports took 4.0 ms at p50. Search had p50 latency of 40.0 ms and p95 of 1,078.7 ms. The script had already sent a warm-up search, so the available record does not identify the cause of this tail value. Repeated runs from fresh processes would be needed to isolate it.
 
 All 28 automated tests and all 14 live failure scenarios passed in the recorded run. Ten concurrent submissions produced unique IDs without corruption. Blank input, invalid labels and missing reports returned clear 4xx errors; long and Unicode text were handled; and historical records remained read-only. The tests cover the expected prototype workflow, but they do not measure sustained load or production security.
 
@@ -293,22 +309,11 @@ CrisisLens states that it is not an emergency service and directs people in dang
 
 Every page has a main heading and skip link. Navigation marks the current page, interactive icons have text labels, keyboard focus is visible, motion follows reduced-motion preferences and the layout adapts to phone screens. Colours were selected against the WCAG 2.2 AA contrast target of 4.5:1 for normal text (World Wide Web Consortium, 2024).
 
-### 7.4 Demonstration scenario
-
-The live demonstration follows one continuous task. A user submits a new crisis message, reviews the model's label and confidence, confirms or changes the board, publishes the report and arrives at the selected board. The demonstration then opens related historical messages, uses keyword search and filters, and shows a low-confidence report in the review queue. A repeated-message example shows the purpose of duplicate grouping and introduces the administrator and abuse controls proposed in Section 11.
-
-The demonstration covers the complete route from a new message to a saved, searchable report. The original model output, the user's board decision and the report status remain visible throughout the process.
-
 ## 8. Outcomes and value added
 
-CrisisLens connects the classifier to review routing, report storage, category boards and historical-message retrieval. Each component has a defined role:
+The project produced a working path from an unstructured message to a searchable board entry. DistilBERT raised macro-F1 from the baseline's 0.7262 to 0.7547, and calibrated confidence routes lower-confidence cases to review. MiniLM retrieves related messages, while TF-IDF searches for exact names and keywords. Publishing or correcting a report updates the retrieval index immediately. The database stores the original prediction separately from the current board, source and review status, so a human correction does not erase the model output.
 
-1. The transparent baseline shows the improvement and cost of contextual modelling.
-2. Calibration and selective prediction determine which messages enter the review queue.
-3. Semantic retrieval finds similar situations, while TF-IDF preserves exact search.
-4. The application keeps model output, human correction, source and verification status separate.
-
-The cross-event experiment showed that confidence handling can change under event shift. Temperature scaling helped both Transformers on the seen test set but transferred differently to the held-out event. The retrieval experiment produced a clearer operational result: semantic retrieval raised Precision@5 from 0.607 to 0.800 while remaining fast enough for interactive use.
+The cross-event results show that confidence handling can change under event shift. Temperature scaling helped both Transformers on the seen test set but transferred differently to the held-out event. The retrieval result was more direct: semantic retrieval raised Precision@5 from 0.607 to 0.800 while remaining fast enough for interactive use.
 
 The repository also contains a self-contained EDA notebook, packaged model interfaces, a general cross-event evaluator, a historical-message index, REST schemas, integration tests and a web interface. The separate interfaces allow one component to be reproduced or replaced without rewriting the rest of the system.
 
@@ -364,7 +369,11 @@ Geifman, Y., & El-Yaniv, R. (2017). Selective classification for deep neural net
 
 Guo, C., Pleiss, G., Sun, Y., & Weinberger, K. Q. (2017). On calibration of modern neural networks. In *Proceedings of the 34th International Conference on Machine Learning* (Vol. 70, pp. 1321–1330). PMLR. https://proceedings.mlr.press/v70/guo17a.html
 
+Imran, M., Castillo, C., Lucas, J., Meier, P., & Vieweg, S. (2014). AIDR: Artificial intelligence for disaster response. In *Proceedings of the 23rd International Conference on World Wide Web Companion* (pp. 159–162). https://doi.org/10.1145/2567948.2577034
+
 National Institute of Standards and Technology. (2023). *Artificial intelligence risk management framework (AI RMF 1.0)* (NIST AI 100-1). https://doi.org/10.6028/NIST.AI.100-1
+
+Okolloh, O. (2009). Ushahidi or 'testimony': Web 2.0 tools for crowdsourcing crisis information. *Participatory Learning and Action, 59*, 65–70. https://www.iied.org/g02842
 
 Reimers, N., & Gurevych, I. (2019). Sentence-BERT: Sentence embeddings using Siamese BERT-networks. In *Proceedings of the 2019 Conference on Empirical Methods in Natural Language Processing and the 9th International Joint Conference on Natural Language Processing* (pp. 3982–3992). Association for Computational Linguistics. https://doi.org/10.18653/v1/D19-1410
 
@@ -378,7 +387,7 @@ World Wide Web Consortium. (2024). *Web Content Accessibility Guidelines (WCAG) 
 
 ## Appendix A. Reproducibility
 
-The results in this report correspond to code snapshot `fb3d0789f0c26c53f3e393705716baeadeaf9101`. Runtime values are reported only as measurements from the recorded experiment environments because hardware differed across team members. The repository supports Python 3.11 or later, and `pyproject.toml` with `uv.lock` records the shared environment.
+Runtime values are reported only as measurements from the recorded experiment environments because hardware differed across team members. The repository supports Python 3.11 or later, and `pyproject.toml` with `uv.lock` records the shared environment.
 
 ```bash
 uv sync
