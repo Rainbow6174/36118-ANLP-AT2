@@ -190,7 +190,7 @@ Semantic retrieval would be adopted only if it improved overall Precision@5 by a
 
 The final automated suite contains 48 tests covering API contracts, the data path, moderation, current-event retrieval, classifier input cleaning, cross-event metrics, accessibility and frontend behaviour. After warm-up requests to health, analysis and search, seven endpoints were measured over 20 requests each. Fourteen live failure scenarios covered invalid and unusual input, missing or protected records, search, concurrent submissions and pagination.
 
-The design review covered uncertainty, correction, privacy, status language, provenance, errors, responsive layout and accessibility. The live demonstration follows analysis, correction, publication, board redirection, retrieval and low-confidence review. It tests the implemented journey and is not presented as a formal usability study.
+The design review covered uncertainty, correction, privacy, status language, provenance, errors, responsive layout and accessibility (Appendix E). The live demonstration follows analysis, correction, publication, board redirection, retrieval and low-confidence review. It tests the implemented journey and is not presented as a formal usability study.
 
 ## 6. Results and findings
 
@@ -279,6 +279,8 @@ The application makes the model part of a short, reversible workflow:
 5. Readers can browse boards and search the current event by keyword and filters. They can switch to Historical dataset when they want to search past HumAID messages; the two modes do not mix results.
 6. Low-confidence reports appear in the administrator review queue. An administrator can confirm or change the category without overwriting the original prediction.
 
+Different people use CrisisLens for different reasons. Anyone can write a report without signing in, which avoids delaying the moment a person wants to share something. Signing in lets a person follow their own reports. The review queue and the administrator page are reserved for a demo administrator role, which illustrates how moderation could be kept apart from reporting but is not a security mechanism (Section 10).
+
 ![CrisisLens home page and report states](screenshots/7.jpg)
 
 *Figure 5. The NiceGUI home page links to submission, search and all ten category boards. Demo records show the “Unverified” and “Category needs review” states.*
@@ -287,13 +289,15 @@ The application makes the model part of a short, reversible workflow:
 
 The home page links directly to submission, search and category boards. The form separates description, category review and publication. Categories have consistent names, colours, icons and explanations, while loading, empty and error states provide a next action.
 
+These choices respond to specific risks in a crisis setting. Editing the text resets the review step, so that a prediction made for old text cannot be published with new text. Confidence is shown as a percentage, and a highlighted alert appears when the model is unsure, as a bare label could be read as a fact. This follows guidance for human–AI interaction on showing how well a system can do what it does and on supporting correction (Amershi et al., 2019). Appendix E lists these risks with the design response to each.
+
 The interface separates three ideas that could otherwise be confused:
 
 - **Unverified** describes the truth status of a community report: CrisisLens has not fact-checked it.
 - **Category needs review** means model confidence was below the threshold.
 - **Category reviewed** means a person checked the sorting, not that the report is true.
 
-The review queue shows the suggested category and confidence before confirmation or correction (Figure 6). A demo administrator can also hide, restore or delete inappropriate or repeated submissions. Hiding is reversible; permanent deletion asks for confirmation.
+The review queue shows the suggested category and confidence before confirmation or correction (Figure 6). A demo administrator can also hide, restore or delete inappropriate or repeated submissions. Hiding is reversible; permanent deletion asks for confirmation by default.
 
 ![CrisisLens review queue](screenshots/4.jpg)
 
@@ -311,7 +315,7 @@ An empty board can show three HumAID cards with a dashed border, the label “Ex
 
 ### 7.3 Safety, privacy and accessibility
 
-CrisisLens states that it is not an emergency service. The form discourages personal details; location is optional, confirmed before use and rounded for display. Map and geocoding services are disclosed. The responsive layout includes headings, a skip link, current-page navigation, keyboard focus and reduced-motion support. All 23 tested colour pairs met the WCAG 2.2 AA target, with a minimum contrast ratio of 4.57:1 (World Wide Web Consortium, 2024).
+CrisisLens states that it is not an emergency service. The form discourages personal details; location is optional, confirmed before use and rounded before it is stored, as an exact position is rarely needed to sort a report. Map and geocoding services are disclosed. The responsive layout includes headings, a skip link, current-page navigation, keyboard focus and reduced-motion support. All 23 tested colour pairs met the WCAG 2.2 AA target, with a minimum contrast ratio of 4.57:1 (World Wide Web Consortium, 2024).
 
 ## 8. Outcomes and value added
 
@@ -337,7 +341,7 @@ The held-out event exposed limits in calibration transfer, while semantic retrie
 
 **Rare classes and event coverage.** The official test has only 72 `missing_or_found_people` messages and the held-out event has four, making those scores unstable. One held-out event cannot support broad robustness claims.
 
-**Verification and moderation.** CrisisLens sorts but does not verify reports. Administration uses fixed demo accounts without secure backend authorisation or an audit history. A public version needs secure accounts, role checks, rate limits and moderation records.
+**Verification and moderation.** CrisisLens sorts but does not verify reports. Administration uses fixed demo accounts without secure backend authorisation or an audit history. Category changes are restricted to the author or an administrator at the interface only. The backend does not verify identity: the author is a name sent by the client, and a person can still choose any category when publishing, which is not checked against the model's suggestion. A public version needs secure accounts, role checks, rate limits and moderation records.
 
 **Privacy and data governance.** Reports may contain personal information despite the form warning. Retention, withdrawal and incident-response policies are not implemented. Historical tweets remain subject to dataset terms and privacy requirements.
 
@@ -361,6 +365,8 @@ Alam, F., Ofli, F., & Imran, M. (2018). CrisisMMD: Multimodal Twitter datasets f
 
 Alam, F., Qazi, U., Imran, M., & Ofli, F. (2021). HumAID: Human-annotated disaster incidents data from Twitter with deep learning benchmarks. *Proceedings of the International AAAI Conference on Web and Social Media, 15*(1), 933–942. https://doi.org/10.1609/icwsm.v15i1.18116
 
+Amershi, S., Weld, D., Vorvoreanu, M., Fourney, A., Nushi, B., Collisson, P., Suh, J., Iqbal, S., Bennett, P. N., Inkpen, K., Teevan, J., Kikin-Gil, R., & Horvitz, E. (2019). Guidelines for human-AI interaction. In *Proceedings of the 2019 CHI Conference on Human Factors in Computing Systems*. ACM. https://doi.org/10.1145/3290605.3300233
+
 Barbieri, F., Camacho-Collados, J., Espinosa Anke, L., & Neves, L. (2020). TweetEval: Unified benchmark and comparative evaluation for tweet classification. In *Findings of the Association for Computational Linguistics: EMNLP 2020* (pp. 1644–1650). Association for Computational Linguistics. https://doi.org/10.18653/v1/2020.findings-emnlp.148
 
 CrisisNLP. (n.d.). *Resources for research on crisis informatics topics*. Retrieved October 13, 2026, from https://crisisnlp.qcri.org/
@@ -372,6 +378,8 @@ Guo, C., Pleiss, G., Sun, Y., & Weinberger, K. Q. (2017). On calibration of mode
 Imran, M., Castillo, C., Lucas, J., Meier, P., & Vieweg, S. (2014). AIDR: Artificial intelligence for disaster response. In *Proceedings of the 23rd International Conference on World Wide Web Companion* (pp. 159–162). https://doi.org/10.1145/2567948.2577034
 
 National Institute of Standards and Technology. (2023). *Artificial intelligence risk management framework (AI RMF 1.0)* (NIST AI 100-1). https://doi.org/10.6028/NIST.AI.100-1
+
+Nielsen, J. (1994, April 24). *10 usability heuristics for user interface design*. Nielsen Norman Group. https://www.nngroup.com/articles/ten-usability-heuristics/
 
 Okolloh, O. (2009). Ushahidi or 'testimony': Web 2.0 tools for crowdsourcing crisis information. *Participatory Learning and Action, 59*, 65–70. https://www.iied.org/g02842
 
@@ -481,3 +489,17 @@ The selected Transformer checkpoint is stored in `models/transformer/`, the loca
 4. Browse the board, open a report and search the Current event with a filter. Switch to Historical dataset to show that past HumAID messages are searched separately.
 5. Show how a low-confidence prediction appears in the review queue without being presented as fact-checked.
 6. Open the administrator page and show how a repeated or inappropriate submission can be hidden, restored or deleted. Explain that the demo login is not intended for public deployment.
+
+## Appendix E. Interface design review
+
+The interface was reviewed by the team against Nielsen's usability heuristics (Nielsen, 1994), the guidelines for human–AI interaction (Amershi et al., 2019) and WCAG 2.2 (World Wide Web Consortium, 2024). The table pairs each risk with the design response, the principle it applies and where it appears.
+
+| Risk | Design response | Principle | Where |
+| --- | --- | --- | --- |
+| A person may trust a model guess as a fact | Every community report carries an "Unverified" badge; "Category reviewed" only means a person checked the category | Visibility of system status (Nielsen) | Figures 5–7 |
+| A person may not understand the confidence | Confidence is shown as a percentage; a highlighted alert and the review queue handle uncertain predictions | Make clear how well the system can do what it can do; scope services when in doubt (Amershi et al.) | Figures 6, 8 |
+| The model may be wrong and a person may not be able to correct it | The person can change the category before publishing; the original model suggestion is kept | Support efficient correction (Amershi et al.); user control and freedom (Nielsen) | Section 7.1 |
+| A person may share personal or exact location data | A privacy reminder, an optional location confirmed by the person, and coordinates rounded to about 1 km and drawn as a circle | Error prevention (Nielsen) | Section 7.3 |
+| The tool may be mistaken for an emergency service | A safety line on every page except the form, a larger box with emergency numbers on the form, and a footer note | Make clear what the system can do (Amershi et al.) | Section 7.3 |
+| Past disasters may look current | Historical results are labelled, marked as not current and shown with usernames anonymised and links removed; empty boards show clearly marked examples | Visibility of system status (Nielsen) | Section 7.2 |
+| Small screens, keyboard use or low contrast may make the interface harder to use | A skip link, visible focus styles, semantic headings, a layout that adapts to phones, and colour pairs checked against WCAG 2.2 AA (23 pairs, lowest ratio 4.57:1) | Accessibility (WCAG 2.2) | Section 7.3 |
