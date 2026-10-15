@@ -200,8 +200,8 @@ def submit_page() -> None:
                         related_card(related, "Similar to your report")
 
             ui.label(
-                "Once published, your report is visible to everyone and cannot "
-                "be edited or deleted in this prototype."
+                "Once published, your report is visible to everyone. Only its author "
+                "or an administrator can change its category."
             ).classes("text-body-sm")
             publish_feedback = ui.label("").classes(
                 "crisis-form-feedback crisis-form-feedback--error"
