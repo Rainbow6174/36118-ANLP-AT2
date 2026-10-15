@@ -50,3 +50,26 @@ def test_related_item_with_unknown_label_is_not_relabelled():
     }
     with pytest.raises(api.BackendError):
         api._related_from_json(item)
+
+
+def test_empty_success_response_is_not_an_error(monkeypatch):
+    """DELETE answers 204 No Content; the client must treat that as success."""
+    import asyncio
+
+    import httpx
+
+    api = _import_api()
+
+    def handler(request):
+        return httpx.Response(204)
+
+    transport = httpx.MockTransport(handler)
+    real_client = httpx.AsyncClient
+
+    def fake_client(*args, **kwargs):
+        kwargs["transport"] = transport
+        return real_client(*args, **kwargs)
+
+    monkeypatch.setattr(api, "API_URL", "http://backend.test")
+    monkeypatch.setattr(api.httpx, "AsyncClient", fake_client)
+    assert asyncio.run(api._call("DELETE", "/api/reports/x")) is None

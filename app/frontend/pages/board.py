@@ -1,11 +1,13 @@
-"""Board page: the reports of one category, community reports apart from historical ones."""
+"""Board page: the current event's reports in one category.
 
-import asyncio
+A board with no reports yet shows a few examples from past disasters, clearly
+marked, so a visitor can see what the category collects.
+"""
 
 from components.category_card import category_icon
 from components.report_cards import (
     crisis_pagination,
-    related_card,
+    example_card,
     report_card,
     report_count,
 )
@@ -28,6 +30,7 @@ from nicegui import ui
 from services import api, auth
 
 PAGE_SIZE = 5
+EXAMPLE_COUNT = 3
 
 
 @ui.page("/boards/{label}", response_timeout=PAGE_RESPONSE_TIMEOUT_SECONDS)
@@ -44,29 +47,32 @@ async def board_page(label: str, new: str = "") -> None:
             )
         return
 
+    # Read the role before any await: after the page has been sent, NiceGUI may no
+    # longer give access to the visitor's session storage.
+    is_admin = auth.is_admin()
     name = LABEL_DISPLAY_NAMES[label]
     ui.page_title(f"{name} · CrisisLens")
     state = {"page": 1, "status": "all"}
 
-    # Extras loaded together; if they fail, the board still shows.
+    # If this fails, the board still shows.
     async def load_published():
         try:
             return await api.get_report(new) if new else None
         except api.BackendError:
             return None
 
-    async def load_history():
+    async def load_examples():
         try:
             return await api.search_reports(
                 name,
                 board_label=label,
                 source_type="humaid_history",
-                k=3,
+                k=EXAMPLE_COUNT,
             )
         except api.BackendError:
-            return None
+            return []
 
-    published, history = await asyncio.gather(load_published(), load_history())
+    published = await load_published()
 
     @ui.refreshable
     async def community_reports() -> None:
@@ -77,7 +83,7 @@ async def board_page(label: str, new: str = "") -> None:
                 status=None if state["status"] == "all" else state["status"],
                 page=state["page"],
                 page_size=PAGE_SIZE,
-                exclude_hidden=not auth.is_admin(),
+                exclude_hidden=not is_admin,
             )
         except api.BackendError:
             crisis_error_state(
@@ -99,6 +105,10 @@ async def board_page(label: str, new: str = "") -> None:
                 None if filtered else "Report a crisis",
                 None if filtered else "/submit",
             )
+            # Examples only on an empty board: a filter with no match must not
+            # suggest that the current event has reports like these.
+            if not filtered:
+                await example_reports()
             return
 
         ui.label(report_count(result.total)).classes("text-body-sm")
@@ -106,6 +116,20 @@ async def board_page(label: str, new: str = "") -> None:
             for report in result.items:
                 report_card(report, highlight=report.message_id == new)
         crisis_pagination(result.page, result.total_pages, go_to_page)
+
+    async def example_reports() -> None:
+        examples = await load_examples()
+        if not examples:
+            return
+        with ui.column().classes("crisis-section crisis-examples"):
+            crisis_heading("Example reports", 2)
+            ui.label(
+                "These examples from past disasters show the kind of message this "
+                "category collects. They are not reports about the current situation."
+            ).classes("text-body-sm")
+            with ui.column().classes("crisis-report-list"):
+                for report in examples:
+                    example_card(report)
 
     def go_to_page(page: int) -> None:
         state["page"] = page
@@ -154,13 +178,3 @@ async def board_page(label: str, new: str = "") -> None:
                     status_select.on_value_change(apply_filters)
 
                 await community_reports()
-
-            if history:
-                with ui.column().classes("crisis-section"):
-                    crisis_heading("Related historical references", 2)
-                    ui.label(
-                        "Past examples for context. These are not current reports."
-                    ).classes("text-body-sm")
-                    with ui.column().classes("crisis-report-list"):
-                        for report in history:
-                            related_card(report, "Historical reference")

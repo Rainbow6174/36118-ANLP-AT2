@@ -21,8 +21,8 @@ main functions.
   - The model selection is presented in Section 5.5 (Name Search) of the same notebook.
 - **`add_to_index(message)`:** adds a saved user report to the index, or updates the report
   if its `message_id` already exists, allowing both functions to return it.
-- **`remove_from_index(message_id)`:** removes a deleted user report from the in-memory
-  retrieval and search indexes.
+- **`remove_from_index(message_id)`:** removes a hidden or deleted user report from the
+  in-memory retrieval and search indexes.
 - **`warm_up()`:** loads the indexes and the sentence model and builds the search index in
   advance, ensuring that the first request does not wait.
 - **`reset_index()`:** reloads the saved indexes and removes the reports added in memory.
@@ -66,14 +66,19 @@ The indexes are not committed to the repository and should be built once on each
 
 **When the server starts**
 
-- The service resets the index, adds the user reports stored in SQLite with
-  `add_to_index()`, and calls `warm_up()` once. User reports are rebuilt from
-  SQLite after a restart.
+- The service resets the index, adds the visible user reports stored in SQLite
+  with `add_to_index()`, and calls `warm_up()` once. Hidden reports are skipped
+  when the index is rebuilt after a restart.
 
 **When a report is saved or its board is corrected**
 
 - The service calls `add_to_index()` so retrieval and search can return the
   updated report straight away.
+
+**When a report is hidden or restored**
+
+- A hidden report is removed from the live index. Restoring it adds the report
+  again using its current category and status.
 
 **When a report is deleted**
 

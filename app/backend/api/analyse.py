@@ -35,11 +35,7 @@ def analyse(
         logger.exception("Classification failed for input of length %d", len(payload.text))
         raise HTTPException(status_code=503, detail="Classification service unavailable") from exc
     try:
-        related = retriever.retrieve(
-            payload.text,
-            k=5,
-            filters={"board_label": prediction.predicted_label},
-        )
+        related = services.find_related(retriever, payload.text, k=5)
     except Exception:
         logger.exception("Retrieval failed, returning prediction without related reports")
         related = []

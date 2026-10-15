@@ -24,10 +24,11 @@ from services import api, auth
 
 PAGE_SIZE = 5
 
+# Same wording as the badges and the report: a review concerns the category only.
 STATUS_DISPLAY = {
     "unverified": ("schedule", "Unverified", "var(--color-text-secondary)"),
-    "needs_review": ("flag", "Needs review", "var(--color-warning, #e6a700)"),
-    "resolved": ("check_circle", "Resolved", "var(--color-success, #2e7d32)"),
+    "needs_review": ("flag", "Category needs review", "var(--color-warning, #e6a700)"),
+    "resolved": ("check_circle", "Category reviewed", "var(--color-success, #2e7d32)"),
     "hidden": ("visibility_off", "Hidden", "var(--color-text-secondary)"),
 }
 
@@ -155,9 +156,20 @@ async def _user_my_reports() -> None:
 
     @ui.refreshable
     async def my_list() -> None:
+        if current_user is None:
+            crisis_empty_state(
+                "login",
+                "Log in to see your reports",
+                "Reports are linked to the account that submitted them.",
+                "Log in",
+                "/login",
+            )
+            return
         try:
+            # The backend filters by author, so paging covers all of the user's reports.
             result = await api.list_reports(
                 source_type="user",
+                created_by=current_user,
                 page=state["page"],
                 page_size=PAGE_SIZE,
                 exclude_hidden=True,
@@ -169,7 +181,7 @@ async def _user_my_reports() -> None:
             )
             return
 
-        own = [r for r in result.items if r.created_by == current_user]
+        own = result.items
 
         if not own:
             crisis_empty_state(
@@ -181,10 +193,11 @@ async def _user_my_reports() -> None:
             )
             return
 
-        ui.label(f"{len(own)} of your reports").classes("text-body-sm")
+        ui.label(f"{result.total} of your reports").classes("text-body-sm")
         with ui.column().classes("crisis-report-list"):
             for report in own:
                 _my_report_item(report)
+        crisis_pagination(result.page, result.total_pages, go_to_page)
 
     with frame():
         with ui.column().classes("crisis-page"):
@@ -205,7 +218,7 @@ def _my_report_item(report: CrisisReport) -> None:
             with ui.row().classes("items-center gap-1"):
                 ui.icon(icon).style(f"color: {color}; font-size: 18px;")
                 ui.label(label).style(
-                    f"color: {color}; font-weight: 600; font-size: 13px; text-transform: capitalize;"
+                    f"color: {color}; font-weight: 600; font-size: 13px;"
                 )
         ui.label(report.text).classes("text-body crisis-report-full-text")
         report_meta(report)

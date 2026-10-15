@@ -222,6 +222,35 @@
     text-transform: capitalize;
 }
 
+/* Delete confirmation: the same card as the report cards, with rounded buttons. */
+.crisis-dialog {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: min(480px, calc(100vw - 32px));
+    box-shadow: 0 8px 24px rgba(16, 42, 46, 0.16);
+}
+
+.crisis-dialog-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text-main);
+}
+
+.crisis-dialog-skip {
+    margin-left: -10px; /* line the box up with the text above */
+    color: var(--color-text-secondary);
+}
+
+.crisis-dialog-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-border);
+}
+
 .crisis-pagination-active {
     background: var(--color-primary-soft) !important;
     color: var(--color-primary) !important;

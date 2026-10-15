@@ -30,6 +30,21 @@ def connect() -> sqlite3.Connection:
     return conn
 
 
+# Columns added after the first release. bootstrap() adds any that an existing
+# database file is missing, so a saved crisislens.db keeps working.
+_ADDED_COLUMNS = {
+    "created_by": "TEXT",
+    "status_before_hidden": "TEXT",
+}
+
+
+def _add_missing_columns(conn: sqlite3.Connection) -> None:
+    present = {row[1] for row in conn.execute("PRAGMA table_info(reports)")}
+    for name, sql_type in _ADDED_COLUMNS.items():
+        if name not in present:
+            conn.execute(f"ALTER TABLE reports ADD COLUMN {name} {sql_type}")
+
+
 def bootstrap() -> None:
     """Create the DB file and schema if missing. Idempotent."""
     path = get_db_path()
@@ -37,6 +52,11 @@ def bootstrap() -> None:
     conn = sqlite3.connect(path)
     try:
         conn.execute("PRAGMA foreign_keys = ON")
+        table_exists = conn.execute(
+            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'reports'"
+        ).fetchone()
+        if table_exists:
+            _add_missing_columns(conn)
         with open(SCHEMA_PATH, encoding="utf-8") as f:
             conn.executescript(f.read())
         conn.commit()

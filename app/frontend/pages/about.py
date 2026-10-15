@@ -16,9 +16,10 @@ SECTIONS = (
             "Write a short report and CrisisLens suggests a category, such as urgent "
             "needs, damage or evacuation. You can confirm or change it before "
             "publishing. After that, anyone can browse the reports by category, "
-            "search them and read related reports from past disasters. When the model "
-            "is unsure, the report also goes to a review queue, where a person checks "
-            "its category."
+            "search the current event and read similar reports already saved for that "
+            "event. A separate Historical dataset mode searches past disasters. When "
+            "the model is unsure, the report also goes to a review queue, where a "
+            "person checks its category."
         ),
     ),
     (
@@ -28,16 +29,19 @@ SECTIONS = (
             "in danger, call your local emergency number first. It does not check "
             "whether a report is true either, so every report is marked Unverified. "
             "Categories come from a model and can be wrong; “Category reviewed” only "
-            "means that a person looked at the category."
+            "means that a person looked at the category. The category is a topic, "
+            "not a measure of urgency, and CrisisLens does not replace official "
+            "warnings or emergency information. It currently works with reports "
+            "written in English."
         ),
     ),
     (
         "Where the information comes from",
         (
-            "Community reports are written by the people who use this app. The past "
-            "reports shown for context come from HumAID, a public dataset of tweets "
-            "from earlier disasters, so they are not current. In demo mode, all "
-            "reports and the classifier are simulated."
+            "Community reports are written by the people who use this app. Historical "
+            "search results and the examples on empty boards come from HumAID, a "
+            "public dataset of tweets from earlier disasters, so they are not current. "
+            "In demo mode, all reports and the classifier are simulated."
         ),
     ),
     (

@@ -153,6 +153,8 @@ def _location_panel(report: CrisisReport) -> None:
 
 @ui.page("/reports/{report_id}", response_timeout=PAGE_RESPONSE_TIMEOUT_SECONDS)
 async def report_detail_page(report_id: str) -> None:
+    # Read the role before any await (see home.py).
+    is_admin = auth.is_admin()
     try:
         detail = await api.get_report_detail(report_id)
     except api.BackendError:
@@ -162,6 +164,11 @@ async def report_detail_page(report_id: str) -> None:
                 ui.navigate.reload,
             )
         return
+
+    # A hidden report is removed from boards and search for everyone but an
+    # administrator, so a direct link must not reveal it either.
+    if detail is not None and detail[0].status == "hidden" and not is_admin:
+        detail = None
 
     with frame():
         if detail is None:

@@ -373,17 +373,26 @@ def _seed_reports() -> list[CrisisReport]:
 class MockBackend:
     def __init__(self) -> None:
         self._reports = _seed_reports()
+        # Status each hidden report had before hiding, so restoring can bring it back.
+        self._status_before_hidden: dict[str, str] = {}
 
     def classify(self, text: str) -> ClassificationResponse:
         return classify(text)
 
     def retrieve(
-        self, text: str, k: int = 5, exclude_id: str | None = None
+        self,
+        text: str,
+        k: int = 5,
+        exclude_id: str | None = None,
     ) -> list[RelatedReport]:
+        """Like the real backend: the current event's reports in any category,
+        hidden reports and past-disaster messages left out."""
         query = _tokens(text)
         scored = []
         for report in self._reports:
-            if report.message_id == exclude_id:
+            if report.message_id == exclude_id or report.status == "hidden":
+                continue
+            if report.source_type != "user":
                 continue
             score = _similarity(query, _tokens(report.text))
             if score >= 0.15:
@@ -434,6 +443,7 @@ class MockBackend:
         message_id: str,
         board_label: str | None = None,
         status: str | None = None,
+        hidden: bool | None = None,
     ) -> CrisisReport:
         report = self.get_report(message_id)
         if report is None:
@@ -449,10 +459,21 @@ class MockBackend:
             changes["user_correction"] = (
                 board_label if board_label != report.predicted_label else None
             )
-        if status is not None:
+        if hidden is True or status == "hidden":
+            if report.status != "hidden":
+                self._status_before_hidden[message_id] = report.status
+            changes["status"] = "hidden"
+        elif hidden is False:
+            if report.status == "hidden":
+                changes["status"] = self._status_before_hidden.pop(
+                    message_id,
+                    "needs_review" if report.needs_review else "unverified",
+                )
+        elif status is not None:
             if status not in VALID_STATUSES:
                 raise ValueError(f"Unknown status: {status}")
             changes["status"] = status
+            self._status_before_hidden.pop(message_id, None)
 
         updated = replace(report, **changes)
         self._reports[self._reports.index(report)] = updated
@@ -477,6 +498,7 @@ class MockBackend:
         page: int = 1,
         page_size: int = 6,
         exclude_hidden: bool = False,
+        created_by: str | None = None,
     ) -> ReportListResponse:
         items = [
             r
@@ -486,6 +508,7 @@ class MockBackend:
             and (status is None or r.status == status)
             and (needs_review is None or r.needs_review == needs_review)
             and (not exclude_hidden or r.status != "hidden")
+            and (created_by is None or r.created_by == created_by)
         ]
         items.sort(key=lambda r: r.created_at, reverse=True)
 
@@ -529,6 +552,7 @@ class MockBackend:
             q=q,
             page=1,
             page_size=k,
+            exclude_hidden=True,
         )
         return [_related(report) for report in result.items]
 

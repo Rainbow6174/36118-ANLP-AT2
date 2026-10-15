@@ -97,8 +97,9 @@ submit message
   -> classify message
   -> save message with predicted board and confidence
   -> redirect to /boards/<predicted_label>
-  -> show the new message and related historical messages
-  -> browse/search boards or correct/confirm the label
+  -> show the new message and similar reports from the current event
+  -> browse/search the current event or open Historical dataset separately
+  -> correct/confirm the label
   -> keep uncertain items in a review queue
 ~~~
 
@@ -297,10 +298,10 @@ outputs/eda/humaid_label_top_word_features.csv
 
 ### Work
 
-1. Build a historical-message index.
+1. Build the HumAID historical index and support current-event reports in the live index.
 2. Start with TF-IDF cosine similarity.
 3. Test sentence embeddings only if they give better results.
-4. Implement `retrieve(text, k, filters=None)` for related reports and `search(query, filters=None, k=20)` for keyword/filter search.
+4. Implement `retrieve(text, k, filters=None)` for semantic similarity and `search(query, filters=None, k=20)` for keyword/filter search.
 5. Return ID, similarity, text preview, board label and source type.
 6. Create a small query set and check it by hand.
 7. Report precision@k or recall@k, duplicate behaviour and search time.
@@ -335,12 +336,12 @@ outputs/eda/eda_summary.json
 2. Call the backend API and show the predicted board, confidence and review state.
 3. Provide a board list and one page for every label.
 4. Show the new message at the top of the selected board after submission.
-5. Show historical and related messages returned by the API.
+5. Show similar current-event reports and keep Historical dataset search separate.
 6. Add the agreed board search/filter controls and a low-confidence review view.
 7. Allow category confirmation or correction without changing the original model prediction.
 8. Add clear loading, empty, error and API response states.
 9. Run a small user study with people from different English backgrounds.
-10. Test submit, classify, save, redirect and find historical/related messages.
+10. Test submit, classify, save, redirect, similar-report display and historical search.
 11. Record task completion, time, board choice, confidence understanding and corrections.
 12. Make one visible interface revision from the study.
 13. Provide frontend local-run steps and screenshots for the report and poster.

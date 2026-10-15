@@ -177,6 +177,23 @@ def related_card(related: RelatedReport, context: str = "Related report"):
         ui.label(" · ".join(notes)).classes("text-caption crisis-report-note")
 
 
+def example_card(related: RelatedReport):
+    """A message from a past disaster shown as an example on an empty board.
+
+    Marked "Example" so it cannot be mistaken for a report about the current event.
+    """
+    with _card(None, "crisis-report-card--example"):
+        with ui.row().classes("crisis-report-badges"):
+            category_badge(related.board_label)
+            badge("Example · past disaster", "example")
+        ui.label(display_text(related.text_preview, related.source_type)).classes(
+            "text-body crisis-report-text"
+        )
+        ui.label(
+            "Example from a past disaster, not a current report · " + HISTORY_NOTE
+        ).classes("text-caption crisis-report-note")
+
+
 def related_row(related: RelatedReport):
     """A one-line link to a related report; historical records are plain text."""
     is_history = related.source_type == "humaid_history"

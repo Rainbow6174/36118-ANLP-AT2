@@ -8,23 +8,24 @@ CrisisLens requires a backend that (a) serves a DistilBERT classifier and a sema
 
 ### 5.4.2 API surface
 
-The backend exposes six REST endpoints and a health check through FastAPI:
+The backend exposes seven REST endpoints and a health check through FastAPI:
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| POST | /api/analyse | Classify text, return 10-label prediction and related reports |
+| POST | /api/analyse | Classify text and return similar reports from the current event |
 | POST | /api/reports | Persist a report with auto-assigned ID, derive status from confidence |
-| GET | /api/reports | Paginated, filterable list of reports |
-| GET | /api/reports/{id} | Single report with related reports from the retrieval index |
-| GET | /api/search | Ranked keyword and semantic search over the retrieval index |
-| PATCH | /api/reports/{id} | User correction (updates board_label) and/or status change |
+| GET | /api/reports | Paginated report list with board, status, visibility and author filters |
+| GET | /api/reports/{id} | Single report with similar reports from the current event |
+| GET | /api/search | Keyword search over current-event or historical records |
+| PATCH | /api/reports/{id} | Correct the board, update review status, or hide and restore a report |
+| DELETE | /api/reports/{id} | Delete a community report and remove it from the live index |
 | GET | /api/health | Liveness check reporting runtime mode and loaded components |
 
 Every response conforms to Pydantic schemas enforcing the 10-label contract: probabilities must contain all 10 labels, each in [0, 1], summing to 1.0 within 1e-3 tolerance. The `predicted_label` field is immutable after creation; user corrections update `board_label` only, preserving the original model output for evaluation.
 
 ### 5.4.3 Persistence
 
-SQLite stores user-submitted reports in a single `reports` table with 11 required columns, 5 nullable location columns, and 6 indexes. The schema is auto-applied on startup via a lifespan handler. Historical HumAID messages (76,484 records) live in the read-only retrieval index rather than SQLite, keeping the database small and the write path simple.
+SQLite stores user-submitted reports in one `reports` table, with indexes for the fields used most often in lists and filters. Optional fields store corrections, approximate location, author and the status held before a report is hidden. The schema is applied on startup, and older databases receive missing columns automatically. Historical HumAID messages (76,484 records) remain in the read-only retrieval index rather than SQLite.
 
 ### 5.4.4 Runtime modes
 
@@ -34,7 +35,7 @@ The backend supports three modes controlled by the `CRISISLENS_RUNTIME` environm
 - **mock**: uses MockClassifier and MockRetriever for frontend development without model dependencies.
 - **auto** (default): attempts real, falls back to mock with a warning.
 
-A `TransformerClassifierAdapter` bridges Member 3's `classify()` return dictionary to the Pydantic `Prediction` schema. A `RetrievalAdapter` wraps Member 5's `retrieve()`, `search()`, `add_to_index()`, `warm_up()`, and `reset()` functions behind the `Retriever` protocol. On startup in real mode, any existing user reports from SQLite are loaded into the retrieval index so that search covers both historical and user-submitted messages.
+A `TransformerClassifierAdapter` bridges Member 3's `classify()` return dictionary to the Pydantic `Prediction` schema. A `RetrievalAdapter` wraps Member 5's retrieval, search and live-index functions behind the `Retriever` protocol. On startup in real mode, visible user reports from SQLite are added to the retrieval index. Hidden reports stay out of search and similar-report results.
 
 ### 5.4.5 Integration fixes
 
@@ -46,15 +47,7 @@ Two bugs were discovered and fixed during integration:
 
 ### 5.4.6 Test suite
 
-The final test suite contains 28 tests across three files:
-
-| File | Tests | Coverage |
-| --- | --- | --- |
-| test_api_integration.py | 16 | Endpoint contracts, golden path, validation, pagination, corrections |
-| test_cross_event.py | 9 | Evaluator data loading, metric computation, output file generation |
-| test_frontend_labels.py | 3 | Frontend strict label handling for unknown labels |
-
-All 28 tests pass. The 7 warnings are cosmetic sklearn/starlette deprecations with no behavioural impact.
+The final suite contains 48 tests across eight files. It covers API contracts, classifier input cleaning, current-event retrieval, live-index updates, moderation, authorship, database migration, search filters, colour contrast, frontend response handling and cross-event evaluation. All 48 tests passed in the final local run with the MiniLM model and retrieval index available.
 
 ## 5.5 Cross-event Evaluation Harness
 

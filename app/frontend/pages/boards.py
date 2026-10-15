@@ -14,7 +14,8 @@ def boards_page() -> None:
             crisis_heading("All categories", 1)
             ui.label(
                 "Every report is sorted into one of ten boards. Pick a board to "
-                "see its reports and related historical examples."
+                "see the current event's reports. Empty boards may also show "
+                "marked examples from past disasters."
             ).classes("text-body-sm")
             with ui.element("div").classes("crisis-category-grid"):
                 for label in LABELS:

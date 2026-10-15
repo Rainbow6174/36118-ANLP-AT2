@@ -42,6 +42,9 @@ def _category_link(label: str) -> None:
 async def home_page() -> None:
     """The latest reports load after the page is shown."""
     client = ui.context.client
+    # Read the role before any await: after the page has been sent, NiceGUI may no
+    # longer give access to the visitor's session storage.
+    is_admin = auth.is_admin()
 
     def go_to_search() -> None:
         query = (search_box.value or "").strip()
@@ -57,7 +60,7 @@ async def home_page() -> None:
         try:
             result = await api.list_reports(
                 source_type="user", page=1, page_size=LATEST_REPORT_COUNT,
-                exclude_hidden=not auth.is_admin(),
+                exclude_hidden=not is_admin,
             )
         except api.BackendError:
             updates.clear()
@@ -152,9 +155,10 @@ async def home_page() -> None:
 
             with ui.row().classes("crisis-search-examples"):
                 ui.label("Try:")
-                # source=all, so examples have results before any community report exists.
+                # Searches the current event; with no match, the search page
+                # offers the historical dataset instead.
                 for example in SEARCH_EXAMPLES:
-                    ui.link(example, f"/search?q={quote(example)}&source=all")
+                    ui.link(example, f"/search?q={quote(example)}")
 
         # Categories on the left, latest reports on the right (stacked on phones).
         with ui.element("div").classes("crisis-home-discovery"):

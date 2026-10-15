@@ -113,6 +113,8 @@ class ReportCreate(BaseModel):
     model_version: str
     needs_review: bool = False
     location: Optional[Location] = None
+    # Username from the prototype's demo login, used for "My reports".
+    created_by: Optional[str] = Field(default=None, max_length=64)
 
     @field_validator("predicted_label")
     @classmethod
@@ -146,6 +148,7 @@ class ReportRecord(BaseModel):
     city: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
+    created_by: Optional[str] = None
 
 
 class ReportListResponse(BaseModel):
@@ -163,6 +166,8 @@ class ReportDetailResponse(BaseModel):
 class ReportPatch(BaseModel):
     user_correction: Optional[str] = None
     status: Optional[Status] = None
+    # True hides a report; False restores the status it had before hiding.
+    hidden: Optional[bool] = None
 
     @field_validator("user_correction")
     @classmethod

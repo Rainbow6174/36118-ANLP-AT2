@@ -3,9 +3,10 @@
 Deployment model is DistilBERT (run A1, seed 42, plain), with its own fitted
 temperature T and frozen review threshold tau. The RoBERTa (A4) analysis
 model lives in metadata only; it is the report's analysis model, not shipped
-in this package. Download `models_transformer.zip` from the
+in this package. The loader, metadata, config and tokenizer files are tracked
+in Git. Download `model.safetensors` from the
 [m3-transformer-v1 release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v1)
-and extract the model and tokenizer files directly into this folder.
+and place it directly in this folder; no archive needs to be extracted.
 
 ## Contents
 
@@ -14,7 +15,7 @@ models/transformer/
   __init__.py                    # load_model + ContextualClassifier
   metadata.json                  # nested: deployment_model, analysis_model, canonical_label_order, ...
   config.json                    # HF: model config (DistilBERT, 10-class head)
-  model.safetensors              # HF: deployment weights (A1_best)
+  model.safetensors              # HF: deployment weights (A1_best), from the release
   tokenizer.json                 # HF: tokenizer
   tokenizer_config.json
 ```

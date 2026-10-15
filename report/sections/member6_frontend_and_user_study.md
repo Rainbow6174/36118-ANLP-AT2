@@ -132,7 +132,7 @@ This prototype has not been tested with real users. Its interface is instead ass
 The next step is a small usability test with real users, planned as follows:
 
 - **Participants:** 3 to 5 people who are not on the project team, with varied English-language backgrounds.
-- **Tasks:** submit a report, explain what the confidence display means, correct a wrong category, find related historical messages using search, and locate the review queue.
+- **Tasks:** submit a report, explain what the confidence display means, correct a wrong category, inspect similar reports from the current event, search the current event and Historical dataset separately, and locate the review queue.
 - **Measures:** task completion, time on task, whether the selected category matches the intended message, whether participants understand "Unverified" and "Category reviewed", and the number and type of corrections made.
 - **Material:** short realistic disaster messages, and the 3 October 2026 earthquake near Leongatha, Victoria (preliminary magnitude 4.8; Geoscience Australia, 2026), for which 10 test reports have been prepared in `scripts/submit_earthquake_reports.py`.
 - **Records:** results would be anonymised and stored in `report/user_study/`, without names or other identifying information.
@@ -216,7 +216,7 @@ Without `CRISISLENS_API_URL`, the frontend runs in demo mode on an in-memory dem
 - In-memory report storage that resets on restart
 - A visible "Demo mode" banner, so that the data is not taken for real
 
-A fresh backend database may initially be empty, which makes its boards look unused. A seed script (`app/frontend/scripts/seed_demo_reports.py`) therefore adds nine demo reports across different categories for demonstrations and screenshots, and the interface marks them "Demo data". Instructions for running and deploying the frontend are in the repository README.
+A fresh backend database has no community reports. For demonstrations, `scripts/demo_data.py nepal --replace` loads nine labelled Nepal scenario reports and marks them as demo data. The same script can clear the event or load a named HumAID event. Instructions are in the repository README.
 
 ## References
 

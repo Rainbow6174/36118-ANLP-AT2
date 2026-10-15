@@ -41,6 +41,8 @@ def list_reports(
     region: Optional[str] = None,
     city: Optional[str] = None,
     needs_review: Optional[bool] = None,
+    exclude_hidden: bool = False,
+    created_by: Optional[str] = None,
     page: int = Query(1, ge=1),
     k: int = Query(20, ge=1, le=200),
 ) -> ReportListResponse:
@@ -52,6 +54,8 @@ def list_reports(
         region=region,
         city=city,
         needs_review=needs_review,
+        exclude_hidden=exclude_hidden,
+        created_by=created_by,
         page=page,
         k=k,
     )
@@ -66,11 +70,8 @@ def get_report(
     record = store.get(message_id)
     if record is None:
         raise HTTPException(status_code=404, detail="report not found")
-    related = retriever.retrieve(
-        record.text,
-        k=5,
-        filters={"board_label": record.board_label},
-        exclude_ids=[record.message_id],
+    related = services.find_related(
+        retriever, record.text, k=5, exclude_ids=[record.message_id]
     )
     return ReportDetailResponse(report=record, related_reports=related)
 
@@ -82,6 +83,7 @@ def patch_report(message_id: str, patch: ReportPatch) -> ReportRecord:
             message_id,
             user_correction=patch.user_correction,
             status=patch.status,
+            hidden=patch.hidden,
         )
     except PermissionError as exc:
         raise HTTPException(status_code=403, detail=str(exc)) from exc
@@ -89,7 +91,7 @@ def patch_report(message_id: str, patch: ReportPatch) -> ReportRecord:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     if updated is None:
         raise HTTPException(status_code=404, detail="report not found")
-    services.index_report(updated)
+    services.sync_report_index(updated)
     return updated
 
 

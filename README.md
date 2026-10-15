@@ -1,6 +1,6 @@
 # CrisisLens
 
-CrisisLens sorts short English disaster messages into ten HumAID categories. It shows the suggested category, calibrated confidence and related historical messages before the user confirms or changes the category. Saved reports appear on category boards and can be searched later. Low-confidence results also appear in a review queue.
+CrisisLens sorts short English disaster messages into ten HumAID categories. It shows the suggested category, calibrated confidence and similar reports already saved for the current event before the user confirms or changes the category. Saved reports appear on category boards and can be searched later. Low-confidence results also appear in a review queue.
 
 CrisisLens organises information. It does not verify reports or make emergency decisions.
 
@@ -13,11 +13,12 @@ CrisisLens organises information. It does not verify reports or make emergency d
 ```text
 NiceGUI frontend -> FastAPI API
                     ├── DistilBERT classifier
-                    ├── semantic retrieval and TF-IDF search
-                    └── SQLite user reports
+                    ├── MiniLM similarity and TF-IDF search
+                    │     └── read-only HumAID history (historical search only)
+                    └── SQLite reports for the current event
 ```
 
-`POST /api/analyse` returns a prediction and related messages from the predicted category. `POST /api/reports` saves the confirmed category and opens its board. Corrections keep the original prediction and update search and retrieval immediately. Deleting a community report removes it from both SQLite and the live retrieval index. The interface marks community reports, HumAID history and demo records separately.
+Each deployment serves one event. `POST /api/analyse` cleans the text as in Transformer training, returns a prediction and lists earlier reports from the current event whose MiniLM similarity is at least 0.45, in any category. `POST /api/reports` saves the confirmed category and opens its board. Corrections keep the original prediction and update search and retrieval immediately. Hiding or deleting a community report removes it from the live retrieval index. HumAID history is used only by the separate Historical dataset search and as marked examples on empty boards.
 
 ## Results
 
@@ -30,7 +31,8 @@ The official HumAID split contains 53,531 training, 7,793 validation and 15,160 
 | Twitter-RoBERTa analysis model | 0.7621 test macro-F1; not loaded by the application |
 | Semantic related-message retrieval | Precision@5 0.800 |
 | TF-IDF keyword search | Precision@5 0.756 |
-| System evaluation | 28 automated tests and 14 recorded failure scenarios passed |
+| Similar-report display threshold | 0.45 MiniLM similarity; 75.8% of shown candidates relevant on held-out judgements |
+| System evaluation | 48 automated tests and 14 failure scenarios passed |
 
 The application uses the DistilBERT model trained on the official HumAID split. The unseen-event experiment retrains separate models on 12 events and tests them on 779 `cyclone_idai_2019` messages; those checkpoints are only used for shift analysis.
 
@@ -44,14 +46,14 @@ notebooks/    EDA, training, calibration, cross-event and retrieval experiments
 outputs/      Recorded EDA, predictions, metrics and figures
 poster/       Final poster
 report/       Final report, screenshots and six member sections
-scripts/      Endpoint benchmarks and failure-scenario checks
-tests/        API, cross-event and frontend contract tests
+scripts/      Demo data, real-mode checks, benchmarks, failure checks and result reproduction
+tests/        API, retrieval, moderation, cross-event, accessibility and frontend tests
 ```
 
 Git contains the code, notebooks, recorded results, TF-IDF baseline, report and poster. It does not contain:
 
 - raw HumAID and CrisisMMD downloads under `data/`;
-- DistilBERT weights and tokenizer files under `models/transformer/`;
+- the DistilBERT weights `models/transformer/model.safetensors` (about 270 MB, published as a release asset);
 - the generated retrieval index under `models/retrieval/index/`;
 - the local SQLite database, environments or caches.
 
@@ -142,20 +144,30 @@ The data sources are [HumAID-all](https://huggingface.co/datasets/QCRI/HumAID-al
 
 ### 2. Add the deployment model
 
-Download `models_transformer.zip` from the [m3-transformer-v1 release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v1) and extract it at the repository root. The deployment files must end up directly inside `models/transformer/`:
+The loader, metadata, configuration and tokenizer files are already tracked in `models/transformer/`. Download `model.safetensors` from the [m3-transformer-v1 release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v1) and save it as:
+
+```text
+models/transformer/model.safetensors
+```
+
+With the GitHub CLI:
+
+```bash
+gh release download m3-transformer-v1 -R Rainbow6174/36118-ANLP-AT2 -p model.safetensors -D models/transformer
+```
+
+No archive is extracted, so the tracked loader and metadata are never replaced. The folder should then contain:
 
 ```text
 models/transformer/
-├── __init__.py
-├── metadata.json
-├── config.json
-├── model.safetensors              # or pytorch_model.bin
-├── tokenizer.json                 # or vocab.txt
-├── tokenizer_config.json
-└── special_tokens_map.json        # included when supplied by the tokenizer
+├── __init__.py              # tracked
+├── metadata.json            # tracked
+├── README.md                # tracked
+├── config.json              # tracked
+├── tokenizer.json           # tracked
+├── tokenizer_config.json    # tracked
+└── model.safetensors        # downloaded from the release
 ```
-
-The repository already contains the loader and metadata. The release supplies the large Hugging Face model and tokenizer files. If extraction creates another `models_transformer/` folder, move its model files into `models/transformer/` before starting the backend.
 
 ### 3. Build the retrieval index
 
@@ -221,15 +233,17 @@ uv run python app/frontend/main.py
 
 Use `python app/frontend/main.py` after setting the same variable in a pip environment. Open <http://localhost:8080>. The **Demo mode** notice should no longer be present. Use `user` / `user` for the standard demo account or `admin` / `admin` for the administrator page. The administrator can correct categories and hide, restore or delete community reports.
 
-### 6. Optional: add demonstration reports
+### 6. Prepare a demonstration event
 
-A new database has no community reports. While the backend is running, add the nine labelled demo records with:
+Each deployment serves one event, and a new database has no community reports. While the backend is running, choose one starting point:
 
 ```bash
-uv run python app/frontend/scripts/seed_demo_reports.py http://localhost:8000
+uv run python scripts/demo_data.py empty --yes
+uv run python scripts/demo_data.py nepal --replace
+uv run python scripts/demo_data.py event kerala_floods_2018 --limit 40 --replace
 ```
 
-The script does not delete or change existing reports. It stops if the demo records already exist unless `--force` is supplied.
+`empty` removes every community report. `nepal` loads the nine labelled Nepal flood and landslide reports also used by demo mode. `event` samples one event's HumAID test split, classifies each message with the running model and marks the saved records as demo data; `uv run python scripts/demo_data.py event --list` shows the events downloaded by the EDA notebook. Without `--replace`, loading stops if the database already has reports, so two events are never mixed.
 
 ## Runtime settings
 
@@ -244,7 +258,7 @@ The script does not delete or change existing reports. It stops if the demo reco
 
 ## Verify the repository
 
-The automated tests use mock model components and a temporary database, so they do not require the large Transformer files or retrieval index:
+The suite contains 48 tests. Most use mock model components and a temporary database. Two retrieval tests use the local index and MiniLM model and are skipped when these are not available:
 
 ```bash
 uv run pytest
@@ -256,26 +270,34 @@ Static checks:
 uv run ruff check .
 ```
 
-With the real backend running, the recorded benchmark and failure scripts can be repeated:
+With the real backend running, these scripts check the application and repeat the recorded measurements:
 
 ```bash
+uv run python scripts/real_mode_check.py
 uv run python scripts/benchmark_endpoints.py
 uv run python scripts/test_failure_scenarios.py
 ```
 
-The saved results are in `outputs/results/system/`. These scripts add local test records, so use a disposable database if the existing reports matter.
+`real_mode_check.py` exercises analysis, similar reports, publishing, moderation, search filters and deletion, then removes its own reports. The other two scripts save results in `outputs/results/system/` and add local test records, so use a disposable database if the existing reports matter.
+
+The similar-report threshold and the deployed DistilBERT validation curve can be reproduced with:
+
+```bash
+uv run python scripts/calibrate_related_threshold.py
+uv run python scripts/distilbert_validation_curve.py
+```
 
 ## API overview
 
 | Method and path | Purpose |
 | --- | --- |
 | `GET /api/health` | Show API and model runtime status |
-| `POST /api/analyse` | Classify text and return related historical reports |
+| `POST /api/analyse` | Classify text and return similar reports from the current event |
 | `POST /api/reports` | Save a user-confirmed report |
-| `GET /api/reports` | List and filter saved reports |
-| `GET /api/reports/{message_id}` | Show one report and its related messages |
-| `GET /api/search` | Search historical and user reports |
-| `PATCH /api/reports/{message_id}` | Confirm or correct a report category or status |
+| `GET /api/reports` | List and filter saved reports; `exclude_hidden=true` omits hidden reports and `created_by` lists one account's reports |
+| `GET /api/reports/{message_id}` | Show one report and similar reports from the current event |
+| `GET /api/search` | Keyword search; the interface searches either the current event or the Historical dataset, never both |
+| `PATCH /api/reports/{message_id}` | Confirm or correct a category, or hide and restore a report |
 | `DELETE /api/reports/{message_id}` | Delete a community report and remove it from the live index |
 
 FastAPI also exposes interactive API documentation at <http://localhost:8000/docs> while the backend is running.
@@ -289,9 +311,9 @@ The repository keeps the experiment code and the recorded outputs used in the re
 | Data preparation and EDA | `notebooks/01_crisis_eda.ipynb` | `outputs/eda/` |
 | TF-IDF baseline | `models/text_baseline/` | `outputs/results/baseline/`, `outputs/predictions/baseline/` |
 | Transformer training | `notebooks/member3/nb1-transformer-training_with output.ipynb` | `outputs/results/transformer/` |
-| Calibration and selective prediction | `notebooks/member3/nb2_calibration_selective_with output.ipynb` | calibration tables and coverage-risk files |
+| Calibration and selective prediction | `notebooks/member3/nb2_calibration_selective_with output.ipynb`, `scripts/distilbert_validation_curve.py` | calibration tables, coverage-risk files, `distilbert_validation_curve.json` |
 | Unseen-event evaluation | `notebooks/member3/nb3_cross_event_with output.ipynb`, `evaluation/cross_event/` | `outputs/results/cross_event/` |
-| Retrieval and search | `notebooks/member5/retrieval_experiments.ipynb` | `outputs/results/retrieval/` |
+| Retrieval and search | `notebooks/member5/retrieval_experiments.ipynb`, `scripts/calibrate_related_threshold.py` | `outputs/results/retrieval/`, including `related_threshold.csv` |
 | Integrated system | `tests/`, `scripts/` | `outputs/results/system/` |
 
 The official benchmark and the unseen-event experiment use different training sets. Their results should not be treated as measurements from one checkpoint. Full methods, limitations and references are in the [technical report](report/tech_report.pdf).

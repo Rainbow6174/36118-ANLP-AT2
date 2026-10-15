@@ -1,0 +1,24 @@
+usage,text,background,text_hex,background_hex,ratio,passes_aa_normal_text
+Body text on the page,--color-text-main,--color-background,#102A2E,#F7FAF9,14.36,True
+Body text on cards,--color-text-main,--color-surface,#102A2E,#FFFFFF,15.08,True
+Secondary text on the page,--color-text-secondary,--color-background,#52676B,#F7FAF9,5.7,True
+Secondary text on cards,--color-text-secondary,--color-surface,#52676B,#FFFFFF,5.98,True
+Safety line under the header,--color-text-secondary,--color-notice-soft,#52676B,#EDF3F2,5.33,True
+Navigation text,--color-text-main,--color-header-background,#102A2E,#FFFEFC,14.96,True
+Links and outline buttons,--color-primary,--color-surface,#0F6B66,#FFFFFF,6.33,True
+Primary soft chips,--color-primary,--color-primary-soft,#0F6B66,#E7F3F1,5.58,True
+Text on primary buttons,#FFFFFF,--color-primary,#FFFFFF,#0F6B66,6.33,True
+Category needs review badge and alerts,--color-review,--color-review-soft,#B54708,#FCEEE4,4.78,True
+Error messages,--color-error,--color-error-soft,#B42318,#FBEAE8,5.65,True
+Category reviewed badge,--color-success,--color-success-soft,#027A48,#E7F6EF,4.85,True
+Urgent Needs accent,--color-urgent,--color-surface,#BA2B20,#FFFFFF,6.08,True
+Category badge: requests_or_urgent_needs,label text,label background,#BA2B20,#FCE8E6,5.16,True
+Category badge: rescue_volunteering_or_donation_effort,label text,label background,#2A7549,#E4F3EA,4.9,True
+Category badge: infrastructure_and_utility_damage,label text,label background,#2F6DB3,#E6EFFA,4.57,True
+Category badge: displaced_people_and_evacuations,label text,label background,#A35600,#FEEFD8,4.77,True
+Category badge: missing_or_found_people,label text,label background,#6D4AA8,#EEE8F8,5.49,True
+Category badge: caution_and_advice,label text,label background,#6F6100,#F7F2B8,5.42,True
+Category badge: injured_or_dead_people,label text,label background,#6B4226,#F1E7DF,7.09,True
+Category badge: other_relevant_information,label text,label background,#0E7490,#DFF3F8,4.67,True
+Category badge: sympathy_and_support,label text,label background,#A8326D,#FCE7F1,5.34,True
+Category badge: not_humanitarian,label text,label background,#5B6663,#EEF0EF,5.2,True

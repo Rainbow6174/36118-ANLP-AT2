@@ -20,7 +20,9 @@ CREATE TABLE IF NOT EXISTS reports (
     region           TEXT,
     city             TEXT,
     latitude         REAL,
-    longitude        REAL
+    longitude        REAL,
+    created_by       TEXT,
+    status_before_hidden TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_reports_board_label   ON reports(board_label);
@@ -29,3 +31,4 @@ CREATE INDEX IF NOT EXISTS idx_reports_status        ON reports(status);
 CREATE INDEX IF NOT EXISTS idx_reports_needs_review  ON reports(needs_review);
 CREATE INDEX IF NOT EXISTS idx_reports_created_at    ON reports(created_at);
 CREATE INDEX IF NOT EXISTS idx_reports_country       ON reports(country);
+CREATE INDEX IF NOT EXISTS idx_reports_created_by    ON reports(created_by);

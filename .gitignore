@@ -216,14 +216,11 @@ tests/test_data_pipeline.py
 tools/build_eda_notebook.py
 CrisisLens_Revised_Project_Proposal.pdf
 
-# Transformer weights ship via GitHub Release, not Git
+# Transformer weights ship as model.safetensors in the m3-transformer-v1 GitHub
+# Release. The small config and tokenizer files are tracked, so downloading the
+# weights never replaces the repository's loader or metadata.
 models/transformer/*.safetensors
 models/transformer/*.bin
-models/transformer/config.json
-models/transformer/tokenizer.json
-models/transformer/tokenizer_config.json
-models/transformer/special_tokens_map.json
-models/transformer/vocab.txt
 
 # Member 4: local SQLite DB (schema is in app/schema.sql)
 app/backend/*.db

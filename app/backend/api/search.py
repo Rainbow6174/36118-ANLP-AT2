@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
@@ -27,6 +28,8 @@ def search(
     region: Optional[str] = None,
     city: Optional[str] = None,
     needs_review: Optional[bool] = None,
+    created_after: Optional[datetime] = None,
+    created_before: Optional[datetime] = None,
     retriever: Retriever = Depends(get_retriever),
 ) -> SearchResponse:
     filters = {
@@ -39,6 +42,8 @@ def search(
             "region": region,
             "city": city,
             "needs_review": needs_review,
+            "created_after": created_after.isoformat() if created_after else None,
+            "created_before": created_before.isoformat() if created_before else None,
         }.items()
         if val is not None
     }

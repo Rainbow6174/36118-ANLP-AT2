@@ -70,6 +70,8 @@ async def _call(
         return None
     if response.is_error:
         raise BackendError(f"The server answered with error {response.status_code}.")
+    if response.status_code == 204 or not response.content:
+        return None  # e.g. DELETE answers 204 No Content
     try:
         return response.json()
     except ValueError as exc:
@@ -142,6 +144,7 @@ def _report_from_record(data: dict) -> CrisisReport:
         user_correction=data.get("user_correction"),
         location=_location_from_record(data),
         is_demo=data["model_version"].startswith(_DEMO_MODEL_PREFIX),
+        created_by=data.get("created_by"),
     )
 
 
@@ -164,8 +167,10 @@ async def analyse(text: str, location: LocationInput | None = None) -> AnalyseRe
     """Classify a draft report and find related reports."""
     if USING_MOCK_BACKEND:
         await asyncio.sleep(_MOCK_LATENCY_SECONDS)
+        prediction = backend.classify(text)
+        # Like POST /api/analyse: earlier reports of the current event.
         return AnalyseResponse(
-            prediction=backend.classify(text),
+            prediction=prediction,
             related_reports=backend.retrieve(text, k=3),
         )
 
@@ -213,6 +218,7 @@ async def create_report(
             "model_version": prediction.model_version,
             "needs_review": prediction.needs_review,
             "location": _location_payload(location),
+            "created_by": created_by,
         },
     )
     return _parse(lambda: _report_from_record(data), "saved report")
@@ -227,6 +233,7 @@ async def list_reports(
     page: int = 1,
     page_size: int = 6,
     exclude_hidden: bool = False,
+    created_by: str | None = None,
 ) -> ReportListResponse:
     """One page of full reports, newest first."""
     if USING_MOCK_BACKEND:
@@ -238,6 +245,7 @@ async def list_reports(
             page=page,
             page_size=page_size,
             exclude_hidden=exclude_hidden,
+            created_by=created_by,
         )
 
     data = await _call(
@@ -248,6 +256,8 @@ async def list_reports(
             "source_type": source_type,
             "status": status,
             "needs_review": needs_review,
+            "exclude_hidden": exclude_hidden,
+            "created_by": created_by,
             "page": page,
             "k": page_size,
         },
@@ -352,12 +362,16 @@ async def update_report(
     *,
     board_label: str | None = None,
     status: str | None = None,
+    hidden: bool | None = None,
 ) -> CrisisReport:
-    """Change the category and/or status; pass board_label only when it really changes."""
+    """Change the category, status or visibility; pass board_label only when it really changes.
+
+    hidden=True hides a report; hidden=False restores the status it had before.
+    """
     if USING_MOCK_BACKEND:
         try:
             return backend.update_report(
-                message_id, board_label=board_label, status=status
+                message_id, board_label=board_label, status=status, hidden=hidden
             )
         except (KeyError, ValueError, PermissionError) as exc:
             raise BackendError(str(exc)) from exc
@@ -367,6 +381,8 @@ async def update_report(
         body["user_correction"] = board_label
     if status is not None:
         body["status"] = status
+    if hidden is not None:
+        body["hidden"] = hidden
     data = await _call("PATCH", f"/api/reports/{message_id}", json=body)
     return _parse(lambda: _report_from_record(data), "updated report")
 

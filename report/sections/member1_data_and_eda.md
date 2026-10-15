@@ -80,7 +80,7 @@ The notebook produces label-level word features and character n-grams in `output
 - Member 5 should build retrieval over historical HumAID messages and preserve the event, label and source fields as filters.
 - Member 6 should use the ten labels as the board categories, show the predicted label and confidence, and test whether users understand that the prediction can be wrong.
 
-The main user-facing flow is: a user submits a message, the classifier returns a label and confidence, the message is saved under that suggested board, and related historical messages can be searched. Low-confidence predictions should remain visible for review.
+The main user-facing flow is: a user submits a message, the classifier returns a label and confidence, and the user can correct the label before saving. The app then opens the selected board and shows similar reports already saved for the current event. Historical messages remain available through a separate search mode. Low-confidence predictions stay visible for review.
 
 ## Reproducibility and handoff
 

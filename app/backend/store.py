@@ -18,7 +18,7 @@ from .schemas import ReportCreate, ReportRecord
 _COLUMNS = (
     "message_id, text, predicted_label, board_label, source_type, "
     "confidence, model_version, needs_review, created_at, user_correction, "
-    "status, country, region, city, latitude, longitude"
+    "status, country, region, city, latitude, longitude, created_by"
 )
 
 
@@ -44,6 +44,7 @@ def _row_to_record(row: sqlite3.Row) -> ReportRecord:
         city=row["city"],
         latitude=row["latitude"],
         longitude=row["longitude"],
+        created_by=row["created_by"],
     )
 
 
@@ -68,12 +69,13 @@ def insert(payload: ReportCreate) -> ReportRecord:
         city=loc.city if loc else None,
         latitude=loc.latitude if loc else None,
         longitude=loc.longitude if loc else None,
+        created_by=payload.created_by,
     )
     conn = db.connect()
     try:
         conn.execute(
             f"INSERT INTO reports ({_COLUMNS}) VALUES "
-            "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            "(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 record.message_id,
                 record.text,
@@ -91,6 +93,7 @@ def insert(payload: ReportCreate) -> ReportRecord:
                 record.city,
                 record.latitude,
                 record.longitude,
+                record.created_by,
             ),
         )
         conn.commit()
@@ -118,6 +121,8 @@ def list_reports(
     region: Optional[str] = None,
     city: Optional[str] = None,
     needs_review: Optional[bool] = None,
+    exclude_hidden: bool = False,
+    created_by: Optional[str] = None,
     page: int = 1,
     k: int = 20,
 ) -> tuple[list[ReportRecord], int]:
@@ -144,6 +149,12 @@ def list_reports(
     if needs_review is not None:
         conditions.append("needs_review = ?")
         params.append(int(needs_review))
+    if exclude_hidden:
+        conditions.append("status != ?")
+        params.append("hidden")
+    if created_by is not None:
+        conditions.append("created_by = ?")
+        params.append(created_by)
 
     where_sql = " AND ".join(conditions)
     page = max(1, page)
@@ -174,10 +185,13 @@ def patch(
     *,
     user_correction: Optional[str],
     status: Optional[str],
+    hidden: Optional[bool] = None,
 ) -> Optional[ReportRecord]:
-    """Apply a correction and/or status update.
+    """Apply a correction, a status update and/or a hide/restore action.
 
     - user_correction updates board_label; predicted_label is never overwritten.
+    - Hiding (hidden=True or status="hidden") remembers the current status;
+      hidden=False restores it, so a report awaiting review returns to the queue.
     - Historical rows (source_type=humaid_history) raise PermissionError.
     """
     conn = db.connect()
@@ -195,6 +209,7 @@ def patch(
         new_board = row["board_label"]
         new_status = row["status"]
         new_needs_review = row["needs_review"]
+        new_before_hidden = row["status_before_hidden"]
 
         if user_correction is not None:
             if user_correction not in LABEL_SET:
@@ -202,15 +217,34 @@ def patch(
             new_correction = user_correction
             new_board = user_correction
             new_needs_review = False
-        if status is not None:
+        if hidden is True or status == "hidden":
+            if row["status"] != "hidden":
+                new_before_hidden = row["status"]
+            new_status = "hidden"
+        elif hidden is False:
+            if row["status"] == "hidden":
+                new_status = row["status_before_hidden"] or (
+                    "needs_review" if new_needs_review else "unverified"
+                )
+            new_before_hidden = None
+        elif status is not None:
             new_status = status
+            new_before_hidden = None
             if status == "resolved":
                 new_needs_review = False
 
         conn.execute(
             "UPDATE reports SET user_correction = ?, board_label = ?, "
-            "status = ?, needs_review = ? WHERE message_id = ?",
-            (new_correction, new_board, new_status, new_needs_review, message_id),
+            "status = ?, needs_review = ?, status_before_hidden = ? "
+            "WHERE message_id = ?",
+            (
+                new_correction,
+                new_board,
+                new_status,
+                new_needs_review,
+                new_before_hidden,
+                message_id,
+            ),
         )
         conn.commit()
         cur = conn.execute(

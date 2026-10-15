@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -41,6 +42,19 @@ _status: dict[str, Any] = {
 }
 
 
+def clean_for_classifier(text: str) -> str:
+    """The text cleaning used to train and evaluate the Transformer.
+
+    Identical to clean_text in notebooks/member3/nb1: links removed, usernames
+    replaced by @user, '#' removed and spaces collapsed. Only the model input is
+    cleaned; the saved report keeps the text the user wrote.
+    """
+    text = re.sub(r"https?://\S+|www\.\S+", "", text)
+    text = re.sub(r"@\w+", "@user", text)
+    text = re.sub(r"#", "", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
 class TransformerClassifierAdapter:
     """Validate Member 3's dictionary response against the API contract."""
 
@@ -49,7 +63,34 @@ class TransformerClassifierAdapter:
         self.model_version = model.model_version
 
     def classify(self, text: str) -> Prediction:
-        return Prediction.model_validate(self._model.classify(text))
+        # The model sees text cleaned the way its training and evaluation data were.
+        return Prediction.model_validate(self._model.classify(clean_for_classifier(text)))
+
+
+# Similar reports come from the current event only: the community reports saved in
+# this deployment, in any category, because one incident can be reported under
+# several categories. HumAID history is kept for evaluation, the historical search
+# mode and the examples on an empty board.
+RELATED_FILTERS = {"source_type": "user"}
+# MiniLM cosine similarity below which a report is not shown as similar. Chosen
+# on Member 5's manual relevance judgements (tuning queries, precision >= 0.80);
+# on the held-out final queries 75.8% of the shown reports were relevant and
+# 83.1% of relevant ones were kept. See scripts/calibrate_related_threshold.py.
+RELATED_MIN_SIMILARITY = 0.45
+
+
+def find_related(
+    retriever: Any, text: str, k: int = 5, exclude_ids=None
+) -> list[RelatedReport]:
+    """Earlier reports of the current event that describe a similar situation."""
+    items = retriever.retrieve(
+        text, k=k, filters=dict(RELATED_FILTERS), exclude_ids=exclude_ids
+    )
+    return [
+        item
+        for item in items
+        if item.similarity is None or item.similarity >= RELATED_MIN_SIMILARITY
+    ]
 
 
 class RetrievalAdapter:
@@ -156,7 +197,7 @@ def _load_real(config: dict) -> tuple[Classifier, RetrievalAdapter]:
     if not _model_files_ready(model_dir):
         missing.append(
             f"deployment model files in {model_dir} "
-            "(download the m3-transformer-v1 release)"
+            "(download model.safetensors from the m3-transformer-v1 release)"
         )
     if not _retrieval_files_ready(index_dir):
         missing.append(
@@ -176,7 +217,10 @@ def _load_real(config: dict) -> tuple[Classifier, RetrievalAdapter]:
     page_size = 500
     while True:
         reports, total = store.list_reports(
-            source_type="user", page=page, k=page_size
+            source_type="user",
+            exclude_hidden=True,
+            page=page,
+            k=page_size,
         )
         for report in reports:
             retriever.add_to_index(report)
@@ -256,11 +300,20 @@ def index_report(report: ReportRecord) -> None:
 
 
 def remove_report_from_index(message_id: str) -> None:
-    """Stop a deleted user report from appearing in retrieval results."""
+    """Stop a hidden or deleted user report from appearing in results."""
 
     remove = getattr(_retriever, "remove_from_index", None)
     if remove is not None:
         remove(message_id)
+
+
+def sync_report_index(report: ReportRecord) -> None:
+    """Apply a saved report's current visibility to the live index."""
+
+    if report.status == "hidden":
+        remove_report_from_index(report.message_id)
+    else:
+        index_report(report)
 
 
 def runtime_status() -> dict[str, Any]:

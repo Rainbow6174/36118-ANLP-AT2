@@ -433,8 +433,8 @@ def remove_from_index(message_id: str) -> bool:
     """Remove one report from the in-memory indexes.
 
     Returns True when the report was present. Historical records are protected
-    by the database layer, so the backend calls this only after deleting a
-    stored user report.
+    by the database layer, so the backend uses this only for hidden or deleted
+    user reports.
     """
     state = _get_state()
     records = state["records"]

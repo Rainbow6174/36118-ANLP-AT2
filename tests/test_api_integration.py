@@ -99,16 +99,14 @@ def test_filtered_search_returns_matching_items(client):
     assert all(item["board_label"] == "caution_and_advice" for item in items)
 
 
-def test_analyse_filters_related_items_to_predicted_board(client):
+def test_analyse_related_reports_come_from_the_current_event(client):
+    """Similar reports are earlier community reports, never past-disaster messages."""
     response = client.post(
         "/api/analyse", json={"text": "families need drinking water"}
     )
     assert response.status_code == 200
-    body = response.json()
-    predicted = body["prediction"]["predicted_label"]
-    assert all(
-        item["board_label"] == predicted for item in body["related_reports"]
-    )
+    related = response.json()["related_reports"]
+    assert all(item["source_type"] == "user" for item in related)
 
 
 def test_post_defaults_board_to_predicted(client):
@@ -183,7 +181,7 @@ def test_patch_not_found(client):
     assert r.status_code == 404
 
 
-def test_delete_removes_report_from_store_and_live_index(client, monkeypatch):
+def test_hide_restore_and_delete_sync_live_index(client, monkeypatch):
     from app.backend import services
 
     class TrackingRetriever:
@@ -213,12 +211,31 @@ def test_delete_removes_report_from_store_and_live_index(client, monkeypatch):
     message_id = client.post("/api/reports", json=body).json()["message_id"]
     assert message_id in retriever.ids
 
+    hidden = client.patch(
+        f"/api/reports/{message_id}", json={"status": "hidden"}
+    )
+    assert hidden.status_code == 200
+    assert hidden.json()["status"] == "hidden"
+    assert message_id not in retriever.ids
+    assert retriever.removed == [message_id]
+
+    public_list = client.get("/api/reports?exclude_hidden=true").json()
+    assert public_list["total"] == 0
+    admin_list = client.get("/api/reports").json()
+    assert admin_list["total"] == 1
+
+    restored = client.patch(
+        f"/api/reports/{message_id}", json={"status": "unverified"}
+    )
+    assert restored.status_code == 200
+    assert message_id in retriever.ids
+
     response = client.delete(f"/api/reports/{message_id}")
 
     assert response.status_code == 204
     assert client.get(f"/api/reports/{message_id}").status_code == 404
     assert message_id not in retriever.ids
-    assert retriever.removed == [message_id]
+    assert retriever.removed == [message_id, message_id]
 
 
 def test_historical_row_is_readonly(client):

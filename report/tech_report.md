@@ -7,54 +7,46 @@
 
 ## Executive summary
 
-People use social media to share warnings, damage reports, requests and offers during disasters, but the resulting stream is difficult to organise quickly. CrisisLens is a web-based NLP prototype that turns a new English crisis message into a structured, searchable report. It predicts one of ten humanitarian categories, shows the prediction and its confidence, allows a person to correct the category, saves the report to the relevant board and retrieves related messages from earlier disasters. Low-confidence predictions enter a review queue. The system organises information; it does not verify whether a report is true or dispatch emergency help.
+During disasters, public messages about warnings, damage, needs and offers are difficult to organise quickly. CrisisLens turns an English crisis message into a structured report, predicts one of ten humanitarian categories and lets the user correct the category before publication. It also finds similar reports already saved for the current event across all boards. Low-confidence predictions enter an administrator review queue. CrisisLens organises information; it does not verify reports or dispatch help.
 
-The project compared a transparent word-and-character TF-IDF baseline with DistilBERT and Twitter-RoBERTa. On the official HumAID test set, macro-F1 increased from 0.7262 for the baseline to 0.7547 for DistilBERT and 0.7621 for Twitter-RoBERTa. DistilBERT was selected for the application because it gave up only 0.0074 macro-F1 while taking roughly half the training and inference time of Twitter-RoBERTa in the saved experiments. Temperature scaling and confidence-based selective prediction were added so that uncertain cases could be sent to human review.
+On the official HumAID test set, macro-F1 was 0.7262 for word-and-character TF-IDF, 0.7547 for DistilBERT and 0.7621 for Twitter-RoBERTa. Validation macro-F1 was 0.7526 for DistilBERT and 0.7589 for Twitter-RoBERTa. DistilBERT was deployed because this small gap came with about 50% less recorded training time and 46% less inference time. On 779 held-out Cyclone Idai messages, the scores fell to 0.5760, 0.6969 and 0.718 respectively, and calibration transferred inconsistently. Confidence is therefore used to route review, not as a guarantee.
 
-Generalisation was tested by removing `cyclone_idai_2019` from training and evaluating on its 779 test messages. Under this shift, macro-F1 was 0.5760 for the TF-IDF baseline, 0.6969 for DistilBERT and 0.718 for Twitter-RoBERTa. Calibration learned on seen events did not transfer consistently: the frozen temperature improved DistilBERT's expected calibration error (ECE) on the held-out event but worsened it for Twitter-RoBERTa. For this reason, confidence is used to route messages for review and is not treated as a guarantee.
-
-For related-message retrieval, semantic search with `all-MiniLM-L6-v2` achieved Precision@5 of 0.800, compared with 0.607 for TF-IDF, while answering a query in 34 ms on average after loading. TF-IDF remained the better method for exact keyword and name search. The integrated FastAPI and NiceGUI application completed classification, saving, board navigation, search and correction through stable interfaces. Twenty-eight automated tests and fourteen live failure scenarios passed.
+On the HumAID retrieval evaluation, `all-MiniLM-L6-v2` achieved Precision@5 of 0.800, compared with 0.607 for TF-IDF, at 34 ms per query after loading. MiniLM finds similar current-event reports; TF-IDF handles exact search in separate current-event and historical modes. FastAPI and NiceGUI connect these components in the running application.
 
 ## 1. Project objectives and scope
 
 ### 1.1 Problem and users
 
-HumAID was created because high-volume social-media content during disasters is noisy and difficult to use directly (Alam et al., 2021). CrisisLens addresses the narrower problem of turning an individual English crisis message into information that can be browsed and reviewed.
-
-The primary users are volunteer crisis-information coordinators and humanitarian information analysts who need to sort and inspect public reports. Community members are secondary users who submit a message and review the suggested category. Other readers can browse boards or search historical examples. The workflow supports both the person providing information and the person reviewing it.
+HumAID was created because high-volume disaster messages are noisy and difficult to use directly (Alam et al., 2021). CrisisLens addresses the narrower task of organising individual English reports. Its main users are volunteer coordinators and humanitarian information analysts; community members submit reports and review the suggested category. Other readers can browse the current event or open a separate historical mode.
 
 The project objective was:
 
-> To test whether a human-in-the-loop NLP workflow can classify a new English crisis message, place it in a useful humanitarian board, retrieve related historical messages and expose uncertainty clearly enough for a person to confirm or correct the result.
+> To test whether a human-in-the-loop NLP workflow can classify a new English crisis message, place it in a useful humanitarian board, find similar reports already saved for the same event and expose uncertainty clearly enough for a person to confirm or correct the result.
 
 Four research questions guided the work:
 
 1. How much do contextual Transformers improve ten-class humanitarian classification over a transparent lexical baseline?
 2. How well do classification performance, calibration and review thresholds transfer to an unseen disaster event?
-3. Does semantic retrieval provide more relevant historical context than TF-IDF without losing interactive speed?
+3. On held-out HumAID data, does semantic retrieval return more relevant results than TF-IDF without losing interactive speed, and can the selected method support current-event report matching?
 4. Can these components support a clear submit–review–publish–browse workflow in a web application?
 
 ### 1.2 Scope and boundaries
 
-The minimum product accepts one English message at a time, predicts one of ten HumAID categories, records model confidence and version, allows category correction, saves the report, redirects to its board and displays related historical messages. It also provides keyword search, board and source filters, and a review queue for uncertain predictions.
+The product accepts one English message at a time, predicts a HumAID category, records confidence and model version, allows correction, publishes to a board and shows sufficiently similar current-event reports. The interface keeps current-event search separate from the read-only Historical dataset mode. It also provides board and status filters and a review queue. Each deployment serves one event: its database holds only that event's community reports, and a new event starts from an empty database or a loaded demonstration scenario.
 
-The prototype does not determine urgency, verify facts, coordinate emergency response or replace official sources. It currently supports English only. Location is optional and approximate. These boundaries are stated in the interface because a category prediction is a sorting suggestion, not evidence that the message is accurate.
+The prototype supports English only and does not determine urgency, verify facts, coordinate response or replace official sources. Location is optional and approximate. A category prediction is a sorting suggestion, not evidence that a report is accurate.
 
 ### 1.3 Positioning and project contribution
 
-CrisisLens combines message classification, confidence-based review, category boards and historical-message retrieval. CrisisNLP provides datasets and benchmarks, while ReliefWeb distributes professionally curated humanitarian information (CrisisNLP, n.d.; ReliefWeb, n.d.). AIDR and Ushahidi are closer system comparisons. AIDR uses crowdsourcing and machine learning to classify crisis microblogs in real time (Imran et al., 2014). Ushahidi allows people to submit and map reports during crises (Okolloh, 2009).
-
-CrisisLens focuses on how these functions work together. Calibrated confidence routes uncertain messages to review. The predicted category sets the board used for the first historical search, and a person can change that category before publication. Once saved, the report becomes available to later searches. The project evaluates this combined workflow through classification, calibration, retrieval and system tests.
+CrisisLens combines classification, calibrated review routing, category boards and cross-board matching of current-event reports. A user can correct the category before publication. Similar reports can add context even when they received different labels, but they do not verify one another. Historical messages remain in a separate search mode. The comparison below distinguishes this workflow from dataset providers, curated information services and earlier crisis platforms.
 
 | Existing approach | Strength | Gap explored by CrisisLens |
 | --- | --- | --- |
-| CrisisNLP benchmarks | Supply crisis datasets, tasks and model comparisons | Do not by themselves provide the report-to-board workflow tested here |
-| ReliefWeb | Provides professionally curated humanitarian information | Serves a different publishing process from immediate community submission and sorting |
-| AIDR | Combines real-time crisis-message classification with human labelling | CrisisLens instead evaluates a fixed ten-label model, calibrated review routing and historical retrieval in one user journey |
-| Ushahidi | Collects and maps crowdsourced crisis reports | CrisisLens focuses on NLP-assisted category assignment and related-message retrieval before and after publication |
-| CrisisLens | Connects confidence, review, boards and retrieval and evaluates each link | Remains a student prototype; adoption would require moderation, staffing, security, monitoring and wider field validation |
-
-Each part was evaluated with a matching measure. Classification used macro-F1 and per-label results; confidence handling used calibration and risk–coverage; retrieval used Precision@K; and the integrated system used response-time, API and failure tests.
+| CrisisNLP benchmarks (CrisisNLP, n.d.) | Supply crisis datasets and model comparisons | Do not provide a report-to-board workflow |
+| ReliefWeb (ReliefWeb, n.d.) | Provides professionally curated information | Uses a different publishing process from immediate community submission |
+| AIDR (Imran et al., 2014) | Combines crisis-message classification with human labelling | CrisisLens adds calibrated review routing and current-event similarity in one journey |
+| Ushahidi (Okolloh, 2009) | Collects and maps crowdsourced reports | CrisisLens focuses on category assistance and similar-report discovery |
+| CrisisLens | Connects review, boards, current-event matching and historical search | Remains a prototype requiring wider field validation and operational controls |
 
 ## 2. Project phases and team contributions
 
@@ -99,7 +91,7 @@ CrisisMMD was inspected as a supporting dataset. It contains text–image pairs 
 
 The EDA notebook downloads the public files, validates schemas and writes approved tables and figures. For modelling, URLs are removed, mentions become `@user`, hashtag words are retained and repeated whitespace is collapsed. This light normalisation keeps useful words, spelling patterns and hashtag content in short social-media messages.
 
-The duplicate analysis found 12 exact duplicates and four normalised duplicate groups crossing official split boundaries. The number is small relative to the dataset, but it creates limited leakage risk and is reported as a limitation. Historical messages are stored separately from new user submissions: HumAID examples use `source_type=humaid_history` in the read-only retrieval index, while application submissions use `source_type=user` in SQLite.
+The duplicate analysis found 12 exact duplicates and four normalised duplicate groups crossing official split boundaries. The number is small relative to the dataset, but it creates limited leakage risk and is reported as a limitation. Historical messages use `source_type=humaid_history` in the read-only index, while application submissions use `source_type=user` in SQLite.
 
 ## 4. NLP methods and system design
 
@@ -107,16 +99,16 @@ The main design decisions and their supporting evidence are summarised below:
 
 | Problem | Chosen method | Evidence used in this report |
 | --- | --- | --- |
-| Noisy, uneven ten-class crisis messages | Word-and-character TF-IDF baseline plus contextual Transformers | Macro-F1, per-label results and imbalance ablations |
-| Confidence may be misleading | Temperature scaling and a validation-selected review threshold | ECE, coverage, accepted risk and review rate |
-| A new disaster may differ from training events | Retrain on 12 events and hold out Cyclone Idai | Held-out macro-F1, calibration and risk–coverage |
-| Users need related situations, not only matching words | MiniLM semantic retrieval | Blinded relevance judgements and Precision@5/10 |
-| Names, numbers and exact terms still matter | TF-IDF keyword search | Name-search and filter checks |
-| Model outputs must support a usable workflow | FastAPI, SQLite, NiceGUI and stable component contracts | API tests, failure scenarios, latency and the end-to-end demonstration |
+| Uneven ten-class messages | TF-IDF baseline and Transformers | Macro-F1, per-label results and imbalance ablations |
+| Unreliable confidence | Temperature scaling and review threshold | ECE and risk–coverage |
+| Event shift | Twelve-event training with Cyclone Idai held out | Held-out performance and calibration |
+| Similar situations | MiniLM with a display threshold | Blinded relevance judgements and Precision@K |
+| Exact words and names | TF-IDF keyword search | Name-search and filter checks |
+| Integrated use | FastAPI, SQLite and NiceGUI | API, failure, latency and demonstration evidence |
 
 ### 4.1 End-to-end architecture
 
-The architecture keeps modelling, retrieval, storage and presentation separate. The backend calls each component through a stable interface, which allowed the team to build and test parts independently.
+The architecture separates modelling, retrieval, storage and presentation behind small backend interfaces.
 
 ```mermaid
 flowchart LR
@@ -124,56 +116,50 @@ flowchart LR
     A[Analyst or reviewer] --> F
     F -->|REST| B[FastAPI backend]
     B --> C[DistilBERT classifier]
-    B --> R[Semantic retrieval and TF-IDF search]
-    B --> D[(SQLite user reports)]
-    R --> H[(Read-only HumAID history)]
+    B --> R[MiniLM similarity and TF-IDF search]
+    B --> D[(SQLite current-event reports)]
+    D -->|visible reports indexed| R
+    H[(Read-only HumAID history)] -->|historical search and empty-board examples| R
     C -->|label, probabilities, confidence| B
     B -->|prediction, related reports, status| F
     F -->|confirm or correct category| B
 ```
 
-*Figure 2. CrisisLens architecture and data flow. Classification suggests a board; people retain control over the published category.*
+*Figure 2. CrisisLens architecture and data flow. Classification suggests a board; people retain control over the published category. Similar-report retrieval uses current-event reports, while HumAID remains a separate historical source.*
 
-Every classifier implements `classify(text)` and returns a label, probabilities for all ten labels, confidence, model version and `needs_review`. Retrieval implements `retrieve(text, k, filters)` for related messages and `search(query, filters, k)` for keyword search. The original `predicted_label` is preserved when a user changes `board_label`, which keeps model output and human action distinguishable.
+`classify(text)` returns a label, ten probabilities, confidence, model version and `needs_review`. Retrieval separates semantic `retrieve` from keyword `search`. The database preserves `predicted_label` when a user changes `board_label`.
 
-`POST /api/analyse` limits related reports to the classifier's predicted board instead of mixing results from all ten boards. When a user saves a report or corrects its board, the backend immediately adds or updates that record in the retrieval index. Later related-message requests and searches use the current human-confirmed category without waiting for an offline rebuild.
+`POST /api/analyse` searches only visible `source_type=user` reports already saved for the current event. It does not restrict results to the predicted board, because similar accounts may have been assigned different categories. MiniLM candidates below 0.45 cosine similarity are not shown; when no candidate reaches the threshold, the similar-report section is omitted. Saving a report or changing its board immediately updates the live index without waiting for an offline rebuild.
 
 ### 4.2 Transparent text baseline
 
-The baseline compared word TF-IDF, character TF-IDF and their union with linear SVM and Logistic Regression classifiers. Macro-F1 on validation selected the configuration. The final model combines word 1–2 grams (`min_df=5`, 12,000 features) and character 3–5 grams (`min_df=10`, 16,000 features) with Logistic Regression (`C=1.0`, `max_iter=1000`, seed 42).
-
-The best Logistic Regression result was only slightly above the best combined LinearSVC result, but it was chosen because it also provides native probabilities. Those probabilities support confidence display and review routing without a separate conversion model. Balanced class weights were tested and improved balanced accuracy, but reduced macro-F1, so the final baseline uses no class weights.
+Validation macro-F1 compared word, character and combined TF-IDF with LinearSVC and Logistic Regression. The selected model combines word 1–2 grams (`min_df=5`, 12,000 features) and character 3–5 grams (`min_df=10`, 16,000 features) with Logistic Regression (`C=1.0`, `max_iter=1000`, seed 42). Logistic Regression supplied probabilities for review routing. Balanced weights improved balanced accuracy but reduced macro-F1, so they were not used.
 
 ### 4.3 Contextual classifiers
 
-Two encoders were fine-tuned for five epochs with batch size 32, learning rate `2e-5`, maximum length 128, warm-up ratio 0.1 and weight decay 0.01:
+DistilBERT was chosen as a compact general encoder (Sanh et al., 2019), while `cardiffnlp/twitter-roberta-base` supplied Twitter-specific pretraining (Barbieri et al., 2020). Both were fine-tuned for five epochs with batch size 32, learning rate `2e-5`, maximum length 128, warm-up ratio 0.1 and weight decay 0.01. These settings were fixed across runs; length 128 matched the tweet format, and exhaustive tuning was outside scope.
 
-- DistilBERT, a compact general-purpose encoder designed to reduce model size and inference cost (Sanh et al., 2019);
-- Twitter-RoBERTa (`cardiffnlp/twitter-roberta-base`), a RoBERTa model pretrained for Twitter language, chosen because HumAID consists of tweets (Barbieri et al., 2020).
+Plain fine-tuning, class weighting and focal loss were compared using a fixed rule: an alternative needed to improve F1 for at least two of the three smallest classes without reducing macro-F1 by more than 0.01. Neither alternative passed, so plain fine-tuning was retained.
 
-The training settings were fixed before the final comparison and were not selected from test results. We used batch size 32 and learning rate `2e-5` for every run. Maximum length 128 matched the short tweet format. Keeping these settings unchanged made the encoder and loss comparisons consistent; an exhaustive hyperparameter search was outside the project scope.
-
-Macro-F1 selected models because the class distribution is uneven. Plain fine-tuning, class weighting and focal loss were compared under a rule fixed before the final result: an imbalance method would be adopted only if it improved the three smallest classes without reducing overall macro-F1 by more than 0.01. Neither class weighting nor focal loss passed. Giving rare labels more influence made the models predict them more often. This raised recall in some cases but also produced more false positives, reducing precision and minority-class F1. Plain fine-tuning was retained.
-
-Twitter-RoBERTa produced the highest score, but DistilBERT was selected as the deployment classifier. Twitter-RoBERTa improved test macro-F1 by only 0.0074, while DistilBERT reduced training time from 3,586.6 to 1,794 seconds and inference time from 4.10 to 2.23 ms per sample. After temperature scaling, DistilBERT also had lower test ECE (0.0257 compared with 0.0351). These results favoured DistilBERT for the interactive application. Twitter-RoBERTa was retained for comparison and cross-event analysis; it is not loaded by the application.
+DistilBERT was deployed because its validation macro-F1 of 0.7526 was only 0.0063 below Twitter-RoBERTa's 0.7589, while reducing recorded training time by about 50% and inference time by about 46%. On the test set, the macro-F1 gap remained 0.0074 and DistilBERT had lower calibrated ECE (0.0257 versus 0.0351). Twitter-RoBERTa remains an analysis model and is not loaded by the application.
 
 ### 4.4 Calibration and selective prediction
 
-Confidence is the maximum predicted class probability. Neural classifiers can be accurate but poorly calibrated, so temperature scaling was fitted to validation logits only (Guo et al., 2017). The fitted temperatures were 1.1017 for DistilBERT and 1.3509 for Twitter-RoBERTa.
-
-A review threshold was also selected on validation. The search chose the greatest coverage whose estimated accepted-sample error was at most 5%. A message below the threshold is still published only after the person sees the prediction, and it is flagged for review. This reject-option design makes the workload–risk trade-off explicit (Geifman & El-Yaniv, 2017).
+Temperature scaling was fitted to validation logits (Guo et al., 2017), giving `T = 1.1017` for DistilBERT and 1.3509 for Twitter-RoBERTa. Validation also selected the greatest coverage with accepted-sample error at or below 5%; DistilBERT's threshold was `tau = 0.8866`. Lower-confidence messages are shown to the submitter and flagged for administrator review, making the workload–risk trade-off explicit (Geifman & El-Yaniv, 2017).
 
 ### 4.5 Retrieval, search and duplicate grouping
 
-Two retrieval methods were evaluated. TF-IDF with cosine similarity provides transparent word matching. Semantic retrieval uses normalised 384-dimensional `all-MiniLM-L6-v2` sentence embeddings with cosine similarity. Sentence-BERT-style encoders are suited to similarity search because each sentence can be embedded once and compared efficiently (Reimers & Gurevych, 2019).
+Retrieval compared TF-IDF word matching with cosine similarity over normalised 384-dimensional `all-MiniLM-L6-v2` embeddings (Reimers & Gurevych, 2019; Wang et al., 2020). MiniLM was selected for similar reports and searches visible current-event reports across categories. Its 0.45 display threshold was the lowest value reaching 80% precision on 163 tuning judgements from the 1,427 labelled pairs. Relevance meant the same type of need, damage or situation, not proof of the same incident; the other 1,264 judgements were held out.
 
-Semantic retrieval was selected for related reports. It uses `all-MiniLM-L6-v2`, a compact MiniLM sentence encoder (Reimers & Gurevych, 2019; Wang et al., 2020). TF-IDF remained the method for explicit keyword search because it reliably finds exact words, names and numbers. Near-duplicates are grouped using cleaned-text TF-IDF similarity at a threshold of 0.90, preventing retweets and close copies from filling the first results. Filters for category, source, status, review flag, place and date are applied without changing the classification result.
+TF-IDF remained the method for explicit keyword search because it reliably finds exact words, names and numbers. Near-duplicates are grouped using cleaned-text TF-IDF similarity at a threshold of 0.90, preventing retweets and close copies from filling the first results. Search filters do not change the classification result.
 
 ### 4.6 Web application
 
-FastAPI exposes endpoints for analysis, report creation, listing, report detail, search, correction, status changes, deletion and health checks. Pydantic schemas enforce the label and probability contract. SQLite stores user submissions, including the original prediction, current board, confidence, model version, review status, optional approximate location and timestamp. New and corrected user reports are added to the live retrieval index. When a report is deleted, it is removed from both SQLite and the in-memory index. HumAID history stays in the retrieval index.
+FastAPI and Pydantic enforce the API contract. Before classification, links are removed, usernames become `@user`, hashtag symbols are removed and spaces are collapsed, matching training. SQLite keeps the user's original text with the prediction, current board, confidence, model version, review status, submitting account, optional location and timestamp.
 
-The frontend uses NiceGUI and calls the backend only through REST. It provides home, submit, boards, board detail, search, review, report detail, login, administrator and About pages. Demo mode supports interface work without the large model and index, while real mode fails visibly if required artefacts are missing.
+New and corrected visible reports are added to the live retrieval index. Hiding a report removes it from the index, restoring it adds it again, and deletion removes it from both SQLite and the index.
+
+NiceGUI calls the backend through REST. Demo mode works without the model and index; real mode fails visibly when required artefacts are missing.
 
 ## 5. Evaluation design
 
@@ -186,19 +172,15 @@ Two separate classification settings were used and are not combined when interpr
 | Official HumAID benchmark | The published split: 53,531 training, 7,793 validation and 15,160 test messages across 19 events | Select the main models and compare them on a fixed benchmark | The TF-IDF baseline, DistilBERT and Twitter-RoBERTa results in Section 6.1. The deployed DistilBERT checkpoint comes from this setting. |
 | Unseen-event stress test | The 13-event `events_set1_47K` subset, with every `cyclone_idai_2019` training and validation message removed; 779 Idai test messages | Measure transfer to a disaster excluded from model development | Each classifier was retrained on the remaining 12 events. These models are used only for the Section 6.3 shift analysis, not by the application. |
 
-For the official benchmark, model selection used training and validation data. The 15,160-message test split was used only after model settings, temperature and review thresholds were fixed. Macro-F1 was the primary measure; accuracy, balanced accuracy, per-label precision, recall, F1 and support were also recorded. Calibration used 15-bin top-label ECE and log loss. Selective prediction reported coverage, accepted-sample risk and review rate.
-
-The majority classifier demonstrates why accuracy alone is unsuitable: predicting only the largest class achieved validation accuracy of 0.2782 but macro-F1 of 0.0435.
+For the official benchmark, model selection used validation results and recorded training and inference time. Temperature scaling and review thresholds used validation data only. The test split was evaluated after these choices were fixed and was used for final reporting. Macro-F1 was the primary metric for all classifiers. Per-label precision, recall, F1 and support were also recorded. Accuracy, balanced accuracy and log loss were reported for the baseline only. Calibration was evaluated with 15-bin top-label ECE. Selective prediction was measured using coverage, accepted-sample risk and review rate.
 
 ### 5.2 Unseen-event stress test
 
-The final cross-event protocol used the 13 events in HumAID `events_set1_47K`. All `cyclone_idai_2019` training and validation messages were removed. Models trained on the remaining 12 events and were evaluated on the held-out event's 779 test messages. The TF-IDF configuration and review thresholds were transferred without tuning on the held-out event.
-
-This is a focused distribution-shift test. One event cannot establish general cross-disaster robustness, and several labels have very low held-out support. We report per-label support and do not estimate confidence intervals from a single event.
+The cross-event protocol removed all `cyclone_idai_2019` training and validation messages from the 13-event `events_set1_47K` subset. Models trained on the other 12 events and used transferred TF-IDF settings and review thresholds on 779 Idai test messages. This single-event stress test cannot establish broad robustness, so per-label support is reported without confidence intervals.
 
 ### 5.3 Retrieval protocol
 
-Ten validation queries, one per category, selected the TF-IDF setting. The final comparison used 20 original test messages, two per category, and 10 paraphrases, one per category. Both methods searched only the 61,324 training and validation messages, so no test query could retrieve itself. Their top 20 results were pooled, shuffled and judged without revealing the method. A result was relevant when it described the same type of need, damage or situation as the query; a keyword-search result was relevant when it concerned the searched topic. The retrieval evaluator applied this rule once to each pooled query–result pair, producing 1,427 manual judgements: 163 for tuning and 1,264 for final retrieval and search evaluation. Because each pair received one judgement rather than independent ratings from several assessors, inter-annotator agreement is not claimed. The released query and judgement files make the comparison auditable, while single-assessor subjectivity remains a limitation.
+Ten validation queries, one per category, selected the TF-IDF setting. The final comparison used 20 original test messages, two per category, and 10 paraphrases, one per category. Both methods searched only the 61,324 training and validation messages, so no test query could retrieve itself. Their top 20 results were pooled, shuffled and judged without revealing the method. A result was relevant when it described the same type of need, damage or situation as the query; a keyword-search result was relevant when it concerned the searched topic. The judgement file contains 1,427 records: 163 for tuning and 1,264 for final evaluation. Of the final records, 36 paraphrase results reused a judgement from the matching original query, leaving 1,391 direct manual judgements. One evaluator made these judgements, so inter-annotator agreement is not claimed. The released query and judgement files make the comparison auditable, while single-assessor subjectivity remains a limitation.
 
 The primary metric was Precision@5 because users are most likely to inspect the first few results. Precision@10, pooled recall and query time were supporting measures.
 
@@ -206,9 +188,9 @@ Semantic retrieval would be adopted only if it improved overall Precision@5 by a
 
 ### 5.4 System and interaction evaluation
 
-The automated suite contains 28 tests covering API contracts, the end-to-end data path, correction behaviour, cross-event metric generation and strict frontend label handling. Before the live latency benchmark, one request was sent to the health, analysis and search endpoints to load the main model and retrieval paths. Seven endpoints were then measured over 20 requests each. Fourteen failure scenarios covered blank and very long text, Unicode, invalid labels, missing records, protected historical rows, special-character search, concurrent submissions and pagination limits.
+The final automated suite contains 48 tests covering API contracts, the data path, moderation, current-event retrieval, classifier input cleaning, cross-event metrics, accessibility and frontend behaviour. After warm-up requests to health, analysis and search, seven endpoints were measured over 20 requests each. Fourteen live failure scenarios covered invalid and unusual input, missing or protected records, search, concurrent submissions and pagination.
 
-Interaction quality was assessed through a structured design review covering uncertainty, correction, privacy, status language, historical provenance, errors, responsive layout and accessibility. In the live demonstration, one message passes through analysis, category confirmation or correction, publication, board redirection and retrieval. A low-confidence example also shows how the review workflow operates. The demonstration tests the implemented journey; it is not presented as a formal usability study.
+The design review covered uncertainty, correction, privacy, status language, provenance, errors, responsive layout and accessibility. The live demonstration follows analysis, correction, publication, board redirection, retrieval and low-confidence review. It tests the implemented journey and is not presented as a formal usability study.
 
 ## 6. Results and findings
 
@@ -226,7 +208,7 @@ The contextual models improved macro-F1 over the lexical baseline. Twitter-RoBER
 
 Per-label scores show that the main difficulty is not rare vocabulary alone. Models perform strongly on injured or dead people, infrastructure damage and rescue/donation messages. The weaker boundaries include `not_humanitarian` versus `other_relevant_information`, and requests versus donation or volunteering. These categories can use similar words while differing in communicative intent. Contextual encoders reduce but do not remove that ambiguity.
 
-Class weighting and focal loss made the models predict minority labels more often. For example, recall for `requests_or_urgent_needs` rose from 0.54 to about 0.72, but the added false positives reduced precision. Minority-class F1 did not improve and overall macro-F1 fell, so plain fine-tuning was retained.
+Class weighting and focal loss made the models predict minority labels more often. For DistilBERT, recall for `requests_or_urgent_needs` rose from 0.54 with plain fine-tuning to 0.71 with class weighting and 0.77 with focal loss. Precision fell as false positives increased, so minority-class F1 and overall macro-F1 did not improve. Plain fine-tuning was retained.
 
 ### 6.2 Selective prediction on seen data
 
@@ -234,9 +216,11 @@ The baseline threshold auto-accepted 36.48% of official test messages at 4.76% r
 
 DistilBERT auto-accepted 47.27% at 5.11% risk on seen test data. The risk is slightly above the validation target, showing that a threshold selected for 5% risk does not guarantee exactly 5% on later data. We treat confidence-based routing as a workload control with measured error, not as a safety guarantee.
 
-![Coverage and risk across review thresholds](../outputs/results/transformer/coverage_risk_curve.png)
+Figure 3 shows the validation curve for the deployed DistilBERT. Re-running the released model on all 7,793 official validation messages produced macro-F1 of 0.7526 and recovered the released values `T = 1.1017` and `tau = 0.8866`. At this threshold, coverage was 46.9% and accepted-sample risk was 4.98%, meeting the 5% validation target. The results were generated by `scripts/distilbert_validation_curve.py`.
 
-*Figure 3. Coverage–risk trade-off for the contextual model. Higher thresholds reduce automatic coverage and move more messages to review.*
+![Coverage and risk across review thresholds](../outputs/results/transformer/distilbert_coverage_risk_curve.png)
+
+*Figure 3. DistilBERT coverage–risk curve on the official validation split. The deployed threshold `tau = 0.8866` retained 46.9% of messages at 4.98% risk.*
 
 ### 6.3 Unseen-event results
 
@@ -244,7 +228,7 @@ DistilBERT auto-accepted 47.27% at 5.11% risk on seen test data. The risk is sli
 | --- | ---: | ---: | ---: | ---: |
 | TF-IDF baseline | 0.5760 | −0.1502 | 26.83% | 5.26% |
 | DistilBERT | 0.6969 | −0.0578 | 58.41% | 5.27% |
-| Twitter-RoBERTa | **0.7180** | −0.0441 | 36.8% | 1.1% |
+| Twitter-RoBERTa | **0.718** | −0.0441 | 36.8% | 1.1% |
 
 *Table 2. Results on held-out `cyclone_idai_2019` (779 messages). In all three rows, the seen score comes from the official-split model and the held-out score comes from a separate model retrained on the other 12 events. These differences combine event shift with a change in training data and should be read descriptively.*
 
@@ -266,17 +250,21 @@ Semantic retrieval improved Precision@5 by 0.193 and was equal or better in nine
 
 TF-IDF remained better for exact search. In the name-search test it found every message containing the target name within the top ten, while semantic retrieval found 31%–60% depending on name frequency. The two methods address different user intentions: semantic retrieval finds similar situations, while TF-IDF finds specific words and names.
 
-Duplicate grouping increased the mean number of distinct results in the top ten from seven to ten. All 29 filter checks passed. The selected 0.90 threshold also grouped some near-identical prayer messages that were not labelled duplicate pairs, so the grouping is useful but should be shown transparently as “similar” rather than deletion.
+Duplicate grouping increased the mean number of distinct results in the top ten from seven to ten, and all 29 filter checks passed. No tested threshold met the pre-defined 1% limit: eight of the 200 tuning results were grouped at every threshold. Manual inspection found that all eight were near-identical prayer messages. We kept 0.90 as a display rule, with every source record still available.
 
 ![Retrieval Precision@5 by category](../outputs/results/retrieval/figure_precision_by_category.png)
 
 *Figure 4. Precision@5 by humanitarian category for TF-IDF and semantic retrieval.*
 
+On the 1,264 held-out judgements, the 0.45 threshold displayed 75.8% relevant candidates and retained 83.1% of relevant candidates. This does not establish incident-level matching; within-event behaviour was checked only in small functional cases involving several reports about the same bridge.
+
 ### 6.5 System performance and reliability
 
-On the measured real stack, `POST /api/analyse` had p50 latency of 127.6 ms and p95 of 213.6 ms. Creating a report had p50 latency of 164.6 ms, and listing reports took 4.0 ms at p50. Search had p50 latency of 40.0 ms and p95 of 1,078.7 ms. The script had already sent a warm-up search, so the available record does not identify the cause of this tail value. Repeated runs from fresh processes would be needed to isolate it.
+On the final real-mode stack, `POST /api/analyse` had p50 latency of 127.6 ms and p95 of 213.6 ms. Creating a report had p50 latency of 164.6 ms, and listing reports took 4.0 ms at p50. Search had p50 latency of 40.0 ms and p95 of 1,078.7 ms. The measurements followed warm-up requests. The search tail appeared in the recorded run, but its cause was not isolated.
 
-All 28 automated tests and all 14 live failure scenarios passed in the recorded run. Ten concurrent submissions produced unique IDs without corruption. Blank input, invalid labels and missing reports returned clear 4xx errors; long and Unicode text were handled; and historical records remained read-only. The tests cover the expected prototype workflow, but they do not measure sustained load or production security.
+All 48 automated tests and all 14 live failure scenarios passed.
+
+Ten concurrent submissions produced unique IDs without corruption. Blank input, invalid labels and missing reports returned clear 4xx errors; long and Unicode text were handled; and historical records remained read-only. The tests cover the expected prototype workflow, but they do not measure sustained load or production security.
 
 ## 7. Application and user interaction
 
@@ -284,14 +272,12 @@ All 28 automated tests and all 14 live failure scenarios passed in the recorded 
 
 The application makes the model part of a short, reversible workflow:
 
-1. The user writes a message of up to 2,000 characters and may add an approximate location.
-2. The app displays the suggested category, confidence and related historical messages.
+1. The submission form limits the message to 2,000 characters and allows an optional approximate location.
+2. The app displays the suggested category, confidence and any sufficiently similar reports already saved for the current event.
 3. The user can keep or change the category before publication.
 4. The saved report opens on its category board.
-5. Readers can browse boards, search by keyword and filters, and distinguish current community reports from historical examples.
-6. Low-confidence reports appear in a review queue, where the category can be confirmed or corrected without overwriting the original prediction.
-
-Users can check and correct the category before it determines where the report appears. The saved report also keeps the original prediction, so later corrections do not erase the model's output.
+5. Readers can browse boards and search the current event by keyword and filters. They can switch to Historical dataset when they want to search past HumAID messages; the two modes do not mix results.
+6. Low-confidence reports appear in the administrator review queue. An administrator can confirm or change the category without overwriting the original prediction.
 
 ![CrisisLens home page and report states](screenshots/7.jpg)
 
@@ -299,7 +285,7 @@ Users can check and correct the category before it determines where the report a
 
 ### 7.2 Ease of use and communication
 
-The home page offers three direct starts: submit, search and browse categories. The report form separates description, category review and publication so that the model output is seen before it becomes a board entry. All ten categories have stable display names, colours, icons and short explanations. Loading, empty and error states give a next action instead of leaving a blank page.
+The home page links directly to submission, search and category boards. The form separates description, category review and publication. Categories have consistent names, colours, icons and explanations, while loading, empty and error states provide a next action.
 
 The interface separates three ideas that could otherwise be confused:
 
@@ -307,35 +293,31 @@ The interface separates three ideas that could otherwise be confused:
 - **Category needs review** means model confidence was below the threshold.
 - **Category reviewed** means a person checked the sorting, not that the report is true.
 
-The review queue shows the model's suggested category and confidence before a person confirms or changes the category (Figure 6). The prototype also includes an administrator page with a demo login. From this page, an administrator can correct categories and hide or delete repeated or inappropriate user submissions.
+The review queue shows the suggested category and confidence before confirmation or correction (Figure 6). A demo administrator can also hide, restore or delete inappropriate or repeated submissions. Hiding is reversible; permanent deletion asks for confirmation.
 
 ![CrisisLens review queue](screenshots/4.jpg)
 
-*Figure 6. The review queue shows why a report is waiting, the model confidence and controls to confirm or change the category. The records are demo data.*
+*Figure 6. The administrator review queue shows why a report is waiting and the controls for confirming or changing its category. The Nepal scenario uses preset confidence values to demonstrate these states; the values in this screenshot are not outputs from the deployed model.*
 
-Historical messages are marked as past references, with usernames anonymised and links removed. Demo records carry a visible demo label. These labels let readers distinguish a current community submission from a historical example or demonstration data.
+An empty board can show three HumAID cards with a dashed border, the label “Example · past disaster” and a notice that they are not current reports. They disappear once the board has a current-event report. Historical dataset search has its own page notice, and seeded records carry a “Demo data” label.
 
 ![CrisisLens category board](screenshots/8.jpg)
 
 *Figure 7. A category board keeps source, verification and category-review status separate. The second demo record shows that “Category reviewed” refers to sorting, while the report itself remains “Unverified”.*
 
-![CrisisLens search page](screenshots/11.jpg)
+![CrisisLens real-model prediction and similar current-event reports](screenshots/figure8_nepal_related.jpg)
 
-*Figure 8. The search page provides category, status and source controls above the result list. This demo-data screenshot shows the unfiltered state.*
+*Figure 8. Step 2 of the Nepal scenario submission in real mode. DistilBERT supplies the category and confidence, while the similar-report cards come from community reports already saved for the same event.*
 
 ### 7.3 Safety, privacy and accessibility
 
-CrisisLens states that it is not an emergency service and directs people in danger to emergency services. The form asks users to avoid names, phone numbers and home addresses. Location is optional, included only after confirmation and rounded before display. External map and geocoding services are disclosed.
-
-Every page has a main heading and skip link. Navigation marks the current page, interactive icons have text labels, keyboard focus is visible, motion follows reduced-motion preferences and the layout adapts to phone screens. Colours were selected against the WCAG 2.2 AA contrast target of 4.5:1 for normal text (World Wide Web Consortium, 2024).
+CrisisLens states that it is not an emergency service. The form discourages personal details; location is optional, confirmed before use and rounded for display. Map and geocoding services are disclosed. The responsive layout includes headings, a skip link, current-page navigation, keyboard focus and reduced-motion support. All 23 tested colour pairs met the WCAG 2.2 AA target, with a minimum contrast ratio of 4.57:1 (World Wide Web Consortium, 2024).
 
 ## 8. Outcomes and value added
 
-The project produced a working path from an unstructured message to a searchable board entry. DistilBERT raised macro-F1 from the baseline's 0.7262 to 0.7547, and calibrated confidence routes lower-confidence cases to review. MiniLM retrieves related messages, while TF-IDF searches for exact names and keywords. Publishing or correcting a report updates the retrieval index immediately. The database stores the original prediction separately from the current board, source and review status, so a human correction does not erase the model output.
+CrisisLens provides a working path from an unstructured message to a searchable board entry. DistilBERT improved macro-F1 from 0.7262 to 0.7547, calibrated confidence routes review, and MiniLM links sufficiently similar current-event reports. TF-IDF supports exact search in current and historical modes. Publishing, correction, hiding, restoration and deletion update the live index while preserving the original prediction.
 
-The cross-event results show that confidence handling can change under event shift. Temperature scaling helped both Transformers on the seen test set but transferred differently to the held-out event. The retrieval result was more direct: semantic retrieval raised Precision@5 from 0.607 to 0.800 while remaining fast enough for interactive use.
-
-The repository also contains a self-contained EDA notebook, packaged model interfaces, a general cross-event evaluator, a historical-message index, REST schemas, integration tests and a web interface. The separate interfaces allow one component to be reproduced or replaced without rewriting the rest of the system.
+The held-out event exposed limits in calibration transfer, while semantic retrieval improved Precision@5 from 0.607 to 0.800. The repository packages the EDA, model interfaces, cross-event evaluator, retrieval index, REST schemas, tests and web interface needed to inspect or replace individual components.
 
 ## 9. Challenges and solutions
 
@@ -344,36 +326,34 @@ The repository also contains a self-contained EDA notebook, packaged model inter
 | Severe class imbalance | Used macro-F1 and per-label support; tested class weights and focal loss under a pre-defined decision rule | Neither alternative improved the agreed F1 condition, so plain fine-tuning was retained |
 | Event-specific language and distribution shift | Added a 12-event training / one-event holdout stress test | Contextual models remained stronger; all models and thresholds changed under shift |
 | Confidence could be misleading | Fitted temperature on validation and measured ECE plus risk–coverage | Seen ECE improved, while the held-out event exposed model-dependent transfer |
-| Exact words and paraphrases need different retrieval | Evaluated TF-IDF and sentence embeddings under separate selection rules | Semantic retrieval won for related reports; TF-IDF won for names and keyword search |
+| Exact words and paraphrases need different retrieval | Evaluated TF-IDF and sentence embeddings under separate selection rules, then calibrated a display threshold | Semantic retrieval won for similar reports; TF-IDF won for names and keyword search |
 | Repeated messages reduce useful result diversity | Added 0.90 near-duplicate grouping without deleting source records | Distinct top-ten results increased from seven to ten |
 | Six independently developed components had to agree | Fixed ten labels and small classifier/retriever interfaces; used adapters and Pydantic validation | Integrated API tests and live failure scenarios passed |
-| Users could over-trust labels or reports | Separated prediction, board correction and verification language | Interface shows confidence, review state, “Unverified” and historical/demo provenance |
+| Users could over-trust labels or reports | Separated prediction, board correction and verification language | Interface shows confidence, review state, “Unverified”, demo provenance and a separate historical mode |
 
 ## 10. Ethics, limitations and responsible use
 
-**Dataset coverage and fairness.** The dataset represents public English tweets from selected disasters between 2016 and 2019. It does not represent every language, region, disaster type or communication practice. Hurricane data are especially prominent. Performance differences across locations and populations were not measured, and the system should not infer nationality or personal characteristics from language.
+**Dataset coverage and fairness.** HumAID contains public English tweets from selected 2016–2019 disasters and over-represents hurricanes. It does not cover every language, region or communication practice. Group-level performance was not measured, and language should not be used to infer personal characteristics.
 
-**Rare classes and limited event coverage.** The smallest labels have limited support. The official test contains only 72 `missing_or_found_people` messages, and the held-out event contains only four. Per-label results for these groups are unstable. The cross-event conclusion is also based on one event. More event holdouts are required before making broad robustness claims.
+**Rare classes and event coverage.** The official test has only 72 `missing_or_found_people` messages and the held-out event has four, making those scores unstable. One held-out event cannot support broad robustness claims.
 
-**Verification and moderation.** CrisisLens sorts reports but does not confirm that they are true. The prototype has an administrator page for managing user submissions, but access currently relies on fixed demo accounts and is not protected by secure backend authorisation. It also does not keep an audit history. A public version would need secure administrator accounts, backend role checks, rate limits and a record of moderation actions.
+**Verification and moderation.** CrisisLens sorts but does not verify reports. Administration uses fixed demo accounts without secure backend authorisation or an audit history. A public version needs secure accounts, role checks, rate limits and moderation records.
 
-**Privacy and data governance.** User text may contain personal information even when the form asks people to avoid it. Data retention, withdrawal, deletion and incident-response policies are not implemented. Historical tweets remain user-generated content and must be handled under the dataset terms and relevant privacy requirements.
+**Privacy and data governance.** Reports may contain personal information despite the form warning. Retention, withdrawal and incident-response policies are not implemented. Historical tweets remain subject to dataset terms and privacy requirements.
 
-**Evidence still needed.** The current evidence does not include a formal external usability study, screen-reader test, sustained load test or verified public deployment. Model confidence is shown as a percentage, which some users may over-interpret. NIST's AI risk guidance emphasises that human oversight and system context are part of trustworthy AI, so the review workflow should be supported by clear roles and monitoring rather than treated as a final safeguard (National Institute of Standards and Technology, 2023).
+**Evidence still needed.** The project lacks an external usability study, screen-reader test, sustained load test and verified public deployment. Confidence percentages may be over-interpreted. Human review therefore needs defined roles and monitoring rather than being treated as a final safeguard (National Institute of Standards and Technology, 2023).
 
 ## 11. Recommendations and next steps
 
-A later usability study should test whether people outside the development team understand the difference between model confidence, category review and factual verification. Observed task errors can then guide interface changes.
+A later usability study should test whether new users distinguish confidence, category review and factual verification. Multi-event holdouts should cover more disaster types, while monitoring tracks per-class errors, ECE, review coverage and corrections.
 
-The next technical priority is multi-event evaluation. Repeating the holdout protocol across floods, fires, hurricanes and earthquakes would show whether the current result generalises beyond Cyclone Idai. Live monitoring should track per-class errors, ECE, review coverage and correction rates. Temperatures and thresholds should be re-fitted when evidence shows drift.
-
-For retrieval, future work should add time and approximate-location ranking, compare a crisis-specific sentence encoder and test hybrid lexical–semantic scores. Product work should also consider low-bandwidth operation and multilingual models.
+Retrieval work should test time and approximate-location ranking, crisis-specific encoders and hybrid scores. Reports could be reviewed and archived into historical mode when an event ends. Other priorities are low-bandwidth operation and multilingual models.
 
 For future releases, the team should repeat the real workflow from a clean environment and preserve the tested code version, dependency lock and application evidence together. The current prototype treats local reproducibility as its main deployment evidence; a public service would require separate operational and security checks.
 
-### Future work: abuse prevention
+CrisisLens currently runs the NiceGUI frontend and FastAPI backend as separate processes. Reports are stored in a local SQLite database, while the retrieval index remains in memory. The measured p50 latency for a real-stack analysis request was 127.6 ms, but this experiment did not measure production capacity. At higher traffic, SQLite's serialised writes and a separate in-memory index for each API process would limit throughput and consistency. A larger deployment would therefore need a server database, a shared persistent retrieval service and multiple API workers behind a load balancer.
 
-The current administrator page can hide, restore or delete repeated or inappropriate submissions. A public version should also detect repeated submissions, limit posting rates and keep a reason and history for each moderation action. These controls should not treat the NLP prediction as evidence that a report or its author is malicious.
+**Abuse prevention.** Administrators can hide, restore or delete submissions. A public version should detect repeats, rate-limit posting and record moderation reasons without treating an NLP prediction as evidence of malicious intent.
 
 ## References
 
@@ -414,7 +394,7 @@ uv sync
 uv run jupyter lab
 ```
 
-Run all cells in `notebooks/01_crisis_eda.ipynb`; it downloads missing public data into `data/raw/` and writes the shared EDA outputs to `outputs/eda/`. Download `models_transformer.zip` from the repository's `m3-transformer-v1` release and extract it at the repository root so that the weights and tokenizer are placed in `models/transformer/`. Then build the historical index:
+Run all cells in `notebooks/01_crisis_eda.ipynb`; it downloads missing public data into `data/raw/` and writes the shared EDA outputs to `outputs/eda/`. Download `model.safetensors` from the repository's `m3-transformer-v1` release and place it in `models/transformer/`; the loader, metadata, configuration and tokenizer files are already tracked in Git. Then build the historical index:
 
 ```bash
 uv run python models/retrieval/build_index.py
@@ -429,13 +409,42 @@ CRISISLENS_API_URL=http://localhost:8000 uv run python app/frontend/main.py
 
 Open `http://localhost:8080`. `GET /api/health` should report the real classifier and retrieval components before evidence is captured.
 
+With the backend running, `scripts/demo_data.py` prepares the reports used in a demonstration:
+
+```bash
+uv run python scripts/demo_data.py empty --yes
+uv run python scripts/demo_data.py nepal --replace
+uv run python scripts/demo_data.py event kerala_floods_2018 --limit 40 --replace
+```
+
+`empty` removes all community reports and requires `--yes`. `nepal` loads the nine labelled scenario reports used by the frontend demonstration. `event <name>` samples the named event's HumAID test split, sends each message through the running classifier and marks the saved records as demo data. Event loading requires the per-event files downloaded by `notebooks/01_crisis_eda.ipynb`; `uv run python scripts/demo_data.py event --list` shows the available names.
+
+With the real backend running, the following script checks the active runtime, classification, related-message retrieval, report creation and authorship, public listing, hide and restore behaviour, review status, date-filtered search and deletion:
+
+```bash
+uv run python scripts/real_mode_check.py
+```
+
+The script gives its temporary reports a unique marker and deletes them when a run completes normally.
+
+The retrieval display threshold and the deployed DistilBERT validation curve can be reproduced separately:
+
+```bash
+uv run python scripts/calibrate_related_threshold.py
+uv run python scripts/distilbert_validation_curve.py
+```
+
+The first script uses the released relevance judgements to write `related_threshold.csv`. The second reruns the released DistilBERT on the official validation split and writes the validation summary and Figure 3.
+
 Run the automated suite from the repository root:
 
 ```bash
 uv run pytest tests/ -v
 ```
 
-The recorded integrated run contains 28 passing tests. The selected Transformer checkpoint is stored in `models/transformer/`, the locally generated retrieval index in `models/retrieval/index/`, and the persisted user reports in the SQLite database used by the backend. The repository README is the source of truth for platform-specific environment-variable syntax and the current model-release URL.
+The suite contains 48 automated tests, and all passed with the local MiniLM model and retrieval index available. It covers API contracts, classifier input cleaning, current-event retrieval and threshold behaviour, live-index updates, moderation and authorship, database migration, date-filtered API search, demo-mode consistency, colour contrast, frontend response handling and cross-event evaluation.
+
+The selected Transformer checkpoint is stored in `models/transformer/`, the locally generated retrieval index in `models/retrieval/index/`, and the persisted user reports in the SQLite database used by the backend. See the repository README for platform-specific environment-variable syntax and the current model-release URL.
 
 ## Appendix B. Main artefacts
 
@@ -443,32 +452,32 @@ The recorded integrated run contains 28 passing tests. The selected Transformer 
 | --- | --- |
 | EDA notebook and outputs | `notebooks/01_crisis_eda.ipynb`, `outputs/eda/` |
 | Baseline model and results | `models/text_baseline/`, `outputs/results/baseline/` |
-| Transformer metadata and results | `models/transformer/metadata.json`, `outputs/results/transformer/` |
+| Transformer metadata and results | `models/transformer/metadata.json`, `outputs/results/transformer/distilbert_validation_curve.json`, `outputs/results/transformer/distilbert_coverage_risk_curve.png` |
 | Cross-event results | `outputs/results/cross_event/` |
-| Retrieval implementation and results | `models/retrieval/`, `outputs/results/retrieval/` |
+| Retrieval implementation and results | `models/retrieval/`, `outputs/results/retrieval/`, `outputs/results/retrieval/related_threshold.csv` |
 | Backend and database | `app/backend/`, `app/schema.sql` |
 | Frontend | `app/frontend/` |
-| System timing and failures | `outputs/results/system/` |
+| System timing, failure scenarios and contrast check | `outputs/results/system/endpoint_latency.json`, `outputs/results/system/failure_scenarios.json`, `outputs/results/system/contrast_check.csv` |
 | Interaction design and demonstration flow | `app/frontend/`, `report/sections/member6_frontend_and_user_study.md` |
 
 ## Appendix C. REST endpoints
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| POST | `/api/analyse` | Classify a draft and retrieve related messages |
+| POST | `/api/analyse` | Classify a draft and retrieve similar reports saved for the current event |
 | POST | `/api/reports` | Save a user report |
-| GET | `/api/reports` | List and filter reports |
-| GET | `/api/reports/{id}` | Show one report and related messages |
-| PATCH | `/api/reports/{id}` | Correct the board and/or review status |
+| GET | `/api/reports` | List and filter saved reports, including a `created_by` filter used by My Reports |
+| GET | `/api/reports/{id}` | Show one report and similar reports from the current event |
+| PATCH | `/api/reports/{id}` | Correct the board, update review status, or hide and restore a report |
 | DELETE | `/api/reports/{id}` | Delete a community report |
-| GET | `/api/search` | Keyword and semantic search |
+| GET | `/api/search` | Keyword search with an optional `source_type`; the interface always selects either Current event or Historical dataset |
 | GET | `/api/health` | Show runtime and component status |
 
 ## Appendix D. Live demonstration path
 
-1. Confirm that `GET /api/health` reports the real DistilBERT classifier and retrieval index.
-2. Submit a crisis message and inspect the predicted category, confidence and related historical reports.
+1. Start the real backend, load the Nepal scenario with `uv run python scripts/demo_data.py nepal --replace`, and confirm that `GET /api/health` reports the real DistilBERT classifier and retrieval index.
+2. Submit a bridge-related crisis message and inspect the category and confidence produced by DistilBERT. The similar-report cards should contain only saved reports from the current Nepal event.
 3. Confirm or correct the category, publish the report and follow the redirect to its board.
-4. Browse the board, open a report and use keyword search with a filter.
+4. Browse the board, open a report and search the Current event with a filter. Switch to Historical dataset to show that past HumAID messages are searched separately.
 5. Show how a low-confidence prediction appears in the review queue without being presented as fact-checked.
 6. Open the administrator page and show how a repeated or inappropriate submission can be hidden, restored or deleted. Explain that the demo login is not intended for public deployment.

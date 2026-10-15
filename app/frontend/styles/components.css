@@ -85,6 +85,13 @@
 .crisis-badge--primary { background-color: var(--color-primary-soft); color: var(--color-primary); }
 .crisis-badge--review { background-color: var(--color-review-soft); color: var(--color-review); }
 .crisis-badge--success { background-color: var(--color-success-soft); color: var(--color-success); }
+/* Marks a past-disaster example; outlined so it shows on the grey example card. */
+.crisis-badge--example {
+    background-color: var(--color-surface);
+    color: var(--color-text-main);
+    border: 1px dashed var(--color-text-secondary);
+    font-weight: 600;
+}
 
 /* Alerts */
 .crisis-alert {
@@ -176,6 +183,16 @@
 .crisis-report-card--reference {
     background: var(--color-background);
     box-shadow: none;
+}
+
+/* Past-disaster examples on an empty board: a dashed outline marks them as
+   samples rather than reports about the current situation. */
+.crisis-report-card--example {
+    border-style: dashed;
+}
+
+.crisis-examples {
+    margin-top: 16px;
 }
 
 .crisis-report-note {
