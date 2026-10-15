@@ -173,7 +173,7 @@ def resolve_judgements(sheet: pd.DataFrame) -> tuple[pd.DataFrame, int, int]:
     own = dict(zip(zip(sheet["query_id"], sheet["doc_id"]), values))
 
     resolved, reused = [], 0
-    for query_id, doc_id, value, parent in zip(sheet["query_id"], sheet["doc_id"], values, reused_from):
+    for _query_id, doc_id, value, parent in zip(sheet["query_id"], sheet["doc_id"], values, reused_from):
         if value == "" and parent:
             value = own.get((parent, doc_id), "")
             reused += value != ""

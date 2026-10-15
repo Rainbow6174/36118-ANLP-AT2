@@ -189,7 +189,7 @@ def load_model(
         raise KeyError(
             f"metadata.json missing required field: {e}. Expected nested "
             f"schema with canonical_label_order and deployment_model.* keys."
-        )
+        ) from e
 
     max_length = int(
         meta.get("training_config", {}).get("max_seq_length", 128)

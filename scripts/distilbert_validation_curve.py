@@ -86,7 +86,7 @@ def main() -> None:
 
     data = pd.read_parquet(VALIDATION)
     texts = [clean_text(t) for t in data["tweet_text"]]
-    labels = data["class_label"].map({l: i for i, l in enumerate(labels_order)}).to_numpy()
+    labels = data["class_label"].map({name: i for i, name in enumerate(labels_order)}).to_numpy()
 
     classifier = load_model()
     started = time.perf_counter()

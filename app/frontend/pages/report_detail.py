@@ -99,8 +99,8 @@ def _category_editor(report: CrisisReport) -> None:
                 on_click=lambda: save(category.value),
             )
             ui.label(
-                "Anyone can change a category in this prototype. The model's "
-                "original suggestion is always kept."
+                "Only the author or an administrator can change this category. The "
+                "model's original suggestion is always kept."
             ).classes("text-caption")
         editor.visible = report.status == "needs_review"
 

@@ -92,7 +92,7 @@ def _render_user_icon() -> None:
     initial = "A" if role == "admin" else "U"
 
     with ui.element("div").classes("crisis-user-area"):
-        avatar_btn = (
+        (
             ui.button(initial)
             .classes("crisis-avatar-btn")
             .props("round flat")

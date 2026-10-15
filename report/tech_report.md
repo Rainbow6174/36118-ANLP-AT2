@@ -190,7 +190,7 @@ Semantic retrieval would be adopted only if it improved overall Precision@5 by a
 
 The final automated suite contains 48 tests covering API contracts, the data path, moderation, current-event retrieval, classifier input cleaning, cross-event metrics, accessibility and frontend behaviour. After warm-up requests to health, analysis and search, seven endpoints were measured over 20 requests each. Fourteen live failure scenarios covered invalid and unusual input, missing or protected records, search, concurrent submissions and pagination.
 
-The design review covered uncertainty, correction, privacy, status language, provenance, errors, responsive layout and accessibility (Appendix E). The live demonstration follows analysis, correction, publication, board redirection, retrieval and low-confidence review. It tests the implemented journey and is not presented as a formal usability study.
+The design review covered uncertainty, correction, privacy, status language, provenance, errors, responsive layout and accessibility (Appendix E). The demonstration walkthrough in Appendix D follows analysis, correction, publication, board redirection, retrieval and low-confidence review in the Nepal scenario. Figures 5–8 and Appendix F show the screens it passes through. It tests the implemented journey and is not presented as a formal usability study.
 
 ## 6. Results and findings
 
@@ -297,13 +297,13 @@ The interface separates three ideas that could otherwise be confused:
 - **Category needs review** means model confidence was below the threshold.
 - **Category reviewed** means a person checked the sorting, not that the report is true.
 
-The review queue shows the suggested category and confidence before confirmation or correction (Figure 6). A demo administrator can also hide, restore or delete inappropriate or repeated submissions. Hiding is reversible; permanent deletion asks for confirmation by default.
+The review queue shows the suggested category and confidence before confirmation or correction (Figure 6). A demo administrator can also hide, restore or delete inappropriate or repeated submissions. Hiding is reversible; permanent deletion asks for confirmation by default (Figure 11).
 
 ![CrisisLens review queue](screenshots/4.jpg)
 
 *Figure 6. The administrator review queue shows why a report is waiting and the controls for confirming or changing its category. The Nepal scenario uses preset confidence values to demonstrate these states; the values in this screenshot are not outputs from the deployed model.*
 
-An empty board can show three HumAID cards with a dashed border, the label “Example · past disaster” and a notice that they are not current reports. They disappear once the board has a current-event report. Historical dataset search has its own page notice, and seeded records carry a “Demo data” label.
+An empty board can show three HumAID cards with a dashed border, the label “Example · past disaster” and a notice that they are not current reports. They disappear once the board has a current-event report. Historical dataset search has its own page notice, and seeded records carry a “Demo data” label (Figures 9 and 10).
 
 ![CrisisLens category board](screenshots/8.jpg)
 
@@ -481,7 +481,7 @@ The selected Transformer checkpoint is stored in `models/transformer/`, the loca
 | GET | `/api/search` | Keyword search with an optional `source_type`; the interface always selects either Current event or Historical dataset |
 | GET | `/api/health` | Show runtime and component status |
 
-## Appendix D. Live demonstration path
+## Appendix D. Demonstration walkthrough
 
 1. Start the real backend, load the Nepal scenario with `uv run python scripts/demo_data.py nepal --replace`, and confirm that `GET /api/health` reports the real DistilBERT classifier and retrieval index.
 2. Submit a bridge-related crisis message and inspect the category and confidence produced by DistilBERT. The similar-report cards should contain only saved reports from the current Nepal event.
@@ -501,5 +501,21 @@ The interface was reviewed by the team against Nielsen's usability heuristics (N
 | The model may be wrong and a person may not be able to correct it | The person can change the category before publishing; the original model suggestion is kept | Support efficient correction (Amershi et al.); user control and freedom (Nielsen) | Section 7.1 |
 | A person may share personal or exact location data | A privacy reminder, an optional location confirmed by the person, and coordinates rounded to about 1 km and drawn as a circle | Error prevention (Nielsen) | Section 7.3 |
 | The tool may be mistaken for an emergency service | A safety line on every page except the form, a larger box with emergency numbers on the form, and a footer note | Make clear what the system can do (Amershi et al.) | Section 7.3 |
-| Past disasters may look current | Historical results are labelled, marked as not current and shown with usernames anonymised and links removed; empty boards show clearly marked examples | Visibility of system status (Nielsen) | Section 7.2 |
+| Past disasters may look current | Historical results are labelled, marked as not current and shown with usernames anonymised and links removed; empty boards show clearly marked examples | Visibility of system status (Nielsen) | Figures 9, 10 |
 | Small screens, keyboard use or low contrast may make the interface harder to use | A skip link, visible focus styles, semantic headings, a layout that adapts to phones, and colour pairs checked against WCAG 2.2 AA (23 pairs, lowest ratio 4.57:1) | Accessibility (WCAG 2.2) | Section 7.3 |
+
+## Appendix F. Additional interface screens
+
+These screens were captured from the same build as Figures 5–8 and show the states described in Section 7.2 that the main figures do not cover.
+
+![Empty board with marked examples](screenshots/figF1_empty_board_examples.jpg)
+
+*Figure 9. An empty board in real mode. The HumAID example cards below the empty state have a dashed border and the label “Example · past disaster”, and a notice states that they are not reports about the current situation.*
+
+![Historical dataset search](screenshots/figF2_historical_search.jpg)
+
+*Figure 10. Historical dataset search in real mode. A page notice states that the results are past HumAID messages, and the status filter is disabled because review status applies only to community reports.*
+
+![Delete confirmation](screenshots/figF3_delete_confirmation.jpg)
+
+*Figure 11. Permanent deletion on the administrator page asks for confirmation and suggests hiding instead. The administrator can skip the confirmation for one hour. The records behind the dialog are demo data.*

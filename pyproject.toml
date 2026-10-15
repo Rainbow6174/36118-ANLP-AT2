@@ -31,7 +31,20 @@ dev = [
     "ruff>=0.16.6",
 ]
 
+[tool.ruff]
+# Notebooks are recorded experiments; their outputs are kept as evidence.
+extend-exclude = ["notebooks"]
+
+[tool.ruff.lint]
+# Syntax errors, undefined or unused names and likely bugs. The code base keeps
+# Optional[...] annotations and FastAPI's Depends(...) defaults, so style-only
+# upgrade rules and B008 are not enabled.
+select = ["E4", "E7", "E9", "F", "B"]
+ignore = ["B008", "B905"]
+
 [tool.ruff.lint.per-file-ignores]
+# Scripts add the repository root to sys.path before importing project modules.
+"scripts/*.py" = ["E402"]
 "app/frontend/layout.py" = ["SIM117"]
 "app/frontend/pages/*.py" = ["SIM117"]
 

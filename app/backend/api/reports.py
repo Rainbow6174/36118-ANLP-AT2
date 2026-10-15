@@ -7,7 +7,6 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from .. import services, store
-from ..labels import LABEL_SET
 from ..ports.retriever import Retriever
 from ..schemas import (
     ReportCreate,

@@ -173,7 +173,7 @@ def test_concurrent_submissions(client: httpx.Client) -> tuple[str, str]:
     statuses = [r[0] for r in results]
     ids = [r[1] for r in results if r[1]]
     if all(s == 201 for s in statuses) and len(set(ids)) == 10:
-        return "pass", f"10 concurrent submissions, all unique IDs, no corruption"
+        return "pass", "10 concurrent submissions, all unique IDs, no corruption"
     return "fail", f"Statuses: {statuses}, unique IDs: {len(set(ids))}"
 
 
