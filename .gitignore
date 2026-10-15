@@ -216,7 +216,7 @@ tests/test_data_pipeline.py
 tools/build_eda_notebook.py
 CrisisLens_Revised_Project_Proposal.pdf
 
-# Transformer weights ship as model.safetensors in the m3-transformer-v1 GitHub
+# Transformer weights ship as model.safetensors in the m3-transformer-v2 GitHub
 # Release. The small config and tokenizer files are tracked, so downloading the
 # weights never replaces the repository's loader or metadata.
 models/transformer/*.safetensors

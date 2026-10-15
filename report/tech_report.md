@@ -394,7 +394,7 @@ uv sync
 uv run jupyter lab
 ```
 
-Run all cells in `notebooks/01_crisis_eda.ipynb`; it downloads missing public data into `data/raw/` and writes the shared EDA outputs to `outputs/eda/`. Download `model.safetensors` from the repository's `m3-transformer-v1` release and place it in `models/transformer/`; the loader, metadata, configuration and tokenizer files are already tracked in Git. Then build the historical index:
+Run all cells in `notebooks/01_crisis_eda.ipynb`; it downloads missing public data into `data/raw/` and writes the shared EDA outputs to `outputs/eda/`. Download `model.safetensors` from the repository's `m3-transformer-v2` release and place it in `models/transformer/`; the loader, metadata, configuration and tokenizer files are already tracked in Git. Then build the historical index:
 
 ```bash
 uv run python models/retrieval/build_index.py

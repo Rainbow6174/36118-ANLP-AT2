@@ -5,7 +5,7 @@ temperature T and frozen review threshold tau. The RoBERTa (A4) analysis
 model lives in metadata only; it is the report's analysis model, not shipped
 in this package. The loader, metadata, config and tokenizer files are tracked
 in Git. Download `model.safetensors` from the
-[m3-transformer-v1 release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v1)
+[m3-transformer-v2 release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v2)
 and place it directly in this folder; no archive needs to be extracted.
 
 ## Contents

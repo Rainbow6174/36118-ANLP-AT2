@@ -144,7 +144,7 @@ The data sources are [HumAID-all](https://huggingface.co/datasets/QCRI/HumAID-al
 
 ### 2. Add the deployment model
 
-The loader, metadata, configuration and tokenizer files are already tracked in `models/transformer/`. Download `model.safetensors` from the [m3-transformer-v1 release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v1) and save it as:
+The loader, metadata, configuration and tokenizer files are already tracked in `models/transformer/`. Download `model.safetensors` from the [m3-transformer-v2 release](https://github.com/Rainbow6174/36118-ANLP-AT2/releases/tag/m3-transformer-v2) and save it as:
 
 ```text
 models/transformer/model.safetensors
@@ -153,7 +153,7 @@ models/transformer/model.safetensors
 With the GitHub CLI:
 
 ```bash
-gh release download m3-transformer-v1 -R Rainbow6174/36118-ANLP-AT2 -p model.safetensors -D models/transformer
+gh release download m3-transformer-v2 -R Rainbow6174/36118-ANLP-AT2 -p model.safetensors -D models/transformer
 ```
 
 No archive is extracted, so the tracked loader and metadata are never replaced. The folder should then contain:
