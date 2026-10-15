@@ -197,7 +197,7 @@ def _load_real(config: dict) -> tuple[Classifier, RetrievalAdapter]:
     if not _model_files_ready(model_dir):
         missing.append(
             f"deployment model files in {model_dir} "
-            "(download model.safetensors from the m3-transformer-v1 release)"
+            "(download model.safetensors from the m3-transformer-v2 release)"
         )
     if not _retrieval_files_ready(index_dir):
         missing.append(
